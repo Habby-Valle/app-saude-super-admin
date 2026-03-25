@@ -1,18 +1,64 @@
-import { Users } from 'lucide-react'
+import { Suspense } from 'react'
+import { requireSuperAdmin } from '@/lib/auth'
+import { getUsers } from './actions'
+import { UserTableWrapper } from '@/components/users/user-table-wrapper'
+import { UserTableSkeleton } from '@/components/users/user-table'
+import type { UserRole } from '@/types/database'
 
-export default function UsersPage() {
+interface UsersPageProps {
+  searchParams: Promise<{
+    search?: string
+    role?: string
+    clinic_id?: string
+    page?: string
+  }>
+}
+
+async function UsersContent({ searchParams }: UsersPageProps) {
+  const params = await searchParams
+  const search = params.search ?? ''
+  const role = (params.role ?? 'all') as UserRole | 'all'
+  const clinicId = params.clinic_id ?? 'all'
+  const page = Math.max(1, parseInt(params.page ?? '1', 10))
+  const pageSize = 10
+
+  const { supabase } = await requireSuperAdmin()
+
+  const [{ users, total }, { data: clinics }] = await Promise.all([
+    getUsers({ search, role, clinic_id: clinicId, page, pageSize }),
+    supabase
+      .from('clinics')
+      .select('id, name')
+      .eq('status', 'active')
+      .order('name'),
+  ])
+
+  return (
+    <UserTableWrapper
+      users={users}
+      total={total}
+      page={page}
+      pageSize={pageSize}
+      search={search}
+      role={role}
+      clinicId={clinicId}
+      clinics={clinics ?? []}
+    />
+  )
+}
+
+export default function UsersPage(props: UsersPageProps) {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Usuários</h1>
         <p className="text-muted-foreground">
-          Gerencie administradores e usuários da plataforma.
+          Gerencie administradores, cuidadores e familiares da plataforma.
         </p>
       </div>
-      <div className="flex min-h-96 flex-col items-center justify-center gap-3 rounded-lg border border-dashed text-muted-foreground">
-        <Users className="h-10 w-10 opacity-40" />
-        <p className="text-sm">Feature 5 — Gestão de Usuários</p>
-      </div>
+      <Suspense fallback={<UserTableSkeleton />}>
+        <UsersContent searchParams={props.searchParams} />
+      </Suspense>
     </div>
   )
 }

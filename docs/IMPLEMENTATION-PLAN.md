@@ -13,7 +13,7 @@
 | 2 | Autenticação e Gestão de Sessão | 1 - Foundation | 🔴 Crítico | ✅ Concluído |
 | 3 | Dashboard Global com KPIs | 2 - Core | 🔴 Crítico | ✅ Concluído |
 | 4 | Gestão de Clínicas (CRUD completo) | 2 - Core | 🔴 Crítico | ✅ Concluído |
-| 5 | Gestão de Usuários Admin | 2 - Core | 🟠 Alto | ⏸ Pendente |
+| 5 | Gestão de Usuários Admin | 2 - Core | 🟠 Alto | ✅ Concluído |
 | 6 | Gestão de Pacientes (visão global) | 3 - Operations | 🟠 Alto | ⏸ Pendente |
 | 7 | Checklists Globais (templates) | 3 - Operations | 🟡 Médio | ⏸ Pendente |
 | 8 | Relatórios e Analytics | 4 - Insights | 🟡 Médio | ⏸ Pendente |
@@ -277,4 +277,4 @@ Todo arquivo de Server Action deve ter:
 
 ---
 
-*Última atualização: 2026-03-25*
+Última atualização: 2026-03-25 — F5 Gestão de Usuários concluída
