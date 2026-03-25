@@ -1,11 +1,11 @@
-'use server'
+"use server"
 
-import { revalidatePath } from 'next/cache'
-import { requireSuperAdmin } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase-admin'
-import { inviteUserSchema, updateUserSchema } from '@/lib/validations/user'
-import type { InviteUserValues, UpdateUserValues } from '@/lib/validations/user'
-import type { User, UserRole } from '@/types/database'
+import { revalidatePath } from "next/cache"
+import { requireSuperAdmin } from "@/lib/auth"
+import { createAdminClient } from "@/lib/supabase-admin"
+import { inviteUserSchema, updateUserSchema } from "@/lib/validations/user"
+import type { InviteUserValues, UpdateUserValues } from "@/lib/validations/user"
+import type { User, UserRole } from "@/types/database"
 
 export interface UsersResult {
   users: User[]
@@ -16,42 +16,48 @@ export interface UsersResult {
 
 export async function getUsers(params: {
   search?: string
-  role?: UserRole | 'all'
-  clinic_id?: string | 'all'
+  role?: UserRole | "all"
+  clinic_id?: string | "all"
   page?: number
   pageSize?: number
 }): Promise<UsersResult> {
   const { supabase } = await requireSuperAdmin()
 
-  const { search = '', role = 'all', clinic_id = 'all', page = 1, pageSize = 10 } = params
+  const {
+    search = "",
+    role = "all",
+    clinic_id = "all",
+    page = 1,
+    pageSize = 10,
+  } = params
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
   let query = supabase
-    .from('users')
-    .select('*', { count: 'exact' })
-    .neq('role', 'super_admin')
-    .order('created_at', { ascending: false })
+    .from("users")
+    .select("*", { count: "exact" })
+    .neq("role", "super_admin")
+    .order("created_at", { ascending: false })
     .range(from, to)
 
   if (search.trim()) {
     query = query.or(
-      `name.ilike.%${search.trim()}%,email.ilike.%${search.trim()}%`,
+      `name.ilike.%${search.trim()}%,email.ilike.%${search.trim()}%`
     )
   }
 
-  if (role !== 'all') {
-    query = query.eq('role', role)
+  if (role !== "all") {
+    query = query.eq("role", role)
   }
 
-  if (clinic_id !== 'all') {
-    query = query.eq('clinic_id', clinic_id)
+  if (clinic_id !== "all") {
+    query = query.eq("clinic_id", clinic_id)
   }
 
   const { data, count, error } = await query
 
   if (error) {
-    console.error('[getUsers]', error)
+    console.error("[getUsers]", error)
     throw new Error(error.message)
   }
 
@@ -61,13 +67,13 @@ export async function getUsers(params: {
 // ─── Convidar usuário (cria via Supabase Auth + insere perfil) ────────────────
 
 export async function inviteUser(
-  raw: InviteUserValues,
+  raw: InviteUserValues
 ): Promise<{ success: boolean; error?: string }> {
   await requireSuperAdmin()
 
   const result = inviteUserSchema.safeParse(raw)
   if (!result.success) {
-    return { success: false, error: result.error.errors[0].message }
+    return { success: false, error: result.error.issues[0].message }
   }
 
   const { name, email, role, clinic_id } = result.data
@@ -75,43 +81,47 @@ export async function inviteUser(
 
   // Verifica se email já existe
   const { data: existing } = await admin
-    .from('users')
-    .select('id')
-    .eq('email', email)
+    .from("users")
+    .select("id")
+    .eq("email", email)
     .maybeSingle()
 
   if (existing) {
-    return { success: false, error: 'Já existe um usuário com este email' }
+    return { success: false, error: "Já existe um usuário com este email" }
   }
 
   // Envia convite por email via Supabase Auth
-  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { name },
-  })
+  const { data: invited, error: inviteError } =
+    await admin.auth.admin.inviteUserByEmail(email, {
+      data: { name },
+    })
 
   if (inviteError || !invited.user) {
-    console.error('[inviteUser] auth error:', inviteError)
-    return { success: false, error: inviteError?.message ?? 'Erro ao enviar convite' }
+    console.error("[inviteUser] auth error:", inviteError)
+    return {
+      success: false,
+      error: inviteError?.message ?? "Erro ao enviar convite",
+    }
   }
 
   // Insere perfil público
-  const { error: profileError } = await admin.from('users').insert({
+  const { error: profileError } = await admin.from("users").insert({
     id: invited.user.id,
     name,
     email,
     role,
     clinic_id: clinic_id ?? null,
-    status: 'active',
+    status: "active",
   })
 
   if (profileError) {
-    console.error('[inviteUser] profile error:', profileError)
+    console.error("[inviteUser] profile error:", profileError)
     // Tenta limpar o auth user criado
     await admin.auth.admin.deleteUser(invited.user.id)
     return { success: false, error: profileError.message }
   }
 
-  revalidatePath('/users')
+  revalidatePath("/users")
   return { success: true }
 }
 
@@ -119,30 +129,30 @@ export async function inviteUser(
 
 export async function updateUser(
   id: string,
-  raw: UpdateUserValues,
+  raw: UpdateUserValues
 ): Promise<{ success: boolean; error?: string }> {
   await requireSuperAdmin()
 
   const result = updateUserSchema.safeParse(raw)
   if (!result.success) {
-    return { success: false, error: result.error.errors[0].message }
+    return { success: false, error: result.error.issues[0].message }
   }
 
   const admin = createAdminClient()
   const { name, role, clinic_id } = result.data
 
   const { error } = await admin
-    .from('users')
+    .from("users")
     .update({ name, role, clinic_id: clinic_id ?? null })
-    .eq('id', id)
-    .neq('role', 'super_admin') // garante que super_admin não seja alterado
+    .eq("id", id)
+    .neq("role", "super_admin") // garante que super_admin não seja alterado
 
   if (error) {
-    console.error('[updateUser]', error)
+    console.error("[updateUser]", error)
     return { success: false, error: error.message }
   }
 
-  revalidatePath('/users')
+  revalidatePath("/users")
   return { success: true }
 }
 
@@ -150,24 +160,24 @@ export async function updateUser(
 
 export async function toggleUserStatus(
   id: string,
-  currentStatus: 'active' | 'blocked',
+  currentStatus: "active" | "blocked"
 ): Promise<{ success: boolean; error?: string }> {
   await requireSuperAdmin()
 
-  const newStatus = currentStatus === 'active' ? 'blocked' : 'active'
+  const newStatus = currentStatus === "active" ? "blocked" : "active"
   const admin = createAdminClient()
 
   const { error } = await admin
-    .from('users')
+    .from("users")
     .update({ status: newStatus })
-    .eq('id', id)
-    .neq('role', 'super_admin')
+    .eq("id", id)
+    .neq("role", "super_admin")
 
   if (error) {
-    console.error('[toggleUserStatus]', error)
+    console.error("[toggleUserStatus]", error)
     return { success: false, error: error.message }
   }
 
-  revalidatePath('/users')
+  revalidatePath("/users")
   return { success: true }
 }

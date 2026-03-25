@@ -1,30 +1,39 @@
-'use client'
+"use client"
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { inviteUserSchema, updateUserSchema } from '@/lib/validations/user'
-import type { InviteUserValues, UpdateUserValues } from '@/lib/validations/user'
-import type { User } from '@/types/database'
-import type { Clinic } from '@/types/database'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { inviteUserSchema, updateUserSchema } from "@/lib/validations/user"
+import type {
+  InviteUserValues,
+  UpdateUserValues,
+  UserFormValues,
+} from "@/lib/validations/user"
+import type { User } from "@/types/database"
+import type { Clinic } from "@/types/database"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select"
 
 interface UserFormProps {
   user?: User
-  clinics: Pick<Clinic, 'id' | 'name'>[]
+  clinics: Pick<Clinic, "id" | "name">[]
   onSubmit: (data: InviteUserValues | UpdateUserValues) => Promise<void>
   isLoading: boolean
 }
 
-export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) {
+export function UserForm({
+  user,
+  clinics,
+  onSubmit,
+  isLoading,
+}: UserFormProps) {
   const isEditing = !!user
 
   const {
@@ -33,18 +42,18 @@ export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) 
     setValue,
     watch,
     formState: { errors },
-  } = useForm<InviteUserValues>({
+  } = useForm<UserFormValues>({
     resolver: zodResolver(isEditing ? updateUserSchema : inviteUserSchema),
     defaultValues: {
-      name: user?.name ?? '',
-      email: user?.email ?? '',
-      role: (user?.role as InviteUserValues['role']) ?? 'clinic_admin',
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      role: (user?.role as UserFormValues["role"]) ?? "clinic_admin",
       clinic_id: user?.clinic_id ?? null,
     },
   })
 
-  const roleValue = watch('role')
-  const clinicValue = watch('clinic_id')
+  const roleValue = watch("role")
+  const clinicValue = watch("clinic_id")
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -54,7 +63,7 @@ export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) 
         <Input
           id="name"
           placeholder="Ex: Maria Silva"
-          {...register('name')}
+          {...register("name")}
           aria-invalid={!!errors.name}
         />
         {errors.name && (
@@ -70,7 +79,7 @@ export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) 
             id="email"
             type="email"
             placeholder="usuario@clinica.com"
-            {...register('email')}
+            {...register("email")}
             aria-invalid={!!errors.email}
           />
           {errors.email && (
@@ -85,7 +94,7 @@ export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) 
         <Select
           value={roleValue}
           onValueChange={(v) =>
-            setValue('role', v as InviteUserValues['role'], {
+            setValue("role", v as InviteUserValues["role"], {
               shouldValidate: true,
             })
           }
@@ -108,9 +117,9 @@ export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) 
       <div className="space-y-1.5">
         <Label>Clínica</Label>
         <Select
-          value={clinicValue ?? 'none'}
+          value={clinicValue ?? "none"}
           onValueChange={(v) =>
-            setValue('clinic_id', v === 'none' ? null : v, {
+            setValue("clinic_id", v === "none" ? null : v, {
               shouldValidate: true,
             })
           }
@@ -135,11 +144,11 @@ export function UserForm({ user, clinics, onSubmit, isLoading }: UserFormProps) 
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading
           ? isEditing
-            ? 'Salvando...'
-            : 'Enviando convite...'
+            ? "Salvando..."
+            : "Enviando convite..."
           : isEditing
-            ? 'Salvar alterações'
-            : 'Enviar convite'}
+            ? "Salvar alterações"
+            : "Enviar convite"}
       </Button>
     </form>
   )

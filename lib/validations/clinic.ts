@@ -1,8 +1,8 @@
-import { z } from 'zod'
+import { z } from "zod"
 
 // Valida CNPJ pelo algoritmo oficial (dígitos verificadores)
 function isValidCnpj(cnpj: string): boolean {
-  const digits = cnpj.replace(/\D/g, '')
+  const digits = cnpj.replace(/\D/g, "")
   if (digits.length !== 14) return false
   if (/^(\d)\1+$/.test(digits)) return false // todos iguais
 
@@ -19,23 +19,21 @@ function isValidCnpj(cnpj: string): boolean {
 
   const d1 = calc(digits, 12)
   const d2 = calc(digits, 13)
-  return (
-    d1 === parseInt(digits[12]) && d2 === parseInt(digits[13])
-  )
+  return d1 === parseInt(digits[12]) && d2 === parseInt(digits[13])
 }
 
 export const clinicSchema = z.object({
   name: z
     .string()
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome muito longo'),
+    .min(2, "Nome deve ter pelo menos 2 caracteres")
+    .max(100, "Nome muito longo"),
   cnpj: z
     .string()
-    .min(1, 'CNPJ é obrigatório')
-    .transform((v) => v.replace(/\D/g, ''))
-    .refine(isValidCnpj, 'CNPJ inválido'),
-  status: z.enum(['active', 'inactive', 'suspended'], {
-    required_error: 'Status é obrigatório',
+    .min(1, "CNPJ é obrigatório")
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine(isValidCnpj, "CNPJ inválido"),
+  status: z.enum(["active", "inactive", "suspended"], {
+    message: "Status é obrigatório",
   }),
   plan: z.string().max(50).optional(),
 })
