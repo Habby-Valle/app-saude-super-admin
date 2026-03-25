@@ -4,11 +4,43 @@ import { revalidatePath } from "next/cache"
 import { requireSuperAdmin } from "@/lib/auth"
 import { clinicSchema } from "@/lib/validations/clinic"
 import type { ClinicFormValues } from "@/lib/validations/clinic"
-import type { Clinic, ClinicStatus } from "@/types/database"
+import type { Clinic, ClinicStatus, User } from "@/types/database"
 
 export interface ClinicsResult {
   clinics: Clinic[]
   total: number
+}
+
+export interface ClinicWithDetails extends Clinic {
+  patient_count: number
+  user_count: number
+  caregiver_count: number
+  shift_count: number
+}
+
+export interface ClinicDetails {
+  clinic: Clinic
+  patients: {
+    id: string
+    name: string
+    birth_date: string
+    created_at: string
+  }[]
+  users: {
+    id: string
+    name: string
+    email: string
+    role: string
+    last_sign_in_at: string | null
+  }[]
+  checklists: { id: string; name: string; icon: string | null }[]
+  stats: {
+    patient_count: number
+    user_count: number
+    caregiver_count: number
+    shift_count: number
+    shift_count_month: number
+  }
 }
 
 // ─── Listar clínicas (com busca, filtro, paginação) ───────────────────────────
@@ -151,4 +183,80 @@ export async function deactivateClinic(
   revalidatePath("/clinics")
   revalidatePath("/dashboard")
   return { success: true }
+}
+
+// ─── Detalhes de clínica (drill-down) ───────────────────────────────────────────
+
+export async function getClinicById(id: string): Promise<ClinicDetails | null> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data: clinic, error: clinicError } = await supabase
+    .from("clinics")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (clinicError || !clinic) {
+    console.error("[getClinicById] Clinic not found:", clinicError)
+    return null
+  }
+
+  const now = new Date()
+  const monthStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1
+  ).toISOString()
+
+  const [
+    patientsResult,
+    usersResult,
+    checklistsResult,
+    shiftsResult,
+    shiftsMonthResult,
+  ] = await Promise.all([
+    supabase
+      .from("patients")
+      .select("id, name, birth_date, created_at")
+      .eq("clinic_id", id)
+      .order("name")
+      .limit(10),
+    supabase
+      .from("users")
+      .select("id, name, email, role, last_sign_in_at")
+      .eq("clinic_id", id)
+      .order("name"),
+    supabase
+      .from("checklists")
+      .select("id, name, icon, clinic_id")
+      .eq("clinic_id", id)
+      .order("name"),
+    supabase
+      .from("shifts")
+      .select("id", { count: "exact", head: true })
+      .eq("clinic_id", id),
+    supabase
+      .from("shifts")
+      .select("id", { count: "exact", head: true })
+      .eq("clinic_id", id)
+      .gte("started_at", monthStart),
+  ])
+
+  const caregiverCount = (usersResult.data ?? []).filter(
+    (u) => u.role === "caregiver"
+  ).length
+
+  return {
+    clinic,
+    patients: patientsResult.data ?? [],
+    users: usersResult.data ?? [],
+    checklists: checklistsResult.data ?? [],
+    stats: {
+      patient_count: patientsResult.count ?? 0,
+      user_count: usersResult.count ?? 0,
+      caregiver_count: caregiverCount,
+      shift_count: shiftsResult.count ?? 0,
+      shift_count_month: shiftsMonthResult.count ?? 0,
+    },
+  }
 }

@@ -19,6 +19,10 @@
 | 8   | Relatórios e Analytics                   | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
 | 9   | Auditoria e Logs                         | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
 | 10  | Configurações Globais (planos, sistema)  | 5 - Admin      | 🟢 Normal  | ✅ Concluído |
+| 11  | Detalhes de Clínica (drill-down)         | 6 - Details    | 🟠 Alto    | ✅ Concluído |
+| 12  | Detalhes de Usuário (perfil completo)    | 6 - Details    | 🟠 Alto    | ⏸ Pendente   |
+| 13  | Detalhes de Paciente (prontuário)        | 6 - Details    | 🟠 Alto    | ⏸ Pendente   |
+| 14  | Detalhes de Checklist (estatísticas)     | 6 - Details    | 🟠 Alto    | ⏸ Pendente   |
 
 ---
 
@@ -248,15 +252,120 @@
 - [ ] Configurar tipos de sinais vitais padrão
 - [ ] Configurações de email/notificações
 
+**Status:** ✅ Implementado (dados mockados - aguardando tabelas no banco)
+
+---
+
+## FASE 6 — Detail Views (Features 11-14)
+
+### Feature 11: Detalhes de Clínica (Drill-down)
+
+**Objetivo:** Super Admin visualiza informações completas de uma clínica.
+
+**URL:** `/clinics/[id]`
+
+**Sub-tarefas:**
+
+- [x] Header com nome, CNPJ, status, plano da clínica
+- [x] Cards de métricas (pacientes, cuidadores, turnos no mês)
+- [x] Lista de pacientes vinculados
+- [x] Lista de usuários por role (admin, cuidadores)
+- [x] Checklists configurados na clínica
+- [x] Link de drill-down na tabela de clínicas
+
+---
+
+### Feature 12: Detalhes de Usuário (Perfil Completo)
+
+**Objetivo:** Visualizar perfil e histórico de um usuário.
+
+**URL:** `/users/[id]`
+
+**Sub-tarefas:**
+
+- [ ] Header com avatar, nome, email, role
+- [ ] Clínica vinculada
+- [ ] Status da conta (ativo/bloqueado)
+- [ ] Último acesso
+- [ ] Histórico de ações (via audit_logs)
+- [ ] Pacientes vinculados (se cuidador)
+- [ ] Ações: editar, bloquear/desbloquear, trocar clínica
+
+---
+
+### Feature 13: Detalhes de Paciente (Prontuário)
+
+**Objetivo:** Prontuário completo do paciente para Super Admin.
+
+**URL:** `/patients/[id]`
+
+**Sub-tarefas:**
+
+- [ ] Header com nome, idade, clínica, data de nascimento
+- [ ] Cuidadores vinculados com status
+- [ ] Último turno realizado
+- [ ] Histórico de checklists completados
+- [ ] Contractor (responsável) vinculado
+- [ ] Contatos de emergência
+- [ ] Ações: visualizar turnos, ver cuidadores
+
+---
+
+### Feature 14: Detalhes de Checklist (Estatísticas)
+
+**Objetivo:** Estatísticas de uso de um template de checklist.
+
+**URL:** `/checklists/[id]`
+
+**Sub-tarefas:**
+
+- [ ] Header com nome, escopo (global/clínica), ícone
+- [ ] Total de execuções
+- [ ] Taxa de conclusão (%)
+- [ ] Lista de itens do template (preview)
+- [ ] Clínicas que usam este template
+- [ ] Período de maior uso (gráfico)
+  - [ ] Ações: editar, duplicar, excluir (se não usado)
+
+---
+
+## Pendências
+
+### Feature 10 - Itens pendentes:
+
+- [ ] Vincular clínicas a planos (via gestão de clínicas)
+- [ ] Configurar tipos de sinais vitais padrão
+- [ ] Configurações de email/notificações
+- [ ] Criar tabelas no Supabase: plans, shift_categories, alert_thresholds
+
+---
+
+## Estrutura de URLs (Detail Views)
+
+```
+/clinics/[id]       → Detalhes completos da clínica
+/users/[id]          → Perfil e histórico do usuário
+/patients/[id]       → Prontuário do paciente
+/checklists/[id]     → Estatísticas do template
+```
+
 ---
 
 ## Ordem de Implementação Justificada
 
 ```
-Feature 1 (Base) → Feature 2 (Auth) → Feature 3 (Dashboard) → Feature 4 (Clínicas)
-→ Feature 5 (Usuários) → Feature 6 (Pacientes) → Feature 7 (Checklists)
-→ Feature 8 (Relatórios) → Feature 9 (Auditoria) → Feature 10 (Configurações)
+Features 1-10: ✅ IMPLEMENTADAS
+→ Feature 11 (Detalhes Clínica)
+→ Feature 12 (Detalhes Usuário)
+→ Feature 13 (Detalhes Paciente)
+→ Feature 14 (Detalhes Checklist)
 ```
+
+**Justificativa Features 11-14:**
+
+1. **Detail views** complementam as listagens existentes
+2. Drill-down permite ações mais granulares
+3. Melhora UX do Super Admin para gestão detalhada
 
 **Justificativa:**
 
@@ -299,4 +408,4 @@ Todo arquivo de Server Action deve ter:
 
 ---
 
-Última atualização: 2026-03-25 — Feature 10 Configurações Globais concluída (TODAS IMPLEMENTADAS)
+Última atualização: 2026-03-25 — Feature 11 Detalhes de Clínica concluída

@@ -1,37 +1,39 @@
-'use client'
+"use client"
 
-import { useState, useTransition, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { useState, useTransition, useCallback } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import {
   MoreHorizontal,
   Pencil,
   PowerOff,
   Plus,
   Search,
-} from 'lucide-react'
+  Eye,
+} from "lucide-react"
 
-import { deactivateClinic } from '@/app/(main)/clinics/actions'
-import type { Clinic, ClinicStatus } from '@/types/database'
-import { ClinicDialog } from './clinic-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { deactivateClinic } from "@/app/(main)/clinics/actions"
+import type { Clinic, ClinicStatus } from "@/types/database"
+import { ClinicDialog } from "./clinic-dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -39,7 +41,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,23 +51,23 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog"
 
 const STATUS_MAP: Record<
   ClinicStatus,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+  {
+    label: string
+    variant: "default" | "secondary" | "destructive" | "outline"
+  }
 > = {
-  active: { label: 'Ativa', variant: 'default' },
-  inactive: { label: 'Inativa', variant: 'secondary' },
-  suspended: { label: 'Suspensa', variant: 'destructive' },
+  active: { label: "Ativa", variant: "default" },
+  inactive: { label: "Inativa", variant: "secondary" },
+  suspended: { label: "Suspensa", variant: "destructive" },
 }
 
 function formatCnpj(cnpj: string) {
-  const d = cnpj.replace(/\D/g, '')
-  return d.replace(
-    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-    '$1.$2.$3/$4-$5',
-  )
+  const d = cnpj.replace(/\D/g, "")
+  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
 }
 
 interface ClinicTableProps {
@@ -118,7 +120,7 @@ export function ClinicTable({
         toast.success(`Clínica "${deactivateTarget.name}" desativada.`)
         router.refresh()
       } else {
-        toast.error(result.error ?? 'Erro ao desativar')
+        toast.error(result.error ?? "Erro ao desativar")
       }
       setDeactivateTarget(null)
     })
@@ -129,8 +131,8 @@ export function ClinicTable({
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 gap-2">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="relative max-w-xs flex-1">
+            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar clínica..."
               className="pl-8"
@@ -183,11 +185,18 @@ export function ClinicTable({
               clinics.map((clinic) => {
                 const s = STATUS_MAP[clinic.status] ?? {
                   label: clinic.status,
-                  variant: 'outline' as const,
+                  variant: "outline" as const,
                 }
                 return (
                   <TableRow key={clinic.id}>
-                    <TableCell className="font-medium">{clinic.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/clinics/${clinic.id}`}
+                        className="hover:underline"
+                      >
+                        {clinic.name}
+                      </Link>
+                    </TableCell>
                     <TableCell className="font-mono text-sm">
                       {formatCnpj(clinic.cnpj)}
                     </TableCell>
@@ -202,12 +211,16 @@ export function ClinicTable({
                       <Badge variant={s.variant}>{s.label}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(clinic.created_at).toLocaleDateString('pt-BR')}
+                      {new Date(clinic.created_at).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -216,7 +229,7 @@ export function ClinicTable({
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          {clinic.status !== 'inactive' && (
+                          {clinic.status !== "inactive" && (
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -243,8 +256,8 @@ export function ClinicTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            {total} clínica{total !== 1 ? 's' : ''} encontrada
-            {total !== 1 ? 's' : ''}
+            {total} clínica{total !== 1 ? "s" : ""} encontrada
+            {total !== 1 ? "s" : ""}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -298,7 +311,7 @@ export function ClinicTable({
             <AlertDialogAction
               onClick={handleDeactivate}
               disabled={isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
             >
               Desativar
             </AlertDialogAction>
@@ -321,7 +334,7 @@ export function ClinicTableSkeleton() {
         <Table>
           <TableHeader>
             <TableRow>
-              {['Nome', 'CNPJ', 'Plano', 'Status', 'Criada em', ''].map((h) => (
+              {["Nome", "CNPJ", "Plano", "Status", "Criada em", ""].map((h) => (
                 <TableHead key={h}>{h}</TableHead>
               ))}
             </TableRow>
@@ -329,12 +342,24 @@ export function ClinicTableSkeleton() {
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-36" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-8 w-8 rounded" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
