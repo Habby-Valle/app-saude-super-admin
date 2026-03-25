@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
 import { Eye } from "lucide-react"
 
 import type { PatientWithDetails } from "@/app/(main)/patients/actions"
-import { PatientDialog } from "./patient-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -66,16 +65,7 @@ export function PatientTable({
   onClinicChange,
   onPageChange,
 }: PatientTableProps) {
-  const [selectedPatient, setSelectedPatient] =
-    useState<PatientWithDetails | null>(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
-
   const totalPages = Math.ceil(total / pageSize)
-
-  const openDetails = (patient: PatientWithDetails) => {
-    setSelectedPatient(patient)
-    setDialogOpen(true)
-  }
 
   return (
     <div className="space-y-4">
@@ -151,13 +141,8 @@ export function PatientTable({
                     {new Date(patient.created_at).toLocaleDateString("pt-BR")}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openDetails(patient)}
-                    >
-                      <Eye className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/patients/${patient.id}`}>Ver</Link>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -196,12 +181,6 @@ export function PatientTable({
           </div>
         </div>
       )}
-
-      <PatientDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        patient={selectedPatient}
-      />
     </div>
   )
 }

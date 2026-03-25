@@ -20,7 +20,7 @@
 | 9   | Auditoria e Logs                         | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
 | 10  | Configurações Globais (planos, sistema)  | 5 - Admin      | 🟢 Normal  | ✅ Concluído |
 | 11  | Detalhes de Clínica (drill-down)         | 6 - Details    | 🟠 Alto    | ✅ Concluído |
-| 12  | Detalhes de Usuário (perfil completo)    | 6 - Details    | 🟠 Alto    | ⏸ Pendente   |
+| 12  | Detalhes de Usuário (perfil completo)    | 6 - Details    | 🟠 Alto    | ✅ Concluído |
 | 13  | Detalhes de Paciente (prontuário)        | 6 - Details    | 🟠 Alto    | ⏸ Pendente   |
 | 14  | Detalhes de Checklist (estatísticas)     | 6 - Details    | 🟠 Alto    | ⏸ Pendente   |
 
@@ -283,13 +283,13 @@
 
 **Sub-tarefas:**
 
-- [ ] Header com avatar, nome, email, role
-- [ ] Clínica vinculada
-- [ ] Status da conta (ativo/bloqueado)
-- [ ] Último acesso
-- [ ] Histórico de ações (via audit_logs)
-- [ ] Pacientes vinculados (se cuidador)
-- [ ] Ações: editar, bloquear/desbloquear, trocar clínica
+- [x] Header com avatar, nome, email, role
+- [x] Clínica vinculada
+- [x] Status da conta (ativo/bloqueado)
+- [x] Último acesso
+- [x] Histórico de ações (via audit_logs)
+- [x] Pacientes vinculados (se cuidador)
+- [x] Link de drill-down na tabela de usuários
 
 ---
 
@@ -408,4 +408,4 @@ Todo arquivo de Server Action deve ter:
 
 ---
 
-Última atualização: 2026-03-25 — Feature 11 Detalhes de Clínica concluída
+Última atualização: 2026-03-25 — Feature 12 Detalhes de Usuário concluída

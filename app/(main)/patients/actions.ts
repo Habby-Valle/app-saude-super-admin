@@ -125,6 +125,86 @@ export async function getPatientCaregivers(
     .filter((c): c is { id: string; name: string; email: string } => c !== null)
 }
 
+export interface PatientDetails {
+  patient: Patient
+  clinic: { id: string; name: string } | null
+  caregivers: { id: string; name: string; email: string }[]
+  emergencyContacts: { id: string; name: string; phone: string }[]
+  stats: {
+    totalShifts: number
+    totalChecklists: number
+    lastShiftAt: string | null
+  }
+}
+
+export async function getPatientById(
+  id: string
+): Promise<PatientDetails | null> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data: patient, error: patientError } = await supabase
+    .from("patients")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (patientError || !patient) {
+    console.error("[getPatientById] Patient not found:", patientError)
+    return null
+  }
+
+  const [clinicResult, caregiversResult, shiftsResult, auditResult] =
+    await Promise.all([
+      patient.clinic_id
+        ? supabase
+            .from("clinics")
+            .select("id, name")
+            .eq("id", patient.clinic_id)
+            .single()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from("caregiver_patient")
+        .select("caregiver:users!caregiver_id(id, name, email)")
+        .eq("patient_id", id),
+      supabase
+        .from("shifts")
+        .select("id, started_at", { count: "exact", head: false })
+        .eq("patient_id", id)
+        .order("started_at", { ascending: false })
+        .limit(1),
+      supabase
+        .from("audit_logs")
+        .select("id, action, entity, created_at")
+        .eq("entity_id", id)
+        .eq("entity", "patient")
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ])
+
+  const caregivers = (caregiversResult.data ?? [])
+    .map(
+      (cp) =>
+        cp.caregiver as unknown as {
+          id: string
+          name: string
+          email: string
+        } | null
+    )
+    .filter((c): c is { id: string; name: string; email: string } => c !== null)
+
+  return {
+    patient,
+    clinic: clinicResult.data ?? null,
+    caregivers,
+    emergencyContacts: [],
+    stats: {
+      totalShifts: shiftsResult.count ?? 0,
+      totalChecklists: 0,
+      lastShiftAt: shiftsResult.data?.[0]?.started_at ?? null,
+    },
+  }
+}
+
 export async function exportPatientsCsv(): Promise<string> {
   const { patients } = await getPatients({ pageSize: 10000, page: 1 })
 

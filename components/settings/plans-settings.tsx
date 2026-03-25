@@ -171,7 +171,8 @@ export function PlansSettings({ initialPlans }: PlansSettingsProps) {
       {plans.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            Nenhum plano cadastrado. Clique em "Novo Plano" para começar.
+            Nenhum plano cadastrado. Clique em &ldquo;Novo Plano&rdquo; para
+            começar.
           </CardContent>
         </Card>
       ) : (

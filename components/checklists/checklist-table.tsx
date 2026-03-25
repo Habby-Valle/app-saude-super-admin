@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Copy, Pencil, Plus, Search, Trash2 } from "lucide-react"
 
 import type { ChecklistWithDetails } from "@/app/(main)/checklists/actions"
@@ -78,7 +79,9 @@ export function ChecklistTable({
   const [isPending, startTransition] = useTransition()
 
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editChecklist, setEditChecklist] = useState<ChecklistWithDetails | undefined>()
+  const [editChecklist, setEditChecklist] = useState<
+    ChecklistWithDetails | undefined
+  >()
 
   const openEdit = (cl: ChecklistWithDetails) => {
     setEditChecklist(cl) // Passa o objeto completo
@@ -246,6 +249,11 @@ export function ChecklistTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/checklists/${cl.id}`}>
+                              Ver detalhes
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(cl)}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar

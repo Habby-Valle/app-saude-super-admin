@@ -12,6 +12,22 @@ export interface UsersResult {
   total: number
 }
 
+export interface UserDetails {
+  user: User
+  clinic: { id: string; name: string } | null
+  patients: { id: string; name: string }[]
+  auditLogs: {
+    id: string
+    action: string
+    entity: string
+    created_at: string
+  }[]
+  stats: {
+    totalShifts: number
+    totalChecklists: number
+  }
+}
+
 // ─── Listar usuários (com busca, filtro por role/clínica, paginação) ──────────
 
 export async function getUsers(params: {
@@ -180,4 +196,69 @@ export async function toggleUserStatus(
 
   revalidatePath("/users")
   return { success: true }
+}
+
+// ─── Detalhes de usuário (drill-down) ───────────────────────────────────────────
+
+export async function getUserById(id: string): Promise<UserDetails | null> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (userError || !user) {
+    console.error("[getUserById] User not found:", userError)
+    return null
+  }
+
+  const [clinicResult, patientsResult, shiftsResult, auditResult] =
+    await Promise.all([
+      user.clinic_id
+        ? supabase
+            .from("clinics")
+            .select("id, name")
+            .eq("id", user.clinic_id)
+            .single()
+        : Promise.resolve({ data: null }),
+      user.role === "caregiver"
+        ? supabase
+            .from("caregiver_patient")
+            .select("patient:patients(id, name)")
+            .eq("caregiver_id", id)
+        : Promise.resolve({ data: [] }),
+      user.role === "caregiver"
+        ? supabase
+            .from("shifts")
+            .select("id", { count: "exact", head: true })
+            .eq("caregiver_id", id)
+        : Promise.resolve({ count: 0 }),
+      supabase
+        .from("audit_logs")
+        .select("id, action, entity, created_at")
+        .eq("user_id", id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ])
+
+  const patients = (patientsResult.data ?? []).map((p) => {
+    const patient = p.patient as unknown as { id: string; name: string } | null
+    return {
+      id: patient?.id ?? "",
+      name: patient?.name ?? "",
+    }
+  })
+
+  return {
+    user,
+    clinic: clinicResult.data ?? null,
+    patients,
+    auditLogs: auditResult.data ?? [],
+    stats: {
+      totalShifts: shiftsResult.count ?? 0,
+      totalChecklists: 0,
+    },
+  }
 }
