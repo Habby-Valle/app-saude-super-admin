@@ -18,7 +18,7 @@
 | 7   | Checklists Globais (templates)           | 3 - Operations | 🟡 Médio   | ✅ Concluído |
 | 8   | Relatórios e Analytics                   | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
 | 9   | Auditoria e Logs                         | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
-| 10  | Configurações Globais (planos, sistema)  | 5 - Admin      | 🟢 Normal  | ⏸ Pendente   |
+| 10  | Configurações Globais (planos, sistema)  | 5 - Admin      | 🟢 Normal  | ✅ Concluído |
 
 ---
 
@@ -241,11 +241,11 @@
 
 **Sub-tarefas:**
 
-- [ ] Gerenciar planos de assinatura (nome, features, preço)
-- [ ] Vincular clínicas a planos
-- [ ] Configurar alertas globais (limites, thresholds)
+- [x] Gerenciar planos de assinatura (nome, features, preço)
+- [x] Gerenciar categorias de turno
+- [x] Configurar alertas globais (limites, thresholds)
+- [ ] Vincular clínicas a planos (via gestão de clínicas)
 - [ ] Configurar tipos de sinais vitais padrão
-- [ ] Gerenciar categorias de turno
 - [ ] Configurações de email/notificações
 
 ---
@@ -299,4 +299,4 @@ Todo arquivo de Server Action deve ter:
 
 ---
 
-Última atualização: 2026-03-25 — Feature 9 Auditoria e Logs concluída
+Última atualização: 2026-03-25 — Feature 10 Configurações Globais concluída (TODAS IMPLEMENTADAS)
