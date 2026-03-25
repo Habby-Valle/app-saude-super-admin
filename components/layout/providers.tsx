@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { createClient } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth-store'
+import { Toaster } from '@/components/ui/sonner'
 import type { AuthUser } from '@/types/auth'
 import type { UserRole } from '@/types/database'
 
@@ -88,6 +89,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{children}</AuthProvider>
+      <Toaster richColors position="top-right" />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )

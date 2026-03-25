@@ -1,6 +1,6 @@
 -- ============================================================
--- Migration 001: Clínicas
--- (policies adicionadas em 002 após tabela users existir)
+-- 001: Tabela clinics
+-- Policies adicionadas em 002 (após users existir)
 -- ============================================================
 
 create table if not exists public.clinics (

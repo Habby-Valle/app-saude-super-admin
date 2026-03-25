@@ -9,10 +9,10 @@
 
 | # | Feature | Fase | Prioridade | Status |
 |---|---------|------|------------|--------|
-| 1 | Configuração Completa da Base do Projeto | 1 - Foundation | 🔴 Crítico | ⏳ Em andamento |
-| 2 | Autenticação e Gestão de Sessão | 1 - Foundation | 🔴 Crítico | ⏸ Pendente |
-| 3 | Dashboard Global com KPIs | 2 - Core | 🔴 Crítico | ⏸ Pendente |
-| 4 | Gestão de Clínicas (CRUD completo) | 2 - Core | 🔴 Crítico | ⏸ Pendente |
+| 1 | Configuração Completa da Base do Projeto | 1 - Foundation | 🔴 Crítico | ✅ Concluído |
+| 2 | Autenticação e Gestão de Sessão | 1 - Foundation | 🔴 Crítico | ✅ Concluído |
+| 3 | Dashboard Global com KPIs | 2 - Core | 🔴 Crítico | ✅ Concluído |
+| 4 | Gestão de Clínicas (CRUD completo) | 2 - Core | 🔴 Crítico | ✅ Concluído |
 | 5 | Gestão de Usuários Admin | 2 - Core | 🟠 Alto | ⏸ Pendente |
 | 6 | Gestão de Pacientes (visão global) | 3 - Operations | 🟠 Alto | ⏸ Pendente |
 | 7 | Checklists Globais (templates) | 3 - Operations | 🟡 Médio | ⏸ Pendente |
@@ -277,4 +277,4 @@ Todo arquivo de Server Action deve ter:
 
 ---
 
-*Última atualização: 2026-03-24*
+*Última atualização: 2026-03-25*

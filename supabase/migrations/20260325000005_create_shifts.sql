@@ -1,8 +1,7 @@
 -- ============================================================
--- Migration 005: Turnos e execução de checklists
+-- 005: Turnos e execução de checklists
 -- ============================================================
 
--- Turnos
 create table if not exists public.shifts (
   id           uuid primary key default gen_random_uuid(),
   clinic_id    uuid not null references public.clinics(id) on delete cascade,
@@ -11,36 +10,23 @@ create table if not exists public.shifts (
   started_at   timestamptz not null default now(),
   ended_at     timestamptz,
   status       text not null default 'in_progress'
-                 check (status in ('in_progress','completed','cancelled')),
-  created_at   timestamptz not null default now()
+                 check (status in ('in_progress','completed','cancelled'))
 );
 
 create index if not exists shifts_clinic_id_idx on public.shifts(clinic_id);
-create index if not exists shifts_patient_id_idx on public.shifts(patient_id);
-create index if not exists shifts_caregiver_id_idx on public.shifts(caregiver_id);
-create index if not exists shifts_status_idx on public.shifts(status);
+create index if not exists shifts_status_idx    on public.shifts(status);
 
 alter table public.shifts enable row level security;
 
 create policy "super_admin_all_shifts" on public.shifts
-  for all
-  using (
-    exists (
-      select 1 from public.users u
-      where u.id = auth.uid() and u.role = 'super_admin'
-    )
-  );
+  for all using (public.get_my_role() = 'super_admin');
 
 create policy "clinic_users_read_own_shifts" on public.shifts
   for select
-  using (
-    exists (
-      select 1 from public.users u
-      where u.id = auth.uid() and u.clinic_id = public.shifts.clinic_id
-    )
-  );
+  using (clinic_id = (select clinic_id from public.users where id = auth.uid()));
 
--- Execução de checklist em um turno
+-- ── Execução de checklists por turno ─────────────────────────
+
 create table if not exists public.shift_checklists (
   id           uuid primary key default gen_random_uuid(),
   shift_id     uuid not null references public.shifts(id) on delete cascade,
@@ -51,35 +37,26 @@ create table if not exists public.shift_checklists (
   created_at   timestamptz not null default now()
 );
 
+create index if not exists shift_checklists_shift_id_idx    on public.shift_checklists(shift_id);
+create index if not exists shift_checklists_created_at_idx  on public.shift_checklists(created_at desc);
+
 alter table public.shift_checklists enable row level security;
 
 create policy "super_admin_all_shift_checklists" on public.shift_checklists
-  for all
-  using (
-    exists (
-      select 1 from public.users u
-      where u.id = auth.uid() and u.role = 'super_admin'
-    )
-  );
+  for all using (public.get_my_role() = 'super_admin');
 
--- Respostas por item de checklist (imutáveis após conclusão)
+-- ── Respostas dos itens ───────────────────────────────────────
+
 create table if not exists public.shift_checklist_items (
   id                  uuid primary key default gen_random_uuid(),
   shift_checklist_id  uuid not null references public.shift_checklists(id) on delete cascade,
   checklist_item_id   uuid not null references public.checklist_items(id),
   value               text,
   option_id           uuid references public.checklist_item_options(id),
-  observation         text,
-  created_at          timestamptz not null default now()
+  observation         text
 );
 
 alter table public.shift_checklist_items enable row level security;
 
 create policy "super_admin_all_shift_checklist_items" on public.shift_checklist_items
-  for all
-  using (
-    exists (
-      select 1 from public.users u
-      where u.id = auth.uid() and u.role = 'super_admin'
-    )
-  );
+  for all using (public.get_my_role() = 'super_admin');
