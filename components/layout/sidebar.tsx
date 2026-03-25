@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Building2,
@@ -11,44 +11,50 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
-} from 'lucide-react'
+  Shield,
+} from "lucide-react"
 
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 
 const navItems = [
   {
-    label: 'Dashboard',
-    href: '/dashboard',
+    label: "Dashboard",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    label: 'Clínicas',
-    href: '/clinics',
+    label: "Clínicas",
+    href: "/clinics",
     icon: Building2,
   },
   {
-    label: 'Usuários',
-    href: '/users',
+    label: "Usuários",
+    href: "/users",
     icon: Users,
   },
   {
-    label: 'Pacientes',
-    href: '/patients',
+    label: "Pacientes",
+    href: "/patients",
     icon: UserRound,
   },
   {
-    label: 'Checklists',
-    href: '/checklists',
+    label: "Checklists",
+    href: "/checklists",
     icon: ClipboardList,
   },
   {
-    label: 'Relatórios',
-    href: '/reports',
+    label: "Relatórios",
+    href: "/reports",
     icon: BarChart3,
   },
   {
-    label: 'Configurações',
-    href: '/settings',
+    label: "Logs de Auditoria",
+    href: "/audit-logs",
+    icon: Shield,
+  },
+  {
+    label: "Configurações",
+    href: "/settings",
     icon: Settings,
   },
 ]
@@ -64,7 +70,7 @@ export function Sidebar() {
           <ShieldCheck className="h-4 w-4 text-primary-foreground" />
         </div>
         <div className="leading-none">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
             App Saúde
           </p>
           <p className="text-sm font-bold">Super Admin</p>
@@ -75,7 +81,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(item.href + '/')
+            pathname === item.href || pathname.startsWith(item.href + "/")
           const Icon = item.icon
 
           return (
@@ -83,10 +89,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />

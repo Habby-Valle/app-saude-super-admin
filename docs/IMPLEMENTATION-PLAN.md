@@ -17,7 +17,7 @@
 | 6   | Gestão de Pacientes (visão global)       | 3 - Operations | 🟠 Alto    | ✅ Concluído |
 | 7   | Checklists Globais (templates)           | 3 - Operations | 🟡 Médio   | ✅ Concluído |
 | 8   | Relatórios e Analytics                   | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
-| 9   | Auditoria e Logs                         | 4 - Insights   | 🟡 Médio   | ⏸ Pendente   |
+| 9   | Auditoria e Logs                         | 4 - Insights   | 🟡 Médio   | ✅ Concluído |
 | 10  | Configurações Globais (planos, sistema)  | 5 - Admin      | 🟢 Normal  | ⏸ Pendente   |
 
 ---
@@ -225,11 +225,11 @@
 
 **Sub-tarefas:**
 
-- [ ] Tabela `audit_logs` no Supabase
-- [ ] Registrar: criação de clínica, alteração de usuário, deleção, mudança de plano
-- [ ] Interface de visualização de logs (filtro por tipo, data, usuário)
-- [ ] Logs são imutáveis (sem UPDATE/DELETE no RLS)
-- [ ] Exportar logs
+- [x] Tabela `audit_logs` no Supabase
+- [x] Registrar: criação de clínica, alteração de usuário, deleção, mudança de plano
+- [x] Interface de visualização de logs (filtro por tipo, data, usuário)
+- [x] Logs são imutáveis (sem UPDATE/DELETE no RLS)
+- [x] Exportar logs
 
 ---
 
@@ -299,4 +299,4 @@ Todo arquivo de Server Action deve ter:
 
 ---
 
-Última atualização: 2026-03-25 — Feature 8 Relatórios e Analytics concluída
+Última atualização: 2026-03-25 — Feature 9 Auditoria e Logs concluída
