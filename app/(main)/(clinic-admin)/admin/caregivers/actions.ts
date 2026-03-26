@@ -62,19 +62,28 @@ export async function getClinicCaregivers(raw: {
     throw new Error(error.message)
   }
 
-  const caregiversWithCount: ClinicCaregiver[] = []
+  // Buscar TODOS os vínculos de uma vez (em vez de N queries)
+  const caregiverIds = (caregivers ?? []).map((c) => c.id)
+  const patientCounts: Record<string, number> = {}
 
-  for (const caregiver of caregivers ?? []) {
-    const { count: patientCount } = await supabase
+  if (caregiverIds.length > 0) {
+    const { data: allLinks } = await supabase
       .from("caregiver_patient")
-      .select("*", { count: "exact", head: true })
-      .eq("caregiver_id", caregiver.id)
+      .select("caregiver_id")
+      .in("caregiver_id", caregiverIds)
 
-    caregiversWithCount.push({
-      ...caregiver,
-      patient_count: patientCount ?? 0,
+    allLinks?.forEach((link) => {
+      patientCounts[link.caregiver_id] =
+        (patientCounts[link.caregiver_id] || 0) + 1
     })
   }
+
+  const caregiversWithCount: ClinicCaregiver[] = (caregivers ?? []).map(
+    (c) => ({
+      ...c,
+      patient_count: patientCounts[c.id] || 0,
+    })
+  )
 
   return { caregivers: caregiversWithCount, total: count ?? 0 }
 }

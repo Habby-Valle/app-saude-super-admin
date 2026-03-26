@@ -43,7 +43,6 @@ export async function getClinicPatients(raw: {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  // Buscar pacientes com paginação
   let query = supabase
     .from("patients")
     .select("*", { count: "exact" })
@@ -54,28 +53,34 @@ export async function getClinicPatients(raw: {
   if (search.trim()) {
     query = query.ilike("name", `%${search.trim()}%`)
   }
+
   const { data: patients, count, error } = await query
-  console.log(patients)
 
   if (error) {
     console.error("[getClinicPatients] Supabase error:", error)
     throw new Error(error.message)
   }
 
-  // Para cada paciente, contar cuidadores
-  const patientsWithCount: ClinicPatient[] = []
+  // Buscar TODOS os vínculos de uma vez (em vez de N queries)
+  const patientIds = (patients ?? []).map((p) => p.id)
+  const caregiverCounts: Record<string, number> = {}
 
-  for (const patient of patients ?? []) {
-    const { count: caregiverCount } = await supabase
+  if (patientIds.length > 0) {
+    const { data: allLinks } = await supabase
       .from("caregiver_patient")
-      .select("*", { count: "exact", head: true })
-      .eq("patient_id", patient.id)
+      .select("patient_id")
+      .in("patient_id", patientIds)
 
-    patientsWithCount.push({
-      ...patient,
-      caregiver_count: caregiverCount ?? 0,
+    allLinks?.forEach((link) => {
+      caregiverCounts[link.patient_id] =
+        (caregiverCounts[link.patient_id] || 0) + 1
     })
   }
+
+  const patientsWithCount: ClinicPatient[] = (patients ?? []).map((p) => ({
+    ...p,
+    caregiver_count: caregiverCounts[p.id] || 0,
+  }))
 
   return { patients: patientsWithCount, total: count ?? 0 }
 }
