@@ -14,7 +14,7 @@ import {
   Mail,
 } from "lucide-react"
 
-import { toggleUserStatus } from "@/app/(main)/users/actions"
+import { toggleUserStatus } from "@/app/(main)/(super-admin)/users/actions"
 import type { User, UserRole } from "@/types/database"
 import type { Clinic } from "@/types/database"
 import { UserDialog } from "./user-dialog"

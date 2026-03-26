@@ -9,7 +9,7 @@ import type {
   Plan,
   ShiftCategory,
   AlertThreshold,
-} from "@/app/(main)/settings/actions"
+} from "@/app/(main)/(super-admin)/settings/actions"
 
 interface SettingsTabsProps {
   plans: Plan[]

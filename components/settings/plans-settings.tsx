@@ -7,8 +7,8 @@ import {
   createPlan,
   updatePlan,
   deletePlan,
-} from "@/app/(main)/settings/actions"
-import type { Plan } from "@/app/(main)/settings/actions"
+} from "@/app/(main)/(super-admin)/settings/actions"
+import type { Plan } from "@/app/(main)/(super-admin)/settings/actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

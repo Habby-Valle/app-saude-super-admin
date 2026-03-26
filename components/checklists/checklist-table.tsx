@@ -4,11 +4,11 @@ import { useState } from "react"
 import Link from "next/link"
 import { Copy, Pencil, Plus, Search, Trash2 } from "lucide-react"
 
-import type { ChecklistWithDetails } from "@/app/(main)/checklists/actions"
+import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/checklists/actions"
 import {
   deleteChecklist,
   duplicateChecklist,
-} from "@/app/(main)/checklists/actions"
+} from "@/app/(main)/(super-admin)/checklists/actions"
 import { ChecklistDialog } from "./checklist-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

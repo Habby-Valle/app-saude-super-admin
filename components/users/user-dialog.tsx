@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { inviteUser, updateUser } from '@/app/(main)/users/actions'
+import { inviteUser, updateUser } from '@/app/(main)/(super-admin)/users/actions'
 import type { User } from '@/types/database'
 import type { Clinic } from '@/types/database'
 import type { InviteUserValues, UpdateUserValues } from '@/lib/validations/user'

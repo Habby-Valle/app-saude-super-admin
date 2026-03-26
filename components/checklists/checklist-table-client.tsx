@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation"
 import { useCallback } from "react"
 import { ChecklistTable } from "./checklist-table"
-import type { ChecklistWithDetails } from "@/app/(main)/checklists/actions"
+import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/checklists/actions"
 
 interface ChecklistTableClientProps {
   checklists: ChecklistWithDetails[]

@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { PatientsGrowthData } from "@/app/(main)/reports/actions"
+import type { PatientsGrowthData } from "@/app/(main)/(super-admin)/reports/actions"
 
 interface PatientsGrowthReportProps {
   data: PatientsGrowthData[]
