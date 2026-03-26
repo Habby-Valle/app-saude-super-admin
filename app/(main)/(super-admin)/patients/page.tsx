@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { getPatients, getClinicsForFilter } from "./actions"
-import { PatientTableClient } from "@/components/patients/patient-table-client"
-import { PatientTableSkeleton } from "@/components/patients/patient-table"
+import { PatientTableClient } from "@/components/super-admin/patients/patient-table-client"
+import { PatientTableSkeleton } from "@/components/super-admin/patients/patient-table"
 
 interface PatientsPageProps {
   searchParams: Promise<{

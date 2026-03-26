@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { getChecklists, getClinicsForChecklist } from "./actions"
-import { ChecklistTableClient } from "@/components/checklists/checklist-table-client"
-import { ChecklistTableSkeleton } from "@/components/checklists/checklist-table"
+import { ChecklistTableClient } from "@/components/super-admin/checklists/checklist-table-client"
+import { ChecklistTableSkeleton } from "@/components/super-admin/checklists/checklist-table"
 
 interface ChecklistsPageProps {
   searchParams: Promise<{

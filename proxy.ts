@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (sessionError || !user) {
-    const loginUrl = new URL('/auth/login', request.url)
+    const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }

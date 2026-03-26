@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 import { requireSuperAdmin } from '@/lib/auth'
 import { getUsers } from './actions'
-import { UserTableWrapper } from '@/components/users/user-table-wrapper'
-import { UserTableSkeleton } from '@/components/users/user-table'
+import { UserTableWrapper } from '@/components/super-admin/users/user-table-wrapper'
+import { UserTableSkeleton } from '@/components/super-admin/users/user-table'
 import type { UserRole } from '@/types/database'
 
 interface UsersPageProps {

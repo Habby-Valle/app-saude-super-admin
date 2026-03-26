@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { Settings } from "lucide-react"
 import { getPlans, getShiftCategories, getAlertThresholds } from "./actions"
-import { SettingsTabs } from "@/components/settings/settings-tabs"
+import { SettingsTabs } from "@/components/super-admin/settings/settings-tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 
 async function SettingsContent() {

@@ -8,10 +8,10 @@ import {
   getPatientsGrowth,
   exportToCsv,
 } from "./actions"
-import { ReportsFilters } from "@/components/reports/reports-filters"
-import { ShiftsReport } from "@/components/reports/shifts-report"
-import { ChecklistsReport } from "@/components/reports/checklists-report"
-import { PatientsGrowthReport } from "@/components/reports/patients-growth-report"
+import { ReportsFilters } from "@/components/super-admin/reports/reports-filters"
+import { ShiftsReport } from "@/components/super-admin/reports/shifts-report"
+import { ChecklistsReport } from "@/components/super-admin/reports/checklists-report"
+import { PatientsGrowthReport } from "@/components/super-admin/reports/patients-growth-report"
 import { Skeleton } from "@/components/ui/skeleton"
 import type {
   ShiftsReportData,

@@ -9,11 +9,11 @@ import {
 } from 'lucide-react'
 
 import { getDashboardKPIs, getClinicStats } from './actions'
-import { KpiCard, KpiCardSkeleton } from '@/components/dashboard/kpi-card'
+import { KpiCard, KpiCardSkeleton } from '@/components/super-admin/dashboard/kpi-card'
 import {
   ClinicStatsTable,
   ClinicStatsTableSkeleton,
-} from '@/components/dashboard/clinic-stats-table'
+} from '@/components/super-admin/dashboard/clinic-stats-table'
 
 // ─── KPI Section ──────────────────────────────────────────────────────────────
 

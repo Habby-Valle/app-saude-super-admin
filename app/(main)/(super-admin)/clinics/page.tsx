@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { getClinics } from './actions'
-import { ClinicTableClient } from '@/components/clinics/clinic-table-client'
-import { ClinicTableSkeleton } from '@/components/clinics/clinic-table'
+import { ClinicTableClient } from '@/components/super-admin/clinics/clinic-table-client'
+import { ClinicTableSkeleton } from '@/components/super-admin/clinics/clinic-table'
 import type { ClinicStatus } from '@/types/database'
 
 interface ClinicsPageProps {
