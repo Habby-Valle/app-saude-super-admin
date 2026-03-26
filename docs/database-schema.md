@@ -119,6 +119,35 @@ shift_checklist_items {
 }
 
 %% =========================
+%% SISTEMA SOS
+%% =========================
+
+sos_alerts {
+  uuid id PK
+  uuid patient_id FK
+  uuid triggered_by FK
+  uuid clinic_id FK
+  string status "active|acknowledged|resolved"
+  decimal location_lat
+  decimal location_lng
+  text notes
+  uuid acknowledged_by FK
+  timestamp resolved_at
+  timestamp created_at
+}
+
+sos_notifications {
+  uuid id PK
+  uuid sos_alert_id FK
+  uuid user_id FK
+  string channel "push|email|sms"
+  string recipient
+  string status "pending|sent|delivered|failed"
+  timestamp sent_at
+  timestamp created_at
+}
+
+%% =========================
 %% RELACIONAMENTOS
 %% =========================
 
@@ -150,4 +179,13 @@ shift_checklists ||--o{ shift_checklist_items : "has"
 checklist_items ||--o{ shift_checklist_items : "answered"
 
 checklist_item_options ||--o{ shift_checklist_items : "selected"
+
+%% SOS
+patients ||--o{ sos_alerts : "triggers"
+users ||--o{ sos_alerts : "triggers"
+clinics ||--o{ sos_alerts : "has"
+users ||--o{ sos_alerts : "acknowledges"
+
+sos_alerts ||--o{ sos_notifications : "has"
+users ||--o{ sos_notifications : "receives"
 ```
