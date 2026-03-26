@@ -37,16 +37,16 @@
 
 ## Clinic Admin - Próxima Fase
 
-| #   | Feature                     | Fase           | Prioridade | Status     |
-| --- | --------------------------- | -------------- | ---------- | ---------- |
-| 15  | Foundation Clinic Admin     | 7 - Foundation | 🔴 Crítico | ⏸ Pendente |
-| 15a | Tema Roxo (CSS customizado) | 7 - Foundation | 🔴 Crítico | ⏸ Pendente |
-| 16  | Dashboard da Clínica        | 8 - Core       | 🔴 Crítico | ⏸ Pendente |
-| 17  | Gestão de Pacientes         | 8 - Core       | 🔴 Crítico | ⏸ Pendente |
-| 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ⏸ Pendente |
-| 19  | Gestão de Turnos            | 9 - Operations | 🟠 Alto    | ⏸ Pendente |
-| 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ⏸ Pendente |
-| 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ⏸ Pendente |
+| #   | Feature                     | Fase           | Prioridade | Status       |
+| --- | --------------------------- | -------------- | ---------- | ------------ |
+| 15  | Foundation Clinic Admin     | 7 - Foundation | 🔴 Crítico | ✅ Concluído |
+| 15a | Tema Roxo (CSS customizado) | 7 - Foundation | 🔴 Crítico | ✅ Concluído |
+| 16  | Dashboard da Clínica        | 8 - Core       | 🔴 Crítico | ✅ Concluído |
+| 17  | Gestão de Pacientes         | 8 - Core       | 🔴 Crítico | ⏸ Pendente   |
+| 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ⏸ Pendente   |
+| 19  | Gestão de Turnos            | 9 - Operations | 🟠 Alto    | ⏸ Pendente   |
+| 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ⏸ Pendente   |
+| 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ⏸ Pendente   |
 
 ---
 
