@@ -42,7 +42,6 @@ export function Topbar() {
   }
 
   const initials = user?.name ? getInitials(user.name) : "SA"
-
   return (
     <header className="flex h-16 w-full items-center justify-between border-b bg-card px-4 md:px-6">
       {/* Botão hamburguer — somente mobile */}
