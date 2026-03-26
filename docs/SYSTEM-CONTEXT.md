@@ -396,28 +396,86 @@ module.exports = {
 
 ### 4.2 CSS Variables (globals.css)
 
+O projeto usa **Tailwind CSS v4** com CSS Variables (OKLCH) para cores. Cada módulo (Super Admin e Clinic Admin) pode ter seu próprio tema.
+
 ```css
+/* ============================
+   SUPER ADMIN - Tema Neutro
+   ============================ */
+
+:root {
+  /* Usar variáveis do tema padrão (neutro/slate) */
+  --primary: oklch(0.45 0.15 250); /* Azul padrão */
+  --primary-foreground: oklch(0.98 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0 0);
+  /* ... outras variáveis */
+}
+
+/* ============================
+   CLINIC ADMIN - Tema Roxo
+   ============================ */
+
+.clinic-admin {
+  --primary: oklch(0.45 0.15 300); /* Roxo #764b9d */
+  --primary-foreground: oklch(0.98 0 0);
+  --background: oklch(0.97 0.01 300); /* Lavanda #f6f4fe */
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0); /* White */
+  --accent: oklch(0.92 0.03 300); /* Roxo claro */
+  --sidebar: oklch(1 0 0);
+  --sidebar-primary: oklch(0.45 0.15 300);
+  /* ... outras variáveis */
+}
+```
+
+### 4.2.1 Paleta de Cores Clinic Admin
+
+| Cor             | Hex     | OKLCH                  | Uso                      |
+| --------------- | ------- | ---------------------- | ------------------------ |
+| `primary`       | #764b9d | `oklch(0.45 0.15 300)` | Botões, links, destaques |
+| `primary-light` | #f6f4fe | `oklch(0.96 0.02 300)` | Backgrounds suaves       |
+| `white`         | #ffffff | `oklch(1 0 0)`         | Cards, sidebar, inputs   |
+| `accent`        | #9d6bb5 | `oklch(0.55 0.10 300)` | Hover states, bordas     |
+| `foreground`    | #1a1a1a | `oklch(0.15 0 0)`      | Texto principal          |
+
+### 4.2.2 Implementação do Tema
+
+```css
+/* globals.css */
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+  /* Super Admin - Tema padrão */
+  :root { ... }
+
+  /* Clinic Admin - Tema Roxo */
+  .clinic-admin {
+    --primary: oklch(0.45 0.15 300);
+    --background: oklch(0.97 0.01 300);
+    --foreground: oklch(0.15 0 0);
+    --card: oklch(1 0 0);
+    --accent: oklch(0.92 0.03 300);
+    --border: oklch(0.90 0.02 300);
+    --ring: oklch(0.45 0.15 300);
   }
+}
+
+/* Aplica tema roxo no layout do Clinic Admin */
+.clinic-admin body {
+  background-color: oklch(0.97 0.01 300);
+}
+```
+
+### 4.2.3 Aplicação por Layout
+
+```tsx
+// Super Admin Layout (tema padrão)
+export default function SuperAdminLayout({ children }) {
+  return <div>{children}</div>
+}
+
+// Clinic Admin Layout (tema roxo)
+export default function ClinicAdminLayout({ children }) {
+  return <div className="clinic-admin">{children}</div>
 }
 ```
 

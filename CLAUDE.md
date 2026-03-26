@@ -55,6 +55,33 @@ app/
 - **Deploy**: Vercel + Supabase
 - **Lint/Formatação**: ESLint + Prettier
 
+## Design System - Temas por Módulo
+
+Cada módulo admin possui seu próprio tema visual:
+
+### Super Admin - Tema Neutro
+
+- Cores padrão shadcn/ui (neutro/slate)
+- Uso: gestão global da plataforma
+
+### Clinic Admin - Tema Roxo
+
+- **Primary**: #764b9d (oklch 0.45 0.15 300)
+- **Background**: #f6f4fe (oklch 0.97 0.01 300)
+- **Cards/Sidebar**: White (#ffffff)
+- Aplicado via classe `.clinic-admin` no layout
+
+### Implementação (globals.css)
+
+```css
+.clinic-admin {
+  --primary: oklch(0.45 0.15 300); /* Roxo */
+  --background: oklch(0.97 0.01 300); /* Lavanda */
+  --foreground: oklch(0.15 0 0); /* Texto escuro */
+  --card: oklch(1 0 0); /* White */
+}
+```
+
 ## Estrutura de Pastas Obrigatória
 
 ```bash

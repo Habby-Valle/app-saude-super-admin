@@ -31,6 +31,24 @@ app/
 - TanStack Query + Zustand
 - React Hook Form + Zod v4
 
+## Design System - Temas
+
+### Super Admin - Tema Neutro
+
+Tema padrão shadcn/ui (cores neutras/slate)
+
+### Clinic Admin - Tema Roxo
+
+Cores customizadas para diferenciação visual:
+
+| Elemento   | Cor     | Hex     | OKLCH                  |
+| ---------- | ------- | ------- | ---------------------- |
+| Primary    | Roxo    | #764b9d | `oklch(0.45 0.15 300)` |
+| Background | Lavanda | #f6f4fe | `oklch(0.97 0.01 300)` |
+| Card       | White   | #ffffff | `oklch(1 0 0)`         |
+
+**Implementação**: Classe `.clinic-admin` no layout do `(clinic-admin)/layout.tsx`
+
 ## Módulos do Sistema
 
 ### Super Admin (`app/(main)/(super-admin)/`)

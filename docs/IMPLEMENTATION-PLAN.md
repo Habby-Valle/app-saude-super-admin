@@ -37,15 +37,35 @@
 
 ## Clinic Admin - Próxima Fase
 
-| #   | Feature                 | Fase           | Prioridade | Status     |
-| --- | ----------------------- | -------------- | ---------- | ---------- |
-| 15  | Foundation Clinic Admin | 7 - Foundation | 🔴 Crítico | ⏸ Pendente |
-| 16  | Dashboard da Clínica    | 8 - Core       | 🔴 Crítico | ⏸ Pendente |
-| 17  | Gestão de Pacientes     | 8 - Core       | 🔴 Crítico | ⏸ Pendente |
-| 18  | Gestão de Cuidadores    | 8 - Core       | 🟠 Alto    | ⏸ Pendente |
-| 19  | Gestão de Turnos        | 9 - Operations | 🟠 Alto    | ⏸ Pendente |
-| 20  | Checklists da Clínica   | 9 - Operations | 🟡 Médio   | ⏸ Pendente |
-| 21  | Relatórios da Clínica   | 10 - Insights  | 🟡 Médio   | ⏸ Pendente |
+| #   | Feature                     | Fase           | Prioridade | Status     |
+| --- | --------------------------- | -------------- | ---------- | ---------- |
+| 15  | Foundation Clinic Admin     | 7 - Foundation | 🔴 Crítico | ⏸ Pendente |
+| 15a | Tema Roxo (CSS customizado) | 7 - Foundation | 🔴 Crítico | ⏸ Pendente |
+| 16  | Dashboard da Clínica        | 8 - Core       | 🔴 Crítico | ⏸ Pendente |
+| 17  | Gestão de Pacientes         | 8 - Core       | 🔴 Crítico | ⏸ Pendente |
+| 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ⏸ Pendente |
+| 19  | Gestão de Turnos            | 9 - Operations | 🟠 Alto    | ⏸ Pendente |
+| 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ⏸ Pendente |
+| 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ⏸ Pendente |
+
+---
+
+## Tema Roxo - Clinic Admin
+
+### Cores
+
+| Elemento   | Cor     | Hex     | OKLCH                  |
+| ---------- | ------- | ------- | ---------------------- |
+| Primary    | Roxo    | #764b9d | `oklch(0.45 0.15 300)` |
+| Background | Lavanda | #f6f4fe | `oklch(0.97 0.01 300)` |
+| Card       | White   | #ffffff | `oklch(1 0 0)`         |
+
+### Tarefas
+
+- [ ] Adicionar variáveis CSS no globals.css
+- [ ] Criar classe `.clinic-admin` com tema roxo
+- [ ] Aplicar classe no layout `(clinic-admin)/layout.tsx`
+- [ ] Testar tema no browser
 
 ---
 
