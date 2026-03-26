@@ -13,7 +13,7 @@ import {
   Eye,
 } from "lucide-react"
 
-import { deactivateClinic } from "@/app/(main)/(super-admin)/clinics/actions"
+import { deactivateClinic } from "@/app/(main)/(super-admin)/super-admin/clinics/actions"
 import type { Clinic, ClinicStatus } from "@/types/database"
 import { ClinicDialog } from "./clinic-dialog"
 import { Badge } from "@/components/ui/badge"

@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation"
 import { useCallback } from "react"
 import { PatientTable } from "./patient-table"
-import type { PatientWithDetails } from "@/app/(main)/(super-admin)/patients/actions"
+import type { PatientWithDetails } from "@/app/(main)/(super-admin)/super-admin/patients/actions"
 
 interface PatientTableClientProps {
   patients: PatientWithDetails[]

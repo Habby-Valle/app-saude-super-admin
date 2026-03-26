@@ -85,7 +85,7 @@ async function UserDetailsContent({ id }: { id: string }) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/users">
+          <Link href="/super-admin/users">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -113,7 +113,7 @@ async function UserDetailsContent({ id }: { id: string }) {
           </div>
         </div>
         <Button asChild>
-          <Link href="/users">Editar Usuário</Link>
+          <Link href="/super-admin/users">Editar Usuário</Link>
         </Button>
       </div>
 

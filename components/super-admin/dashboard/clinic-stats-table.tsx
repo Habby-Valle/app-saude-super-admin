@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ClinicStat } from '@/app/(main)/(super-admin)/dashboard/actions'
+import type { ClinicStat } from '@/app/(main)/(super-admin)/super-admin/dashboard/actions'
 
 interface ClinicStatsTableProps {
   clinics: ClinicStat[]

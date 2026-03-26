@@ -1,0 +1,14 @@
+import { requireSuperAdmin } from "@/lib/auth"
+
+export default async function SosPage() {
+  await requireSuperAdmin()
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Sistema SOS</h1>
+        <p className="text-muted-foreground">Alertas de emergência</p>
+      </div>
+    </div>
+  )
+}

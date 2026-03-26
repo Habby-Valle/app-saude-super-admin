@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { ShiftsReportData } from "@/app/(main)/(super-admin)/reports/actions"
+import type { ShiftsReportData } from "@/app/(main)/(super-admin)/super-admin/reports/actions"
 
 interface ShiftsReportProps {
   data: ShiftsReportData[]

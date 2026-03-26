@@ -68,7 +68,7 @@ async function ClinicDetailsContent({ id }: { id: string }) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/clinics">
+          <Link href="/super-admin/clinics">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react"
 import { ClipboardList } from "lucide-react"
-import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/checklists/actions"
+import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import { ChecklistForm } from "./checklist-form"
 import {
   Dialog,

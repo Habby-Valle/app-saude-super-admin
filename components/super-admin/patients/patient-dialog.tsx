@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { User } from "lucide-react"
-import type { PatientWithDetails } from "@/app/(main)/(super-admin)/patients/actions"
-import { getPatientCaregivers } from "@/app/(main)/(super-admin)/patients/actions"
+import type { PatientWithDetails } from "@/app/(main)/(super-admin)/super-admin/patients/actions"
+import { getPatientCaregivers } from "@/app/(main)/(super-admin)/super-admin/patients/actions"
 import { Badge } from "@/components/ui/badge"
 import {
   Dialog,

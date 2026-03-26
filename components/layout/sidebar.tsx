@@ -20,25 +20,25 @@ import {
 import { cn } from "@/lib/utils"
 
 const superAdminNavItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Clínicas", href: "/clinics", icon: Building2 },
-  { label: "Usuários", href: "/users", icon: Users },
-  { label: "Pacientes", href: "/patients", icon: UserRound },
-  { label: "Checklists", href: "/checklists", icon: ClipboardList },
-  { label: "Relatórios", href: "/reports", icon: BarChart3 },
-  { label: "Logs de Auditoria", href: "/audit-logs", icon: Shield },
-  { label: "SOS", href: "/sos", icon: AlertTriangle },
-  { label: "Configurações", href: "/settings", icon: Settings },
+  { label: "Dashboard", href: "/super-admin/dashboard", icon: LayoutDashboard },
+  { label: "Clínicas", href: "/super-admin/clinics", icon: Building2 },
+  { label: "Usuários", href: "/super-admin/users", icon: Users },
+  { label: "Pacientes", href: "/super-admin/patients", icon: UserRound },
+  { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
+  { label: "Relatórios", href: "/super-admin/reports", icon: BarChart3 },
+  { label: "Logs de Auditoria", href: "/super-admin/audit-logs", icon: Shield },
+  { label: "SOS", href: "/super-admin/sos", icon: AlertTriangle },
+  { label: "Configurações", href: "/super-admin/settings", icon: Settings },
 ]
 
 const clinicAdminNavItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Pacientes", href: "/patients", icon: UserRound },
-  { label: "Cuidadores", href: "/caregivers", icon: UserCog },
-  { label: "Turnos", href: "/shifts", icon: CalendarClock },
-  { label: "Checklists", href: "/checklists", icon: ClipboardList },
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Pacientes", href: "/admin/patients", icon: UserRound },
+  { label: "Cuidadores", href: "/admin/caregivers", icon: UserCog },
+  { label: "Turnos", href: "/admin/shifts", icon: CalendarClock },
+  { label: "Checklists", href: "/admin/checklists", icon: ClipboardList },
   { label: "SOS", href: "/sos", icon: AlertTriangle },
-  { label: "Relatórios", href: "/reports", icon: BarChart3 },
+  { label: "Relatórios", href: "/admin/reports", icon: BarChart3 },
 ]
 
 type SidebarVariant = "super-admin" | "clinic-admin"

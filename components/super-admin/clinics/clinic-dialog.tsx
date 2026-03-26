@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { createClinic, updateClinic } from '@/app/(main)/(super-admin)/clinics/actions'
+import { createClinic, updateClinic } from '@/app/(main)/(super-admin)/super-admin/clinics/actions'
 import type { ClinicFormValues } from '@/lib/validations/clinic'
 import type { Clinic } from '@/types/database'
 import { ClinicForm } from './clinic-form'

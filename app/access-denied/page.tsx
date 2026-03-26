@@ -16,7 +16,7 @@ export default function AccessDeniedPage() {
         </p>
       </div>
       <Button variant="outline" asChild>
-        <Link href="/auth/login">Voltar ao login</Link>
+        <Link href="/login">Voltar ao login</Link>
       </Button>
     </div>
   )

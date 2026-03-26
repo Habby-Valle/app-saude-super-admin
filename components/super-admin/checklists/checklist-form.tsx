@@ -7,12 +7,12 @@ import { useTransition } from "react"
 import {
   createChecklist,
   updateChecklist,
-} from "@/app/(main)/(super-admin)/checklists/actions"
-import { getClinicsForChecklist } from "@/app/(main)/(super-admin)/checklists/actions"
+} from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
+import { getClinicsForChecklist } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import type {
   ChecklistWithDetails,
   ChecklistItemWithOptions,
-} from "@/app/(main)/(super-admin)/checklists/actions"
+} from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import type {
   ChecklistFormValues,
   ChecklistItemFormValues,

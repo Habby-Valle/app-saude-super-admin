@@ -77,7 +77,7 @@ async function PatientDetailsContent({ id }: { id: string }) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/patients">
+          <Link href="/super-admin/patients">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -100,7 +100,7 @@ async function PatientDetailsContent({ id }: { id: string }) {
           </div>
         </div>
         <Button asChild>
-          <Link href="/patients">Editar Paciente</Link>
+          <Link href="/super-admin/patients">Editar Paciente</Link>
         </Button>
       </div>
 

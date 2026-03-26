@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Eye } from "lucide-react"
 
-import type { PatientWithDetails } from "@/app/(main)/(super-admin)/patients/actions"
+import type { PatientWithDetails } from "@/app/(main)/(super-admin)/super-admin/patients/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
