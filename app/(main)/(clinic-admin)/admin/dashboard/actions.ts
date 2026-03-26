@@ -41,7 +41,7 @@ export async function getClinicDashboardStats(): Promise<ClinicDashboardStats | 
     const { supabase, clinicId, isSuperAdmin, user } =
       await requireClinicAdmin()
 
-    let effectiveClinicId = clinicId
+    const effectiveClinicId = clinicId
 
     if (!effectiveClinicId) {
       return null

@@ -20,6 +20,71 @@
 
 ---
 
+## ⚠️ Políticas Essenciais (Execute Primeiro)
+
+Estas políticas são **obrigatórias** para o app funcionar corretamente:
+
+### Para login funcionar (topbar mostrar nome):
+
+```sql
+-- Usuário pode ver seu próprio perfil
+CREATE POLICY "Users can view own profile"
+ON users
+FOR SELECT
+TO authenticated
+USING (id = auth.uid());
+```
+
+### Para Clinic Admin ver cuidadores/pacientes:
+
+```sql
+-- Clinic Admin pode ver usuários da própria clínica
+CREATE POLICY "Clinic admins can view clinic users"
+ON users
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND u.clinic_id = users.clinic_id
+  )
+);
+
+-- Clinic Admin pode ver vínculos caregiver_patient
+CREATE POLICY "Clinic admins can view clinic caregiver_patient"
+ON caregiver_patient
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN patients p ON p.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND p.id = caregiver_patient.patient_id
+  )
+);
+
+-- Clinic Admin pode inserir vínculos caregiver_patient (para criar paciente com cuidadores)
+CREATE POLICY "Clinic admins can insert clinic caregiver_patient"
+ON caregiver_patient
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN patients p ON p.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND p.id = caregiver_patient.patient_id
+  )
+);
+```
+
+---
+
 ## clinics
 
 ```sql
@@ -164,6 +229,21 @@ USING (
     AND u.clinic_id = users.clinic_id
   )
 );
+
+-- Usuário pode ver seu próprio perfil (necessário para topbar)
+CREATE POLICY "Users can view own profile"
+ON users
+FOR SELECT
+TO authenticated
+USING (id = auth.uid());
+
+-- Usuário pode atualizar seu próprio perfil
+CREATE POLICY "Users can update own profile"
+ON users
+FOR UPDATE
+TO authenticated
+USING (id = auth.uid())
+WITH CHECK (id = auth.uid());
 ```
 
 ---
@@ -1871,10 +1951,125 @@ CREATE POLICY "clinic_admin_select_clinic" ON users FOR SELECT USING (
 
 -- Clinic Admin pode atualizar usuários da própria clínica (exceto super_admin)
 CREATE POLICY "clinic_admin_update_clinic" ON users FOR UPDATE USING (
-  role != 'super_admin' AND 
+  role != 'super_admin' AND
   clinic_id = (SELECT clinic_id FROM users WHERE id = auth.uid() AND role = 'clinic_admin')
 ) WITH CHECK (
-  role != 'super_admin' AND 
+  role != 'super_admin' AND
   clinic_id = (SELECT clinic_id FROM users WHERE id = auth.uid() AND role = 'clinic_admin')
 );
+```
+
+---
+
+## Trigger Automático: Criar Perfil ao Criar Usuário
+
+Execute este SQL no Supabase SQL Editor para criar um trigger que automatically insere um perfil em `public.users` quando um usuário é criado em `auth.users`.
+
+```sql
+-- 1. Criar função de trigger
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (
+    id,
+    email,
+    name,
+    role,
+    clinic_id,
+    status
+  )
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', 'Usuário'),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'caregiver'),
+    NEW.raw_user_meta_data->>'clinic_id',
+    'active'
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 2. Associar trigger ao auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION handle_new_user();
+```
+
+### O que esse trigger faz:
+
+| auth.users campo                     | public.users campo |
+| ------------------------------------ | ------------------ |
+| NEW.id                               | id                 |
+| NEW.email                            | email              |
+| NEW.raw_user_meta_data->>'name'      | name               |
+| NEW.raw_user_meta_data->>'role'      | role               |
+| NEW.raw_user_meta_data->>'clinic_id' | clinic_id          |
+| -                                    | status = 'active'  |
+
+### Após criar o trigger:
+
+Você também precisa criar o cuidador que falhou manualmente:
+
+```sql
+-- Encontrar o usuário que foi criado só no auth
+SELECT id, email FROM auth.users WHERE email = 'email-do-cuidador@exemplo.com';
+
+-- Inserir manualmente na tabela users
+INSERT INTO users (id, email, name, role, clinic_id, status)
+VALUES (
+  'UUID-do-usuario-acima',
+  'email-do-cuidador@exemplo.com',
+  'Nome do Cuidador',
+  'caregiver',
+  'UUID-da-clinica',
+  'active'
+);
+```
+
+### Próximos passos:
+
+1. Execute o trigger SQL no Supabase
+2. Insira manualmente o cuidador que já foi criado
+3. Teste criando um novo cuidador - o perfil será criado automaticamente
+
+---
+
+## 🔧 Correção: Login parou de funcionar
+
+Se após criar as políticas o login parou de funcionar, execute esta correção:
+
+```sql
+-- PRIMEIRO: Delete as políticasproblemáticas
+DROP POLICY IF EXISTS "Clinic admins can view clinic users" ON users;
+
+-- SEGUNDO: Recrie com a política CORRIGIDA que permite ver seu próprio perfil
+CREATE POLICY "Clinic admins can view own and clinic users"
+ON users
+FOR SELECT
+TO authenticated
+USING (
+  -- Pode ver seu próprio perfil
+  id = auth.uid()
+  OR
+  -- Super Admin pode ver tudo
+  EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'super_admin')
+  OR
+  -- Clinic Admin pode ver usuários da própria clínica
+  (
+    clinic_id = (SELECT clinic_id FROM users WHERE id = auth.uid() AND role = 'clinic_admin' LIMIT 1)
+    AND EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'clinic_admin')
+  )
+);
+
+-- VERIFICAÇÃO: Verificar se o RLS está habilitado
+SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public';
+
+-- Se rowsecurity for false, habilitar:
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE caregiver_patient ENABLE ROW LEVEL SECURITY;
 ```

@@ -43,15 +43,10 @@ export async function getClinicPatients(raw: {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
+  // Buscar pacientes com paginação
   let query = supabase
     .from("patients")
-    .select(
-      `
-      *,
-      caregiver_patient(count)
-    `,
-      { count: "exact" }
-    )
+    .select("*", { count: "exact" })
     .eq("clinic_id", clinicId)
     .order("created_at", { ascending: false })
     .range(from, to)
@@ -59,22 +54,31 @@ export async function getClinicPatients(raw: {
   if (search.trim()) {
     query = query.ilike("name", `%${search.trim()}%`)
   }
-
-  const { data, count, error } = await query
+  const { data: patients, count, error } = await query
+  console.log(patients)
 
   if (error) {
     console.error("[getClinicPatients] Supabase error:", error)
     throw new Error(error.message)
   }
 
-  const patients: ClinicPatient[] = (data ?? []).map((p) => ({
-    ...p,
-    caregiver_count: (p.caregiver_patient as unknown[] | null)?.length ?? 0,
-  }))
+  // Para cada paciente, contar cuidadores
+  const patientsWithCount: ClinicPatient[] = []
 
-  return { patients, total: count ?? 0 }
+  for (const patient of patients ?? []) {
+    const { count: caregiverCount } = await supabase
+      .from("caregiver_patient")
+      .select("*", { count: "exact", head: true })
+      .eq("patient_id", patient.id)
+
+    patientsWithCount.push({
+      ...patient,
+      caregiver_count: caregiverCount ?? 0,
+    })
+  }
+
+  return { patients: patientsWithCount, total: count ?? 0 }
 }
-
 export async function getClinicPatientById(
   id: string
 ): Promise<ClinicPatient | null> {
@@ -82,12 +86,7 @@ export async function getClinicPatientById(
 
   const { data: patient, error: patientError } = await supabase
     .from("patients")
-    .select(
-      `
-      *,
-      caregiver_patient(count)
-    `
-    )
+    .select("*")
     .eq("id", id)
     .eq("clinic_id", clinicId)
     .single()
@@ -96,10 +95,14 @@ export async function getClinicPatientById(
     return null
   }
 
+  const { count: caregiverCount } = await supabase
+    .from("caregiver_patient")
+    .select("*", { count: "exact", head: true })
+    .eq("patient_id", id)
+
   return {
     ...patient,
-    caregiver_count:
-      (patient.caregiver_patient as unknown[] | null)?.length ?? 0,
+    caregiver_count: caregiverCount ?? 0,
   }
 }
 
@@ -114,32 +117,42 @@ export async function getPatientCaregivers(
 ): Promise<PatientCaregiver[]> {
   const { supabase } = await requireClinicAdmin()
 
-  const { data, error } = await supabase
+  // Buscar os relacionamentos primeiro
+  const { data: relations, error: relationsError } = await supabase
     .from("caregiver_patient")
-    .select(
-      `
-      caregiver:users!caregiver_id(id, name, email)
-    `
-    )
+    .select("caregiver_id")
     .eq("patient_id", patientId)
 
-  if (error) {
-    console.error("[getPatientCaregivers] Supabase error:", error)
+  if (relationsError) {
+    console.error("[getPatientCaregivers] Relations error:", relationsError)
     return []
   }
 
-  return (data ?? [])
-    .map(
-      (cp) =>
-        cp.caregiver as unknown as {
-          id: string
-          name: string
-          email: string
-        } | null
-    )
-    .filter((c): c is PatientCaregiver => c !== null)
-}
+  if (!relations || relations.length === 0) {
+    return []
+  }
 
+  // Pegar os IDs dos cuidadores
+  const caregiverIds = relations.map((r) => r.caregiver_id)
+
+  // Buscar os dados dos cuidadores
+  const { data: caregivers, error: caregiversError } = await supabase
+    .from("users")
+    .select("id, name, email")
+    .in("id", caregiverIds)
+    .order("name")
+
+  if (caregiversError) {
+    console.error("[getPatientCaregivers] Caregivers error:", caregiversError)
+    return []
+  }
+
+  return (caregivers ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    email: c.email,
+  }))
+}
 export async function getClinicCaregivers(): Promise<PatientCaregiver[]> {
   const { supabase } = await requireClinicAdmin()
 

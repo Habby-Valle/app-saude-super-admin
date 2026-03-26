@@ -43,7 +43,7 @@
 | 15a | Tema Roxo (CSS customizado) | 7 - Foundation | 🔴 Crítico | ✅ Concluído |
 | 16  | Dashboard da Clínica        | 8 - Core       | 🔴 Crítico | ✅ Concluído |
 | 17  | Gestão de Pacientes         | 8 - Core       | 🔴 Crítico | ✅ Concluído |
-| 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ⏸ Pendente   |
+| 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ✅ Concluído |
 | 19  | Gestão de Turnos            | 9 - Operations | 🟠 Alto    | ⏸ Pendente   |
 | 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ⏸ Pendente   |
 | 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ⏸ Pendente   |
