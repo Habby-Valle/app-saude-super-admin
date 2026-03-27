@@ -109,7 +109,7 @@ Otimização para mecanismos de busca:
 | 24  | Super Admin: Página SOS global              | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 25  | Clinic Admin: Página SOS                    | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ✅ Concluído |
-| 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ⏸ Pendente   |
+| 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ✅ Concluído |
 | 28  | Paginação completa em todas as tabelas      | 12 - UX  | 🟡 Médio   | ⏸ Pendente   |
 | 29  | SEO - Meta tags, Open Graph, sitemap.xml    | 12 - UX  | 🟡 Médio   | ⏸ Pendente   |
 

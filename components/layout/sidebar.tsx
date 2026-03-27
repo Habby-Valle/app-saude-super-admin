@@ -27,7 +27,7 @@ const superAdminNavItems = [
   { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
   { label: "Relatórios", href: "/super-admin/reports", icon: BarChart3 },
   { label: "Logs de Auditoria", href: "/super-admin/audit-logs", icon: Shield },
-  { label: "SOS", href: "/super-admin/sos", icon: AlertTriangle },
+  { label: "SOS", href: "/super-admin/sos", icon: AlertTriangle, isSos: true },
   { label: "Configurações", href: "/super-admin/settings", icon: Settings },
 ]
 
@@ -37,7 +37,7 @@ const clinicAdminNavItems = [
   { label: "Cuidadores", href: "/admin/caregivers", icon: UserCog },
   { label: "Turnos", href: "/admin/shifts", icon: CalendarClock },
   { label: "Checklists", href: "/admin/checklists", icon: ClipboardList },
-  { label: "SOS", href: "/admin/sos", icon: AlertTriangle },
+  { label: "SOS", href: "/admin/sos", icon: AlertTriangle, isSos: true },
   { label: "Relatórios", href: "/admin/reports", icon: BarChart3 },
 ]
 
@@ -45,9 +45,10 @@ type SidebarVariant = "super-admin" | "clinic-admin"
 
 interface SidebarProps {
   variant?: SidebarVariant
+  activeSosCount?: number
 }
 
-export function Sidebar({ variant = "super-admin" }: SidebarProps) {
+export function Sidebar({ variant = "super-admin", activeSosCount = 0 }: SidebarProps) {
   const pathname = usePathname()
 
   const navItems =
@@ -74,6 +75,7 @@ export function Sidebar({ variant = "super-admin" }: SidebarProps) {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/")
           const Icon = item.icon
+          const showBadge = item.isSos && activeSosCount > 0
 
           return (
             <Link
@@ -83,11 +85,25 @@ export function Sidebar({ variant = "super-admin" }: SidebarProps) {
                 "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  : showBadge
+                    ? "text-destructive hover:bg-destructive/10"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span
+                  className={cn(
+                    "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
+                    isActive
+                      ? "bg-primary-foreground text-primary"
+                      : "bg-destructive text-destructive-foreground"
+                  )}
+                >
+                  {activeSosCount > 99 ? "99+" : activeSosCount}
+                </span>
+              )}
             </Link>
           )
         })}

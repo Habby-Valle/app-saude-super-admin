@@ -20,14 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MoreHorizontal } from "lucide-react"
 import { ClinicSosAcknowledgeDialog, ClinicSosResolveDialog } from "./sos-resolve-dialog"
 import type {
   ClinicSosAlertWithDetails,
@@ -108,7 +100,7 @@ export function ClinicSosTable({
               <TableHead>Data/Hora</TableHead>
               <TableHead>Confirmado por</TableHead>
               <TableHead>Observações</TableHead>
-              <TableHead className="w-10" />
+              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -155,45 +147,40 @@ export function ClinicSosTable({
                       <span className="text-xs">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="max-w-[180px] truncate text-sm text-muted-foreground">
+                  <TableCell className="max-w-45 truncate text-sm text-muted-foreground">
                     {alert.notes ?? <span className="text-xs">—</span>}
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      {alert.status === "active" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => setAcknowledgeTarget(alert)}
+                        >
+                          <Clock className="mr-1 h-3 w-3" />
+                          Confirmar
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {alert.status === "active" && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => setAcknowledgeTarget(alert)}
-                            >
-                              <Clock className="mr-2 h-4 w-4" />
-                              Confirmar recebimento
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                          </>
-                        )}
-                        {alert.status !== "resolved" && (
-                          <DropdownMenuItem
-                            onClick={() => setResolveTarget(alert)}
-                            className="text-green-600 focus:text-green-600"
-                          >
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Marcar como resolvido
-                          </DropdownMenuItem>
-                        )}
-                        {alert.status === "resolved" && (
-                          <DropdownMenuItem disabled>
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Alerta resolvido
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      )}
+                      {alert.status !== "resolved" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-green-600 hover:text-green-600"
+                          onClick={() => setResolveTarget(alert)}
+                        >
+                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                          Resolver
+                        </Button>
+                      )}
+                      {alert.status === "resolved" && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                          Resolvido
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
