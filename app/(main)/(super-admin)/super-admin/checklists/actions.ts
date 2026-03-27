@@ -66,8 +66,7 @@ export async function getChecklists(params: {
     .select(
       `
       *,
-      clinic:clinics(name),
-      checklist_items(count)
+      clinic:clinics(name)
     `,
       { count: "exact" }
     )
@@ -94,10 +93,25 @@ export async function getChecklists(params: {
     throw new Error(error.message)
   }
 
+  // Busca contagem de itens em lote
+  const checklistIds = (data ?? []).map((c) => c.id)
+  const itemCounts: Record<string, number> = {}
+
+  if (checklistIds.length > 0) {
+    const { data: allItems } = await supabase
+      .from("checklist_items")
+      .select("checklist_id")
+      .in("checklist_id", checklistIds)
+
+    allItems?.forEach((item) => {
+      itemCounts[item.checklist_id] = (itemCounts[item.checklist_id] || 0) + 1
+    })
+  }
+
   const checklists: ChecklistWithDetails[] = (data ?? []).map((c) => ({
     ...c,
     clinic_name: (c.clinic as { name: string } | null)?.name ?? null,
-    item_count: (c.checklist_items as unknown[] | null)?.length ?? 0,
+    item_count: itemCounts[c.id] ?? 0,
     is_used: false,
   }))
 

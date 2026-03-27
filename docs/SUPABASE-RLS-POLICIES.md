@@ -671,12 +671,18 @@ USING (
 ## checklists
 
 ```sql
--- Todos autenticados: podem ver checklists globais (clinic_id = null)
-CREATE POLICY "Anyone can view global checklists"
+-- Super Admin: pode ver todos os checklists
+CREATE POLICY "Super admins can view all checklists"
 ON checklists
 FOR SELECT
 TO authenticated
-USING (clinic_id IS NULL);
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
 
 -- Super Admin: pode gerenciar checklists globais
 CREATE POLICY "Super admins can manage global checklists"
@@ -692,6 +698,13 @@ USING (
   )
 );
 
+-- Qualquer um: pode ver checklists globais (clinic_id = null)
+CREATE POLICY "Anyone can view global checklists"
+ON checklists
+FOR SELECT
+TO authenticated
+USING (clinic_id IS NULL);
+
 -- Clinic Admin: pode ver checklists da própria clínica
 CREATE POLICY "Clinic admins can view clinic checklists"
 ON checklists
@@ -705,13 +718,6 @@ USING (
     AND users.clinic_id = checklists.clinic_id
   )
 );
-
--- Clinic Admin: pode ver checklists globais também
-CREATE POLICY "Clinic admins can view global checklists"
-ON checklists
-FOR SELECT
-TO authenticated
-USING (clinic_id IS NULL);
 
 -- Clinic Admin: pode criar checklists da própria clínica
 CREATE POLICY "Clinic admins can insert clinic checklists"
@@ -761,6 +767,32 @@ USING (
 ## checklist_items
 
 ```sql
+-- Super Admin: pode ver todos os itens
+CREATE POLICY "Super admins can view all checklist_items"
+ON checklist_items
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
+
+-- Super Admin: pode gerenciar todos os itens
+CREATE POLICY "Super admins can manage all checklist_items"
+ON checklist_items
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
+
 -- Qualquer um: pode ver itens de checklists globais
 CREATE POLICY "Anyone can view items of global checklists"
 ON checklist_items
@@ -774,28 +806,58 @@ USING (
   )
 );
 
--- Super Admin: pode gerenciar itens de checklists globais
-CREATE POLICY "Super admins can manage items of global checklists"
+-- Clinic Admin: pode ver itens de checklists da própria clínica
+CREATE POLICY "Clinic admins can view checklist_items"
 ON checklist_items
-FOR ALL
+FOR SELECT
 TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM checklists c
     WHERE c.id = checklist_items.checklist_id
-    AND c.clinic_id IS NULL
-  )
-  AND EXISTS (
-    SELECT 1 FROM users
-    WHERE users.id = auth.uid()
-    AND users.role = 'super_admin'
+    AND (
+      c.clinic_id IS NULL
+      OR c.clinic_id = (
+        SELECT clinic_id FROM users WHERE id = auth.uid() AND role = 'clinic_admin'
+      )
+    )
   )
 );
 
--- Clinic Admin: pode gerenciar itens de checklists da própria clínica
-CREATE POLICY "Clinic admins can manage items of clinic checklists"
+-- Clinic Admin: pode inserir itens em checklists da própria clínica
+CREATE POLICY "Clinic admins can insert checklist_items"
 ON checklist_items
-FOR ALL
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM checklists c
+    WHERE c.id = checklist_items.checklist_id
+    AND c.clinic_id = (
+      SELECT clinic_id FROM users WHERE id = auth.uid() AND role = 'clinic_admin'
+    )
+  )
+);
+
+-- Clinic Admin: pode atualizar itens de checklists da própria clínica
+CREATE POLICY "Clinic admins can update checklist_items"
+ON checklist_items
+FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM checklists c
+    WHERE c.id = checklist_items.checklist_id
+    AND c.clinic_id = (
+      SELECT clinic_id FROM users WHERE id = auth.uid() AND role = 'clinic_admin'
+    )
+  )
+);
+
+-- Clinic Admin: pode excluir itens de checklists da própria clínica
+CREATE POLICY "Clinic admins can delete checklist_items"
+ON checklist_items
+FOR DELETE
 TO authenticated
 USING (
   EXISTS (

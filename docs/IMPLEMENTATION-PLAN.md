@@ -45,7 +45,7 @@
 | 17  | Gestão de Pacientes         | 8 - Core       | 🔴 Crítico | ✅ Concluído |
 | 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ✅ Concluído |
 | 19  | Gestão de Turnos            | 9 - Operations | 🟠 Alto    | ✅ Concluído |
-| 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ⏸ Pendente   |
+| 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ✅ Concluído |
 | 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ⏸ Pendente   |
 
 ---
