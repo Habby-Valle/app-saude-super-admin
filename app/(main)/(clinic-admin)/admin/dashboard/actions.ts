@@ -121,7 +121,10 @@ export async function getClinicDashboardStats(): Promise<ClinicDashboardStats | 
       patients: {
         total: patientsResult.count ?? 0,
         active: patientsResult.count ?? 0,
-        newThisMonth: 0,
+        newThisMonth: (patientsResult.data ?? []).filter(
+          (p: Record<string, unknown>) =>
+            typeof p.created_at === "string" && p.created_at >= startOfMonth.toISOString()
+        ).length,
       },
       caregivers: {
         total: caregiversResult.count ?? 0,

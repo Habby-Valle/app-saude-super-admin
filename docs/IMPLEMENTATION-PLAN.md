@@ -35,6 +35,37 @@
 
 ---
 
+## Melhorias Globais
+
+| #   | Feature                                  | Prioridade | Status     |
+| --- | ---------------------------------------- | ---------- | ---------- |
+| 28  | Paginação completa em todas as tabelas   | 🟡 Médio   | ⏸ Pendente |
+| 29  | SEO - Meta tags, Open Graph, sitemap.xml | 🟡 Médio   | ⏸ Pendente |
+
+### Paginação (Feature 28)
+
+Melhorar experiência de navegação com paginação completa:
+
+- [ ] Lazy loading / infinite scroll para tabelas grandes
+- [ ] Indicador de registros por página
+- [ ] Ir para página específica
+- [ ] Resumo: "Mostrando 1-10 de 156 registros"
+
+### SEO (Feature 29)
+
+Otimização para mecanismos de busca:
+
+- [ ] Meta tags dinâmicas por página (title, description)
+- [ ] Open Graph tags para compartilhamento
+- [ ] sitemap.xml automático
+- [ ] robots.txt
+- [ ] Canonical URLs
+- [ ] Structured data (JSON-LD) para organização
+- [ ] Favicon e ícones PWA
+- [ ] Otimização de performance (Core Web Vitals)
+
+---
+
 ## Clinic Admin - Próxima Fase
 
 | #   | Feature                     | Fase           | Prioridade | Status       |
@@ -77,8 +108,56 @@
 | 23  | Server Actions SOS                          | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 24  | Super Admin: Página SOS global              | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 25  | Clinic Admin: Página SOS                    | 11 - SOS | 🔴 Crítico | ✅ Concluído |
-| 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ⏸ Pendente   |
+| 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ✅ Concluído |
 | 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ⏸ Pendente   |
+| 28  | Paginação completa em todas as tabelas      | 12 - UX  | 🟡 Médio   | ⏸ Pendente   |
+| 29  | SEO - Meta tags, Open Graph, sitemap.xml    | 12 - UX  | 🟡 Médio   | ⏸ Pendente   |
+
+---
+
+## Segurança
+
+| #   | Feature                                        | Prioridade | Status       |
+| --- | ---------------------------------------------- | ---------- | ------------ |
+| 30  | RLS Policies restritivas por tabela            | 🔴 Crítico | ⏸ Pendente   |
+| 31  | Validação de input em todos os formulários     | 🔴 Crítico | ⏸ Pendente   |
+| 32  | Sanitização de dados de saída                  | 🔴 Crítico | ⏸ Pendente   |
+| 33  | Rate limiting em endpoints críticos            | 🟠 Alto    | ⏸ Pendente   |
+| 34  | HTTPS e headers de segurança (CSP, HSTS, etc.) | 🟠 Alto    | ⏸ Pendente   |
+| 35  | Logs de auditoria para ações sensíveis         | 🟠 Alto    | ✅ Concluído |
+| 36  | Criptografia de dados sensíveis (LGPD)         | 🟠 Alto    | ⏸ Pendente   |
+| 37  | Autenticação 2FA para admins                   | 🟡 Médio   | ⏸ Pendente   |
+| 38  | Sessoes com timeout automático                 | 🟡 Médio   | ⏸ Pendente   |
+| 39  | Revisão de dependências (npm audit)            | 🟡 Médio   | ⏸ Pendente   |
+
+### Detalhamento
+
+#### RLS Policies (Feature 30)
+
+- [ ] Policies por tabela: `patients`, `shifts`, `checklists`, `sos_alerts`
+- [ ] Testar isolamento entre clínicas
+- [ ] Policy para `auth.users` (gerenciar roles)
+
+#### Validação de Input (Feature 31)
+
+- [ ] Zod schemas para todos os formulários
+- [ ] Validação server-side em todas as mutations
+- [ ] Sanitização de strings (XSS prevention)
+
+#### Headers de Segurança (Feature 34)
+
+- [ ] Content-Security-Policy (CSP)
+- [ ] HTTP Strict Transport Security (HSTS)
+- [ ] X-Frame-Options
+- [ ] X-Content-Type-Options
+- [ ] Referrer-Policy
+
+#### LGPD/Privacidade (Feature 36)
+
+- [ ] Criptografia de dados de saúde
+- [ ] Política de retenção de dados
+- [ ] Exportação de dados do usuário (GDPR/LGPD)
+- [ ] Consentimento explícito
 
 ---
 

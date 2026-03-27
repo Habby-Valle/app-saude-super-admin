@@ -10,6 +10,8 @@ export interface DashboardKPIs {
   totalCaregivers: number
   activeShifts: number
   checklistsToday: number
+  activeSosAlerts: number
+  acknowledgedSosAlerts: number
 }
 
 export interface ClinicStat {
@@ -31,6 +33,8 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
     { count: totalCaregivers },
     { count: activeShifts },
     { count: checklistsToday },
+    { count: activeSosAlerts },
+    { count: acknowledgedSosAlerts },
   ] = await Promise.all([
     supabase.from('clinics').select('*', { count: 'exact', head: true }),
     supabase
@@ -55,6 +59,14 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('created_at', new Date().toISOString().split('T')[0]),
+    supabase
+      .from('sos_alerts')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active'),
+    supabase
+      .from('sos_alerts')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'acknowledged'),
   ])
 
   return {
@@ -65,6 +77,8 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
     totalCaregivers: totalCaregivers ?? 0,
     activeShifts: activeShifts ?? 0,
     checklistsToday: checklistsToday ?? 0,
+    activeSosAlerts: activeSosAlerts ?? 0,
+    acknowledgedSosAlerts: acknowledgedSosAlerts ?? 0,
   }
 }
 
