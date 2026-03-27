@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
 import Link from "next/link"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 interface ClinicChecklistTableProps {
   checklists: ClinicChecklistWithDetails[]
@@ -60,6 +61,7 @@ interface ClinicChecklistTableProps {
   onSearchChange: (v: string) => void
   onScopeChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function ClinicChecklistTable({
@@ -72,15 +74,18 @@ export function ClinicChecklistTable({
   onSearchChange,
   onScopeChange,
   onPageChange,
+  onPageSizeChange,
 }: ClinicChecklistTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editTarget, setEditTarget] = useState<ClinicChecklistWithDetails | undefined>()
-  const [deleteTarget, setDeleteTarget] = useState<ClinicChecklistWithDetails | null>(null)
-  const [duplicateTarget, setDuplicateTarget] = useState<ClinicChecklistWithDetails | null>(null)
-
-  const totalPages = Math.ceil(total / pageSize)
+  const [editTarget, setEditTarget] = useState<
+    ClinicChecklistWithDetails | undefined
+  >()
+  const [deleteTarget, setDeleteTarget] =
+    useState<ClinicChecklistWithDetails | null>(null)
+  const [duplicateTarget, setDuplicateTarget] =
+    useState<ClinicChecklistWithDetails | null>(null)
 
   const openCreate = () => {
     setEditTarget(undefined)
@@ -164,7 +169,10 @@ export function ClinicChecklistTable({
           <TableBody>
             {checklists.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="py-10 text-center text-muted-foreground"
+                >
                   Nenhum checklist encontrado.
                 </TableCell>
               </TableRow>
@@ -234,30 +242,13 @@ export function ClinicChecklistTable({
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{total} checklist{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || isPending}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Anterior
-            </Button>
-            <span>{page} / {totalPages}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages || isPending}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Próxima
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
 
       <ClinicChecklistDialog
         open={dialogOpen}
@@ -267,13 +258,16 @@ export function ClinicChecklistTable({
 
       <AlertDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
       >
         <AlertDialogContent className="clinic-admin">
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir checklist?</AlertDialogTitle>
             <AlertDialogDescription>
-              O checklist <strong>{deleteTarget?.name}</strong> será excluído permanentemente.
+              O checklist <strong>{deleteTarget?.name}</strong> será excluído
+              permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -281,7 +275,7 @@ export function ClinicChecklistTable({
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
             >
               Excluir
             </AlertDialogAction>
@@ -291,13 +285,16 @@ export function ClinicChecklistTable({
 
       <AlertDialog
         open={!!duplicateTarget}
-        onOpenChange={(open) => { if (!open) setDuplicateTarget(null) }}
+        onOpenChange={(open) => {
+          if (!open) setDuplicateTarget(null)
+        }}
       >
         <AlertDialogContent className="clinic-admin">
           <AlertDialogHeader>
             <AlertDialogTitle>Duplicar checklist?</AlertDialogTitle>
             <AlertDialogDescription>
-              Criar uma cópia de <strong>{duplicateTarget?.name}</strong> para a sua clínica?
+              Criar uma cópia de <strong>{duplicateTarget?.name}</strong> para a
+              sua clínica?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -332,11 +329,21 @@ export function ClinicChecklistTableSkeleton() {
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-8 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-8 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-8 w-8 rounded" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

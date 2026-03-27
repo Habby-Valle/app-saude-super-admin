@@ -52,6 +52,7 @@ export function ClinicSosTableClient({
       status={status}
       onStatusChange={(v) => updateParams({ status: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}
+      onPageSizeChange={(v) => updateParams({ page: "1", pageSize: String(v) })}
     />
   )
 }

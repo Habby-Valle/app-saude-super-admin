@@ -37,19 +37,19 @@
 
 ## Melhorias Globais
 
-| #   | Feature                                  | Prioridade | Status     |
-| --- | ---------------------------------------- | ---------- | ---------- |
-| 28  | Paginação completa em todas as tabelas   | 🟡 Médio   | ⏸ Pendente |
-| 29  | SEO - Meta tags, Open Graph, sitemap.xml | 🟡 Médio   | ⏸ Pendente |
+| #   | Feature                                  | Prioridade | Status       |
+| --- | ---------------------------------------- | ---------- | ------------ |
+| 28  | Paginação completa em todas as tabelas   | 🟡 Médio   | ✅ Concluído |
+| 29  | SEO - Meta tags, Open Graph, sitemap.xml | 🟡 Médio   | ⏸ Pendente   |
 
 ### Paginação (Feature 28)
 
 Melhorar experiência de navegação com paginação completa:
 
-- [ ] Lazy loading / infinite scroll para tabelas grandes
-- [ ] Indicador de registros por página
-- [ ] Ir para página específica
-- [ ] Resumo: "Mostrando 1-10 de 156 registros"
+- [x] Lazy loading / infinite scroll para tabelas grandes
+- [x] Indicador de registros por página
+- [x] Ir para página específica
+- [x] Resumo: "Mostrando 1-10 de 156 registros"
 
 ### SEO (Feature 29)
 
@@ -110,7 +110,7 @@ Otimização para mecanismos de busca:
 | 25  | Clinic Admin: Página SOS                    | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ✅ Concluído |
 | 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ✅ Concluído |
-| 28  | Paginação completa em todas as tabelas      | 12 - UX  | 🟡 Médio   | ⏸ Pendente   |
+| 28  | Paginação completa em todas as tabelas      | 12 - UX  | 🟡 Médio   | ✅ Concluído |
 | 29  | SEO - Meta tags, Open Graph, sitemap.xml    | 12 - UX  | 🟡 Médio   | ⏸ Pendente   |
 
 ---
@@ -289,9 +289,8 @@ CREATE TABLE sos_notifications (
 
 ### Resumo das Mudanças Recentes
 
+- ✅ Feature 28 — Paginação completa: Componente `DataTablePagination` com seletor de registros/página (10/20/50), ir para página específica, resumo "Mostrando X-Y de Z registros", aplicado em todas as tabelas
 - ✅ Metadata em todas as páginas: Adicionado `export const metadata` com títulos apropriados para todas as páginas (Super Admin e Clinic Admin)
 - ✅ Correção TypeScript: Tipo de casting no `shifts/actions.ts` para relations do Supabase
-- ✅ Feature 19 — Gestão de Turnos: criar/finalizar/cancelar, validação de duração, badge "Aguardando início", cuidadores filtrados por paciente
-- ✅ Feature 20 — Checklists da Clínica: CRUD completo, escopos global/minha, página de detalhes, duplicar para a clínica, correção de contagem de itens (batch query)
-- ✅ Feature 21 — Relatórios da Clínica: summary cards (turnos, checklists, pacientes, cuidadores), gráficos por período (BarChart/LineChart/AreaChart), exportação CSV
-- 🆕 Sistema SOS adicionado ao escopo (features 22-27)
+- ✅ Feature 26 — Dashboard Cards SOS: Cards de resumo (ativos, reconhecidos, resolvidos hoje)
+- ✅ Feature 27 — Ações SOS: Acknowledge e Resolve implementados nas tabelas SOS

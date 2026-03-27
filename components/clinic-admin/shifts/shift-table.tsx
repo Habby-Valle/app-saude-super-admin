@@ -23,8 +23,11 @@ import {
 } from "@/components/ui/select"
 import { ShiftActionsDialog } from "./shift-actions-dialog"
 import { ShiftDialog } from "./shift-dialog"
-import type { ShiftWithDetails, SelectOption } from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
-
+import type {
+  ShiftWithDetails,
+  SelectOption,
+} from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 function formatDateTime(dateStr: string): string {
   return new Date(dateStr).toLocaleString("pt-BR", {
@@ -73,6 +76,7 @@ interface ShiftTableProps {
   onSearchChange: (v: string) => void
   onStatusChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function ShiftTable({
@@ -86,9 +90,8 @@ export function ShiftTable({
   onSearchChange,
   onStatusChange,
   onPageChange,
+  onPageSizeChange,
 }: ShiftTableProps) {
-  const totalPages = Math.ceil(total / pageSize)
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -163,7 +166,9 @@ export function ShiftTable({
                     new Date(shift.started_at) > new Date() ? (
                       <Badge variant="outline">Aguardando início</Badge>
                     ) : (
-                      <Badge variant={STATUS_VARIANTS[shift.status] ?? "outline"}>
+                      <Badge
+                        variant={STATUS_VARIANTS[shift.status] ?? "outline"}
+                      >
                         {STATUS_LABELS[shift.status] ?? shift.status}
                       </Badge>
                     )}
@@ -178,32 +183,13 @@ export function ShiftTable({
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{total} turno(s) encontrado(s)</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Anterior
-            </Button>
-            <span>
-              {page} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Próxima
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   )
 }
@@ -219,11 +205,17 @@ export function ShiftTableSkeleton() {
         <Table>
           <TableHeader>
             <TableRow>
-              {["Paciente", "Cuidador", "Início", "Fim", "Duração", "Status", ""].map(
-                (h) => (
-                  <TableHead key={h}>{h}</TableHead>
-                )
-              )}
+              {[
+                "Paciente",
+                "Cuidador",
+                "Início",
+                "Fim",
+                "Duração",
+                "Status",
+                "",
+              ].map((h) => (
+                <TableHead key={h}>{h}</TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>

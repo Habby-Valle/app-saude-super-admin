@@ -3,7 +3,10 @@
 import { useRouter, usePathname } from "next/navigation"
 import { useCallback } from "react"
 import { ShiftTable } from "./shift-table"
-import type { ShiftWithDetails, SelectOption } from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
+import type {
+  ShiftWithDetails,
+  SelectOption,
+} from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
 
 interface ShiftTableClientProps {
   shifts: ShiftWithDetails[]
@@ -59,6 +62,7 @@ export function ShiftTableClient({
       onSearchChange={(v) => updateParams({ search: v, page: "1" })}
       onStatusChange={(v) => updateParams({ status: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}
+      onPageSizeChange={(v) => updateParams({ page: "1", pageSize: String(v) })}
     />
   )
 }

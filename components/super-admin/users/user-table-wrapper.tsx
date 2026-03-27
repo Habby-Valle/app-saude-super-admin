@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
-import { UserTable } from './user-table'
-import type { User, UserRole } from '@/types/database'
-import type { Clinic } from '@/types/database'
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { useCallback } from "react"
+import { UserTable } from "./user-table"
+import type { User, UserRole } from "@/types/database"
+import type { Clinic } from "@/types/database"
 
 interface UserTableWrapperProps {
   users: User[]
@@ -12,9 +12,9 @@ interface UserTableWrapperProps {
   page: number
   pageSize: number
   search: string
-  role: UserRole | 'all'
+  role: UserRole | "all"
   clinicId: string
-  clinics: Pick<Clinic, 'id' | 'name'>[]
+  clinics: Pick<Clinic, "id" | "name">[]
 }
 
 export function UserTableWrapper({
@@ -34,16 +34,16 @@ export function UserTableWrapper({
   const updateParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value && value !== 'all' && value !== '1') {
+      if (value && value !== "all" && value !== "1") {
         params.set(key, value)
       } else {
         params.delete(key)
       }
       // Reset page on filter change
-      if (key !== 'page') params.delete('page')
+      if (key !== "page") params.delete("page")
       router.push(`${pathname}?${params.toString()}`)
     },
-    [router, pathname, searchParams],
+    [router, pathname, searchParams]
   )
 
   return (
@@ -56,10 +56,14 @@ export function UserTableWrapper({
       role={role}
       clinicId={clinicId}
       clinics={clinics}
-      onSearchChange={(v) => updateParam('search', v)}
-      onRoleChange={(v) => updateParam('role', v)}
-      onClinicChange={(v) => updateParam('clinic_id', v)}
-      onPageChange={(v) => updateParam('page', String(v))}
+      onSearchChange={(v) => updateParam("search", v)}
+      onRoleChange={(v) => updateParam("role", v)}
+      onClinicChange={(v) => updateParam("clinic_id", v)}
+      onPageChange={(v) => updateParam("page", String(v))}
+      onPageSizeChange={(v) => {
+        updateParam("pageSize", String(v))
+        updateParam("page", "1")
+      }}
     />
   )
 }

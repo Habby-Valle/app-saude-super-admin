@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table"
 import { CaregiverDialog } from "./caregiver-dialog"
 import { CaregiverEditDialog } from "./caregiver-edit-dialog"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("pt-BR")
@@ -30,6 +31,7 @@ interface CaregiverTableProps {
   search: string
   onSearchChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function CaregiverTable({
@@ -40,9 +42,8 @@ export function CaregiverTable({
   search,
   onSearchChange,
   onPageChange,
+  onPageSizeChange,
 }: CaregiverTableProps) {
-  const totalPages = Math.ceil(total / pageSize)
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -120,32 +121,13 @@ export function CaregiverTable({
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{total} cuidador(es) encontrado(s)</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Anterior
-            </Button>
-            <span>
-              {page} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Próxima
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </div>
   )
 }

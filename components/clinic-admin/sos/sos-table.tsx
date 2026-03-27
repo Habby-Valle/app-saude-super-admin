@@ -25,6 +25,7 @@ import type {
   ClinicSosAlertWithDetails,
   SosStatus,
 } from "@/app/(main)/(clinic-admin)/admin/sos/actions"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 const STATUS_LABELS: Record<SosStatus, string> = {
   active: "Ativo",
@@ -52,6 +53,7 @@ interface ClinicSosTableProps {
   status: string
   onStatusChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function ClinicSosTable({

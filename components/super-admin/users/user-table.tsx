@@ -54,6 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 const ROLE_MAP: Record<UserRole, string> = {
   super_admin: "Super Admin",
@@ -76,6 +77,7 @@ interface UserTableProps {
   onRoleChange: (v: string) => void
   onClinicChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function UserTable({
@@ -91,6 +93,7 @@ export function UserTable({
   onRoleChange,
   onClinicChange,
   onPageChange,
+  onPageSizeChange,
 }: UserTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -98,8 +101,6 @@ export function UserTable({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | undefined>()
   const [toggleTarget, setToggleTarget] = useState<User | null>(null)
-
-  const totalPages = Math.ceil(total / pageSize)
 
   const openInvite = () => {
     setEditUser(undefined)
@@ -294,36 +295,13 @@ export function UserTable({
         </Table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {total} usuário{total !== 1 ? "s" : ""} encontrado
-            {total !== 1 ? "s" : ""}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Anterior
-            </Button>
-            <span>
-              {page} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Próxima
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
 
       {/* Dialog convite/edição */}
       <UserDialog

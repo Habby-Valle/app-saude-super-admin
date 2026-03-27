@@ -52,6 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 const STATUS_MAP: Record<
   ClinicStatus,
@@ -80,6 +81,7 @@ interface ClinicTableProps {
   onSearchChange: (v: string) => void
   onStatusChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function ClinicTable({
@@ -92,6 +94,7 @@ export function ClinicTable({
   onSearchChange,
   onStatusChange,
   onPageChange,
+  onPageSizeChange,
 }: ClinicTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -253,35 +256,13 @@ export function ClinicTable({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {total} clínica{total !== 1 ? "s" : ""} encontrada
-            {total !== 1 ? "s" : ""}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Anterior
-            </Button>
-            <span>
-              {page} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Próxima
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTablePagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
 
       {/* Dialog criação/edição */}
       <ClinicDialog

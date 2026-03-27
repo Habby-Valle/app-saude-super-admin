@@ -59,6 +59,7 @@ export function ChecklistTableClient({
       onSearchChange={(v) => updateParams({ search: v, page: "1" })}
       onScopeChange={(v) => updateParams({ scope: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}
+      onPageSizeChange={(v) => updateParams({ page: "1", pageSize: String(v) })}
     />
   )
 }

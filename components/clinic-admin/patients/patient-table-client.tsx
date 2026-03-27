@@ -52,6 +52,7 @@ export function PatientTableClient({
       search={search}
       onSearchChange={(v) => updateParams({ search: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}
+      onPageSizeChange={(v) => updateParams({ page: "1", pageSize: String(v) })}
     />
   )
 }

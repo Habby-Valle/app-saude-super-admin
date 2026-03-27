@@ -32,7 +32,8 @@ export function ClinicChecklistTableClient({
       const merged = { ...current, ...updates }
 
       Object.entries(merged).forEach(([k, v]) => {
-        if (!v || (k === "page" && v === "1") || (k === "scope" && v === "all")) return
+        if (!v || (k === "page" && v === "1") || (k === "scope" && v === "all"))
+          return
         params.set(k, v)
       })
 
@@ -53,6 +54,7 @@ export function ClinicChecklistTableClient({
       onSearchChange={(v) => updateParams({ search: v, page: "1" })}
       onScopeChange={(v) => updateParams({ scope: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}
+      onPageSizeChange={(v) => updateParams({ page: "1", pageSize: String(v) })}
     />
   )
 }

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table"
 import { SosAcknowledgeDialog, SosResolveDialog } from "./sos-resolve-dialog"
 import type { SosAlertWithDetails, SosStatus } from "@/app/(main)/(super-admin)/super-admin/sos/actions"
+import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 const STATUS_LABELS: Record<SosStatus, string> = {
   active: "Ativo",
@@ -53,6 +54,7 @@ interface SosTableProps {
   onStatusChange: (v: string) => void
   onClinicChange: (v: string) => void
   onPageChange: (v: number) => void
+  onPageSizeChange: (v: number) => void
 }
 
 export function SosTable({
