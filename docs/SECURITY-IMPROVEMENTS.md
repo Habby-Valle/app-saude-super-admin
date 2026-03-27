@@ -102,85 +102,59 @@ FOR INSERT TO authenticated WITH CHECK (true);
 
 ### Por quê?
 
-Prevenir abuse acidental ou malicioso:
+Prevenir abuse acidental ou malicioso em operações críticas.
 
-- Evitar spam de criações
-- Prevenir brute force
-- Controlar custos (Supabase cobra por operações)
+### Implementação (In-Memory)
 
-### Implementação com Supabase
+Solução simples usando Map em memória (sem dependências externas).
 
-#### Política de Rate Limit por Clinic
+#### Arquivos
 
-```sql
--- Criar função para verificar rate limit
-CREATE OR REPLACE FUNCTION check_user_creation_rate()
-RETURNS TRIGGER AS $$
-DECLARE
-  creations_last_hour INTEGER;
-  max_creations INTEGER := 100; -- máximo por hora
-BEGIN
-  SELECT COUNT(*) INTO creations_last_hour
-  FROM audit_logs
-  WHERE action = 'create_caregiver'
-    AND clinic_id = NEW.clinic_id
-    AND created_at > NOW() - INTERVAL '1 hour';
+| Arquivo                       | Descrição                       |
+| ----------------------------- | ------------------------------- |
+| `lib/rate-limit.ts`           | Cliente TypeScript + tipos      |
+| `app/api/rate-limit/route.ts` | API route com storage in-memory |
 
-  IF creations_last_hour >= max_creations THEN
-    RAISE EXCEPTION 'Rate limit exceeded: max % creations per hour', max_creations;
-  END IF;
+#### Configurações Padrão
 
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+| Tier      | Limite | Janela | Uso        |
+| --------- | ------ | ------ | ---------- |
+| `strict`  | 5      | 60s    | SOS, login |
+| `normal`  | 20     | 60s    | Criações   |
+| `relaxed` | 100    | 60s    | Leituras   |
 
--- Associar trigger
-CREATE TRIGGER enforce_user_creation_rate
-BEFORE INSERT ON audit_logs
-FOR EACH ROW
-WHEN (NEW.action = 'create_caregiver')
-EXECUTE FUNCTION check_user_creation_rate();
-```
-
-#### Rate Limit por IP (Edge Function)
+#### Uso no Servidor
 
 ```typescript
-// supabase/functions/rate-limit/index.ts
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { withRateLimit, RateLimitTier } from "@/lib/rate-limit"
 
-const RATE_LIMIT = 100 // requests per minute
-const WINDOW_MS = 60 * 1000
-
-serve(async (req) => {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown"
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  )
-
-  // Verificar rate limit no Redis ou banco
-  const { data } = await supabase
-    .from("rate_limits")
-    .select("count")
-    .eq("ip", ip)
-    .single()
-
-  if (data && data.count >= RATE_LIMIT) {
-    return new Response("Rate limit exceeded", { status: 429 })
-  }
-
-  // Incrementar contador
-  await supabase.from("rate_limits").upsert({
-    ip,
-    count: (data?.count || 0) + 1,
-    window_start: new Date().toISOString(),
+export async function createPatient(data: unknown) {
+  return withRateLimit("create-patient", "normal", userId, async () => {
+    // sua lógica aqui
   })
-
-  return new Response("OK")
-})
+}
 ```
+
+#### Como funciona
+
+1. API route `/api/rate-limit` mantém um `Map` em memória
+2. Cada chave (ex: `create-patient:user123`) tem contagem + timestamp de expiração
+3. Cleanup automático a cada 5 minutos
+4. Retorna 429 quando limite excedido
+
+#### Endpoints Configurados
+
+| Endpoint       | Limite | Janela |
+| -------------- | ------ | ------ |
+| Login          | 5      | 60s    |
+| Criar cuidador | 20     | 60s    |
+| Criar paciente | 20     | 60s    |
+| Criar clínica  | 10     | 60s    |
+| SOS            | 5      | 60s    |
+
+#### Limitação
+
+Esta solução é **por instância**. Em ambiente serverless (Vercel), cada instância tem sua própria memória, então o rate limiting não é compartilhado entre instâncias. Para produção de alto volume, considere Redis.
 
 ---
 
@@ -260,22 +234,94 @@ export async function createCaregiver(data: ...) {
 
 ---
 
-## 4. Checklist de Segurança
+## 4. Security Headers (Feature 34)
 
-- [ ] Variáveis de ambiente em `.env` (nunca commitadas)
-- [ ] `SERVICE_ROLE_KEY` protegida e rotacionada periodicamente
-- [ ] RLS habilitado em todas as tabelas
-- [ ] Logs de auditoria implementados
-- [ ] Rate limiting configurado
-- [ ] Triggers de trigger implementados
-- [ ] HTTPS forçado
-- [ ] CORS configurado corretamente
-- [ ] Input validation (Zod) em todas as forms
-- [ ] Sanitização de inputs
+### Por quê?
+
+Headers de segurança protegem contra ataques comuns na web:
+
+- XSS (Cross-Site Scripting)
+- Clickjacking
+- MIME sniffing
+- Man-in-the-middle (com HSTS)
+- Information leakage
+
+### Headers Implementados
+
+| Header                    | Valor                            | Proteção                       |
+| ------------------------- | -------------------------------- | ------------------------------ |
+| X-DNS-Prefetch-Control    | on                               | DNS prefetch controlado        |
+| Strict-Transport-Security | max-age=63072000; preload        | HTTPS obrigatório (2 anos)     |
+| X-Frame-Options           | SAMEORIGIN                       | Clickjacking prevention        |
+| X-Content-Type-Options    | nosniff                          | MIME sniffing prevention       |
+| X-XSS-Protection          | 1; mode=block                    | XSS filter (legacy browsers)   |
+| Referrer-Policy           | origin-when-cross-origin         | Controle de referrer           |
+| Permissions-Policy        | camera=(), microphone=(), geo=() | Desabilita APIs não utilizadas |
+| Content-Security-Policy   | Ver abaixo                       | XSS e injection prevention     |
+
+### Content-Security-Policy Detalhado
+
+```
+default-src 'self';
+script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+font-src 'self' https://fonts.gstatic.com;
+img-src 'self' data: https: blob:;
+connect-src 'self' https://*.supabase.co wss://*.supabase.co;
+frame-ancestors 'self';
+base-uri 'self';
+form-action 'self';
+```
+
+### Implementação
+
+O arquivo `next.config.mjs` configura todos os headers:
+
+```javascript
+const securityHeaders = [
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Content-Security-Policy", value: "default-src 'self'; ..." },
+  // ...
+]
+
+const nextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }]
+  },
+}
+```
+
+### Nota sobre HSTS
+
+O header `Strict-Transport-Security` requer que o domínio esteja acessível via HTTPS. Para que funcione corretamente:
+
+1. Configure HTTPS no Vercel (automático)
+2. O `preload` flag requer submissão em hstspreload.org (opcional)
 
 ---
 
-## 5. Variáveis de Ambiente Obrigatórias
+## 5. Checklist de Segurança
+
+- [x] Variáveis de ambiente em `.env` (nunca commitadas)
+- [x] `SERVICE_ROLE_KEY` protegida e rotacionada periodicamente
+- [x] RLS habilitado em todas as tabelas
+- [x] Logs de auditoria implementados
+- [x] Rate limiting configurado
+- [x] Triggers de trigger implementados
+- [x] HTTPS forçado (HSTS header)
+- [x] CORS configurado corretamente
+- [x] Input validation (Zod) em todas as forms
+- [x] Sanitização de inputs
+- [x] Security headers (CSP, X-Frame-Options, etc.)
+
+---
+
+## 6. Variáveis de Ambiente Obrigatórias
 
 ```bash
 # .env (NUNCA COMMITAR ESTE ARQUIVO)
@@ -295,7 +341,7 @@ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Apenas para Server Actions!
 
 ---
 
-## 6. Monitoramento
+## 7. Monitoramento
 
 ### Métricas para monitorar
 

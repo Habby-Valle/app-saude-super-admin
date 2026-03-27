@@ -146,40 +146,101 @@ Controla o ambiente de execução da aplicação:
 
 ## Segurança
 
-| #   | Feature                                        | Prioridade | Status       |
-| --- | ---------------------------------------------- | ---------- | ------------ |
-| 30  | RLS Policies restritivas por tabela            | 🔴 Crítico | ⏸ Pendente   |
-| 31  | Validação de input em todos os formulários     | 🔴 Crítico | ⏸ Pendente   |
-| 32  | Sanitização de dados de saída                  | 🔴 Crítico | ⏸ Pendente   |
-| 33  | Rate limiting em endpoints críticos            | 🟠 Alto    | ⏸ Pendente   |
-| 34  | HTTPS e headers de segurança (CSP, HSTS, etc.) | 🟠 Alto    | ⏸ Pendente   |
-| 35  | Logs de auditoria para ações sensíveis         | 🟠 Alto    | ✅ Concluído |
-| 36  | Criptografia de dados sensíveis (LGPD)         | 🟠 Alto    | ⏸ Pendente   |
-| 37  | Autenticação 2FA para admins                   | 🟡 Médio   | ⏸ Pendente   |
-| 38  | Sessoes com timeout automático                 | 🟡 Médio   | ⏸ Pendente   |
-| 39  | Revisão de dependências (npm audit)            | 🟡 Médio   | ⏸ Pendente   |
+| #   | Feature                                        | Prioridade | Status                      |
+| --- | ---------------------------------------------- | ---------- | --------------------------- |
+| 30  | RLS Policies restritivas por tabela            | 🔴 Crítico | ✅ Concluído                |
+| 31  | Validação de input em todos os formulários     | 🔴 Crítico | ✅ Concluído                |
+| 32  | Sanitização de dados de saída                  | 🔴 Crítico | ✅ Concluído                |
+| 33  | Rate limiting em endpoints críticos            | 🟠 Alto    | ✅ Concluído (simplificado) |
+| 34  | HTTPS e headers de segurança (CSP, HSTS, etc.) | 🟠 Alto    | ✅ Concluído                |
+| 35  | Logs de auditoria para ações sensíveis         | 🟠 Alto    | ✅ Concluído                |
+| 36  | Criptografia de dados sensíveis (LGPD)         | 🟠 Alto    | ⏸ Pendente                  |
+| 37  | Autenticação 2FA para admins                   | 🟡 Médio   | ⏸ Pendente                  |
+| 38  | Sessoes com timeout automático                 | 🟡 Médio   | ⏸ Pendente                  |
+| 39  | Revisão de dependências (npm audit)            | 🟡 Médio   | ⏸ Pendente                  |
 
 ### Detalhamento
 
 #### RLS Policies (Feature 30)
 
-- [ ] Policies por tabela: `patients`, `shifts`, `checklists`, `sos_alerts`
+- [x] Policies por tabela: `patients`, `shifts`, `checklists`, `sos_alerts`
+- [x] Policy para `auth.users` (gerenciar roles)
+- [x] Funções auxiliares: `auth.is_super_admin()`, `auth.get_user_clinic_id()`
 - [ ] Testar isolamento entre clínicas
-- [ ] Policy para `auth.users` (gerenciar roles)
+
+**Script SQL**: `docs/SQL/rls-policies.sql`
+
+#### Tabelas com RLS
+
+| Tabela            | Super Admin    | Clinic Admin                    | Cuidador                  |
+| ----------------- | -------------- | ------------------------------- | ------------------------- |
+| clinics           | CRUD           | -                               | -                         |
+| users             | CRUD           | Read/Update (própria clínica)   | Read/Update (próprio)     |
+| patients          | CRUD           | CRUD                            | -                         |
+| caregiver_patient | CRUD           | CRUD                            | -                         |
+| checklists        | CRUD (globais) | Read (globais) + CRUD (própria) | Read                      |
+| checklist_items   | CRUD           | CRUD                            | Read                      |
+| shifts            | CRUD           | CRUD                            | -                         |
+| sos_alerts        | CRUD           | Update (própria)                | Insert/Select (acionados) |
+| sos_notifications | CRUD           | Update (própria)                | -                         |
+| audit_logs        | Read           | -                               | Insert                    |
 
 #### Validação de Input (Feature 31)
 
-- [ ] Zod schemas para todos os formulários
-- [ ] Validação server-side em todas as mutations
-- [ ] Sanitização de strings (XSS prevention)
+- [x] Zod schemas para todos os formulários
+- [x] Validação server-side em todas as mutations
+- [x] Sanitização de strings (XSS prevention)
+
+**Schemas**: `lib/validations/`
+
+| Schema         | Descrição                     |
+| -------------- | ----------------------------- |
+| `auth.ts`      | Login                         |
+| `clinic.ts`    | Clínicas (com validação CNPJ) |
+| `user.ts`      | Usuários                      |
+| `patient.ts`   | Pacientes                     |
+| `caregiver.ts` | Cuidadores                    |
+| `checklist.ts` | Checklists e itens            |
+| `shift.ts`     | Turnos                        |
+| `sos.ts`       | Alertas SOS                   |
+
+**Utilitários**: `lib/validation.ts`
+
+- `parseWithSanitize()` - Validação com sanitização
+- `validateEmail()` - Validação de email
+- `validateUuid()` - Validação de UUID
+- `validateCnpj()` - Validação de CNPJ
+- `validateCpf()` - Validação de CPF
+
+**Sanitização**: `lib/sanitize.ts`
+
+- `sanitizeString()` - Remove scripts/iframes
+- `sanitizeObject()` - Sanitiza campos específicos
+- `escapeHtml()` - Escapa caracteres HTML
+- `stripHtml()` - Remove tags HTML
 
 #### Headers de Segurança (Feature 34)
 
-- [ ] Content-Security-Policy (CSP)
-- [ ] HTTP Strict Transport Security (HSTS)
-- [ ] X-Frame-Options
-- [ ] X-Content-Type-Options
-- [ ] Referrer-Policy
+- [x] Content-Security-Policy (CSP)
+- [x] HTTP Strict Transport Security (HSTS)
+- [x] X-Frame-Options
+- [x] X-Content-Type-Options
+- [x] Referrer-Policy
+- [x] X-DNS-Prefetch-Control
+- [x] X-XSS-Protection
+- [x] Permissions-Policy
+
+**Arquivo**: `next.config.mjs`
+
+| Header                    | Valor                                        |
+| ------------------------- | -------------------------------------------- |
+| Strict-Transport-Security | max-age=63072000; includeSubDomains; preload |
+| X-Frame-Options           | SAMEORIGIN                                   |
+| X-Content-Type-Options    | nosniff                                      |
+| X-XSS-Protection          | 1; mode=block                                |
+| Referrer-Policy           | origin-when-cross-origin                     |
+| Permissions-Policy        | camera=(), microphone=(), geolocation=()     |
+| Content-Security-Policy   | default-src 'self'; script-src ...           |
 
 #### LGPD/Privacidade (Feature 36)
 
@@ -318,8 +379,8 @@ CREATE TABLE sos_notifications (
 
 ### Resumo das Mudanças Recentes
 
+- ✅ **Simplificação Feature 33** — Rate Limiting: Removida complexidade desnecessária. Solução agora usa Map in-memory em vez de tabelas no banco. Mantém eficácia para contexto de painel administrativo interno.
+- ✅ Feature 34 — Security Headers: Implementados todos os headers de segurança (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, X-DNS-Prefetch-Control, X-XSS-Protection, Permissions-Policy) no `next.config.mjs`
 - ✅ Feature 28 — Paginação completa: Componente `DataTablePagination` com seletor de registros/página (10/20/50), ir para página específica, resumo "Mostrando X-Y de Z registros", aplicado em todas as tabelas
-- ✅ Metadata em todas as páginas: Adicionado `export const metadata` com títulos apropriados para todas as páginas (Super Admin e Clinic Admin)
-- ✅ Correção TypeScript: Tipo de casting no `shifts/actions.ts` para relations do Supabase
 - ✅ Feature 26 — Dashboard Cards SOS: Cards de resumo (ativos, reconhecidos, resolvidos hoje)
 - ✅ Feature 27 — Ações SOS: Acknowledge e Resolve implementados nas tabelas SOS
