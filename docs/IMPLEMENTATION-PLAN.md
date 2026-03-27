@@ -71,14 +71,14 @@
 
 ## Sistema SOS
 
-| #   | Feature                                     | Fase     | Prioridade | Status     |
-| --- | ------------------------------------------- | -------- | ---------- | ---------- |
-| 22  | Tabelas SOS (sos_alerts, sos_notifications) | 11 - SOS | 🔴 Crítico | ⏸ Pendente |
-| 23  | Server Actions SOS                          | 11 - SOS | 🔴 Crítico | ⏸ Pendente |
-| 24  | Super Admin: Página SOS global              | 11 - SOS | 🔴 Crítico | ⏸ Pendente |
-| 25  | Clinic Admin: Página SOS                    | 11 - SOS | 🔴 Crítico | ⏸ Pendente |
-| 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ⏸ Pendente |
-| 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ⏸ Pendente |
+| #   | Feature                                     | Fase     | Prioridade | Status       |
+| --- | ------------------------------------------- | -------- | ---------- | ------------ |
+| 22  | Tabelas SOS (sos_alerts, sos_notifications) | 11 - SOS | 🔴 Crítico | ✅ Concluído |
+| 23  | Server Actions SOS                          | 11 - SOS | 🔴 Crítico | ✅ Concluído |
+| 24  | Super Admin: Página SOS global              | 11 - SOS | 🔴 Crítico | ✅ Concluído |
+| 25  | Clinic Admin: Página SOS                    | 11 - SOS | 🔴 Crítico | ✅ Concluído |
+| 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ⏸ Pendente  |
+| 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ⏸ Pendente  |
 
 ---
 
@@ -99,7 +99,7 @@
 ├── reports/          ✅
 ├── audit-logs/       ✅
 ├── settings/        ✅
-└── sos/             ⏸
+└── sos/             ✅
 
 # Clinic Admin
 /app/(main)/(clinic-admin)/
@@ -112,7 +112,7 @@
 ├── checklists/       ✅
 │   └── [id]/        ✅
 ├── reports/          ✅
-└── sos/              ⏸
+└── sos/              ✅
 ```
 
 ---

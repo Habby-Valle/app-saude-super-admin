@@ -37,7 +37,7 @@ const clinicAdminNavItems = [
   { label: "Cuidadores", href: "/admin/caregivers", icon: UserCog },
   { label: "Turnos", href: "/admin/shifts", icon: CalendarClock },
   { label: "Checklists", href: "/admin/checklists", icon: ClipboardList },
-  { label: "SOS", href: "/sos", icon: AlertTriangle },
+  { label: "SOS", href: "/admin/sos", icon: AlertTriangle },
   { label: "Relatórios", href: "/admin/reports", icon: BarChart3 },
 ]
 

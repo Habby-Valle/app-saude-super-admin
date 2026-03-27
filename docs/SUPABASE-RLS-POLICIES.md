@@ -116,6 +116,35 @@ CREATE POLICY "checklist_items_basic_update" ON checklist_items FOR UPDATE TO au
 DROP POLICY IF EXISTS "checklist_items_basic_delete" ON checklist_items;
 CREATE POLICY "checklist_items_basic_delete" ON checklist_items FOR DELETE TO authenticated USING (true);
 
+-- 9. SOS_ALERTS
+DROP POLICY IF EXISTS "sos_alerts_basic_select" ON sos_alerts;
+CREATE POLICY "sos_alerts_basic_select" ON sos_alerts FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "sos_alerts_basic_insert" ON sos_alerts;
+CREATE POLICY "sos_alerts_basic_insert" ON sos_alerts FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "sos_alerts_basic_update" ON sos_alerts;
+CREATE POLICY "sos_alerts_basic_update" ON sos_alerts FOR UPDATE TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "sos_alerts_basic_delete" ON sos_alerts;
+CREATE POLICY "sos_alerts_basic_delete" ON sos_alerts FOR DELETE TO authenticated USING (true);
+
+-- 10. SOS_NOTIFICATIONS
+DROP POLICY IF EXISTS "sos_notifications_basic_select" ON sos_notifications;
+CREATE POLICY "sos_notifications_basic_select" ON sos_notifications FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "sos_notifications_basic_insert" ON sos_notifications;
+CREATE POLICY "sos_notifications_basic_insert" ON sos_notifications FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "sos_notifications_basic_update" ON sos_notifications;
+CREATE POLICY "sos_notifications_basic_update" ON sos_notifications FOR UPDATE TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "sos_notifications_basic_delete" ON sos_notifications;
+CREATE POLICY "sos_notifications_basic_delete" ON sos_notifications FOR DELETE TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "checklist_items_basic_delete" ON checklist_items;
+CREATE POLICY "checklist_items_basic_delete" ON checklist_items FOR DELETE TO authenticated USING (true);
+
 -- ============================================
 -- FIM DO SCRIPT
 -- ============================================
@@ -2225,6 +2254,186 @@ VALUES (
 1. Execute o trigger SQL no Supabase
 2. Insira manualmente o cuidador que já foi criado
 3. Teste criando um novo cuidador - o perfil será criado automaticamente
+
+---
+
+## sos_alerts
+
+```sql
+-- Super Admin: pode ver todos os alertas
+CREATE POLICY "Super admins can view all sos_alerts"
+ON sos_alerts
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
+
+-- Super Admin: pode gerenciar alertas
+CREATE POLICY "Super admins can manage sos_alerts"
+ON sos_alerts
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
+
+-- Clinic Admin: pode ver alertas da própria clínica
+CREATE POLICY "Clinic admins can view clinic sos_alerts"
+ON sos_alerts
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'clinic_admin'
+    AND users.clinic_id = sos_alerts.clinic_id
+  )
+);
+
+-- Clinic Admin: pode inserir alertas na própria clínica
+CREATE POLICY "Clinic admins can insert clinic sos_alerts"
+ON sos_alerts
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'clinic_admin'
+    AND users.clinic_id = sos_alerts.clinic_id
+  )
+);
+
+-- Clinic Admin: pode atualizar alertas da própria clínica
+CREATE POLICY "Clinic admins can update clinic sos_alerts"
+ON sos_alerts
+FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'clinic_admin'
+    AND users.clinic_id = sos_alerts.clinic_id
+  )
+);
+
+-- Clinic Admin: pode excluir alertas da própria clínica
+CREATE POLICY "Clinic admins can delete clinic sos_alerts"
+ON sos_alerts
+FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'clinic_admin'
+    AND users.clinic_id = sos_alerts.clinic_id
+  )
+);
+```
+
+---
+
+## sos_notifications
+
+```sql
+-- Super Admin: pode ver todas as notificações
+CREATE POLICY "Super admins can view all sos_notifications"
+ON sos_notifications
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
+
+-- Super Admin: pode gerenciar notificações
+CREATE POLICY "Super admins can manage sos_notifications"
+ON sos_notifications
+FOR ALL
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role = 'super_admin'
+  )
+);
+
+-- Clinic Admin: pode ver notificações da própria clínica
+CREATE POLICY "Clinic admins can view clinic sos_notifications"
+ON sos_notifications
+FOR SELECT
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN sos_alerts sa ON sa.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND sa.id = sos_notifications.sos_alert_id
+  )
+);
+
+-- Clinic Admin: pode inserir notificações na própria clínica
+CREATE POLICY "Clinic admins can insert clinic sos_notifications"
+ON sos_notifications
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN sos_alerts sa ON sa.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND sa.id = sos_notifications.sos_alert_id
+  )
+);
+
+-- Clinic Admin: pode atualizar notificações da própria clínica
+CREATE POLICY "Clinic admins can update clinic sos_notifications"
+ON sos_notifications
+FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN sos_alerts sa ON sa.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND sa.id = sos_notifications.sos_alert_id
+  )
+);
+
+-- Clinic Admin: pode excluir notificações da própria clínica
+CREATE POLICY "Clinic admins can delete clinic sos_notifications"
+ON sos_notifications
+FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN sos_alerts sa ON sa.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND sa.id = sos_notifications.sos_alert_id
+  )
+);
+```
 
 ---
 
