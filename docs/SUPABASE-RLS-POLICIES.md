@@ -20,9 +20,122 @@
 
 ---
 
-## ⚠️ Políticas Essenciais (Execute Primeiro)
+## 🚀 Script de Correção Rápida
 
-Estas políticas são **obrigatórias** para o app funcionar corretamente:
+Se você está tendo erros como:
+
+- "new row violates row-level security policy for table..."
+- Login não funciona
+- Dados não aparecem
+
+**Copie e cole este script COMPLETO no Supabase SQL Editor:**
+
+```sql
+-- ============================================
+-- SCRIPT COMPLETO DE POLÍTICAS RLS
+-- Execute TODO este bloco de uma vez
+-- ============================================
+
+-- 1. USERS - Permissão básica
+DROP POLICY IF EXISTS "users_basic_select" ON users;
+CREATE POLICY "users_basic_select" ON users FOR SELECT TO authenticated USING (true);
+
+-- 2. PATIENTS - Permissão básica
+DROP POLICY IF EXISTS "patients_basic_select" ON patients;
+CREATE POLICY "patients_basic_select" ON patients FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "patients_basic_insert" ON patients;
+CREATE POLICY "patients_basic_insert" ON patients FOR INSERT TO authenticated WITH CHECK (true);
+
+-- 3. CAREGIVER_PATIENT - Vínculos
+DROP POLICY IF EXISTS "caregiver_patient_basic_select" ON caregiver_patient;
+CREATE POLICY "caregiver_patient_basic_select" ON caregiver_patient FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "caregiver_patient_basic_insert" ON caregiver_patient;
+CREATE POLICY "caregiver_patient_basic_insert" ON caregiver_patient FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "caregiver_patient_basic_delete" ON caregiver_patient;
+CREATE POLICY "caregiver_patient_basic_delete" ON caregiver_patient FOR DELETE TO authenticated USING (true);
+
+-- 4. SHIFTS - Turnos
+DROP POLICY IF EXISTS "shifts_basic_select" ON shifts;
+CREATE POLICY "shifts_basic_select" ON shifts FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "shifts_basic_insert" ON shifts;
+CREATE POLICY "shifts_basic_insert" ON shifts FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "shifts_basic_update" ON shifts;
+CREATE POLICY "shifts_basic_update" ON shifts FOR UPDATE TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "shifts_basic_delete" ON shifts;
+CREATE POLICY "shifts_basic_delete" ON shifts FOR DELETE TO authenticated USING (true);
+
+-- 5. SHIFT_CHECKLISTS
+DROP POLICY IF EXISTS "shift_checklists_basic_select" ON shift_checklists;
+CREATE POLICY "shift_checklists_basic_select" ON shift_checklists FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "shift_checklists_basic_insert" ON shift_checklists;
+CREATE POLICY "shift_checklists_basic_insert" ON shift_checklists FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "shift_checklists_basic_update" ON shift_checklists;
+CREATE POLICY "shift_checklists_basic_update" ON shift_checklists FOR UPDATE TO authenticated USING (true);
+
+-- 6. SHIFT_CHECKLIST_ITEMS
+DROP POLICY IF EXISTS "shift_checklist_items_basic_select" ON shift_checklist_items;
+CREATE POLICY "shift_checklist_items_basic_select" ON shift_checklist_items FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "shift_checklist_items_basic_insert" ON shift_checklist_items;
+CREATE POLICY "shift_checklist_items_basic_insert" ON shift_checklist_items FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "shift_checklist_items_basic_update" ON shift_checklist_items;
+CREATE POLICY "shift_checklist_items_basic_update" ON shift_checklist_items FOR UPDATE TO authenticated USING (true);
+
+-- 7. CHECKLISTS
+DROP POLICY IF EXISTS "checklists_basic_select" ON checklists;
+CREATE POLICY "checklists_basic_select" ON checklists FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "checklists_basic_insert" ON checklists;
+CREATE POLICY "checklists_basic_insert" ON checklists FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "checklists_basic_update" ON checklists;
+CREATE POLICY "checklists_basic_update" ON checklists FOR UPDATE TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "checklists_basic_delete" ON checklists;
+CREATE POLICY "checklists_basic_delete" ON checklists FOR DELETE TO authenticated USING (true);
+
+-- 8. CHECKLIST_ITEMS
+DROP POLICY IF EXISTS "checklist_items_basic_select" ON checklist_items;
+CREATE POLICY "checklist_items_basic_select" ON checklist_items FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "checklist_items_basic_insert" ON checklist_items;
+CREATE POLICY "checklist_items_basic_insert" ON checklist_items FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "checklist_items_basic_update" ON checklist_items;
+CREATE POLICY "checklist_items_basic_update" ON checklist_items FOR UPDATE TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "checklist_items_basic_delete" ON checklist_items;
+CREATE POLICY "checklist_items_basic_delete" ON checklist_items FOR DELETE TO authenticated USING (true);
+
+-- ============================================
+-- FIM DO SCRIPT
+-- ============================================
+```
+
+---
+
+## ⚠️ Notas Importantes
+
+1. **Estas são políticas PERMISSIVAS** - Permitem tudo para usuários autenticados
+2. **Após testar, substitua** por políticas mais restritivas (multi-tenant)
+3. **Para verificar políticas existentes:**
+
+```sql
+SELECT tablename, policyname FROM pg_policies WHERE schemaname = 'public';
+```
+
+---
+
+## Políticas por Funcionalidade
 
 ### Para login funcionar (topbar mostrar nome):
 
@@ -73,6 +186,21 @@ ON caregiver_patient
 FOR INSERT
 TO authenticated
 WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM users u
+    JOIN patients p ON p.clinic_id = u.clinic_id
+    WHERE u.id = auth.uid()
+    AND u.role = 'clinic_admin'
+    AND p.id = caregiver_patient.patient_id
+  )
+);
+
+-- Clinic Admin: pode deletar vínculos caregiver_patient
+CREATE POLICY "Clinic admins can delete clinic caregiver_patient"
+ON caregiver_patient
+FOR DELETE
+TO authenticated
+USING (
   EXISTS (
     SELECT 1 FROM users u
     JOIN patients p ON p.clinic_id = u.clinic_id
