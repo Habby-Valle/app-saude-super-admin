@@ -1,8 +1,17 @@
-import { requireClinicAdmin } from "@/lib/auth"
+import { Suspense } from "react"
+import { getClinicReportSummary } from "./actions"
+import {
+  ClinicReportsClient,
+  ClinicReportsClientSkeleton,
+} from "./reports-client"
+import { SummaryCards, SummaryCardsSkeleton } from "@/components/clinic-admin/reports/summary-cards"
+
+async function SummarySection() {
+  const summary = await getClinicReportSummary()
+  return <SummaryCards summary={summary} />
+}
 
 export default async function ReportsPage() {
-  await requireClinicAdmin()
-
   return (
     <div className="space-y-6">
       <div>
@@ -11,6 +20,14 @@ export default async function ReportsPage() {
           Relatórios operacionais da clínica
         </p>
       </div>
+
+      <Suspense fallback={<SummaryCardsSkeleton />}>
+        <SummarySection />
+      </Suspense>
+
+      <Suspense fallback={<ClinicReportsClientSkeleton />}>
+        <ClinicReportsClient />
+      </Suspense>
     </div>
   )
 }

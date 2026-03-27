@@ -46,7 +46,7 @@
 | 18  | Gestão de Cuidadores        | 8 - Core       | 🟠 Alto    | ✅ Concluído |
 | 19  | Gestão de Turnos            | 9 - Operations | 🟠 Alto    | ✅ Concluído |
 | 20  | Checklists da Clínica       | 9 - Operations | 🟡 Médio   | ✅ Concluído |
-| 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ⏸ Pendente   |
+| 21  | Relatórios da Clínica       | 10 - Insights  | 🟡 Médio   | ✅ Concluído |
 
 ---
 
@@ -62,10 +62,10 @@
 
 ### Tarefas
 
-- [ ] Adicionar variáveis CSS no globals.css
-- [ ] Criar classe `.clinic-admin` com tema roxo
-- [ ] Aplicar classe no layout `(clinic-admin)/layout.tsx`
-- [ ] Testar tema no browser
+- [x] Adicionar variáveis CSS no globals.css
+- [x] Criar classe `.clinic-admin` com tema roxo
+- [x] Aplicar classe no layout `(clinic-admin)/layout.tsx`
+- [x] Testar tema no browser
 
 ---
 
@@ -105,12 +105,14 @@
 /app/(main)/(clinic-admin)/
 ├── dashboard/        ✅
 ├── patients/         ✅
-│   └── [id]/        ⏸
-├── caregivers/       ⏸
-├── shifts/           ⏸
-├── checklists/       ⏸
-├── sos/              ⏸
-└── reports/         ⏸
+│   └── [id]/        ✅
+├── caregivers/       ✅
+│   └── [id]/        ✅
+├── shifts/           ✅
+├── checklists/       ✅
+│   └── [id]/        ✅
+├── reports/          ✅
+└── sos/              ⏸
 ```
 
 ---
@@ -204,10 +206,11 @@ CREATE TABLE sos_notifications (
 
 ---
 
-## Última atualização: 2026-03-25
+## Última atualização: 2026-03-27
 
 ### Resumo das Mudanças Recentes
 
-- ✅ Features 13-14 (Detalhes de Paciente e Checklist) concluídas
-- 📋 Decisão de arquitetura: projeto unificado com route groups
+- ✅ Feature 19 — Gestão de Turnos: criar/finalizar/cancelar, validação de duração, badge "Aguardando início", cuidadores filtrados por paciente
+- ✅ Feature 20 — Checklists da Clínica: CRUD completo, escopos global/minha, página de detalhes, duplicar para a clínica, correção de contagem de itens (batch query)
+- ✅ Feature 21 — Relatórios da Clínica: summary cards (turnos, checklists, pacientes, cuidadores), gráficos por período (BarChart/LineChart/AreaChart), exportação CSV
 - 🆕 Sistema SOS adicionado ao escopo (features 22-27)
