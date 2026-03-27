@@ -3,6 +3,10 @@ import { getClinicCaregivers } from "./actions"
 import { CaregiverTableClient } from "@/components/clinic-admin/caregivers/caregiver-table-client"
 import { CaregiverTableSkeleton } from "@/components/clinic-admin/caregivers/caregiver-table"
 
+export const metadata = {
+  title: "Cuidadores",
+}
+
 interface CaregiversPageProps {
   searchParams: Promise<{
     search?: string

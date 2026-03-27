@@ -22,6 +22,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+export const metadata = {
+  title: "Detalhes do Checklist",
+}
+
 interface ChecklistDetailsPageProps {
   params: Promise<{ id: string }>
 }

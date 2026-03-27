@@ -1,8 +1,12 @@
-import { Suspense } from 'react'
-import { getClinics } from './actions'
-import { ClinicTableClient } from '@/components/super-admin/clinics/clinic-table-client'
-import { ClinicTableSkeleton } from '@/components/super-admin/clinics/clinic-table'
-import type { ClinicStatus } from '@/types/database'
+import { Suspense } from "react"
+import { getClinics } from "./actions"
+import { ClinicTableClient } from "@/components/super-admin/clinics/clinic-table-client"
+import { ClinicTableSkeleton } from "@/components/super-admin/clinics/clinic-table"
+import type { ClinicStatus } from "@/types/database"
+
+export const metadata = {
+  title: "Clínicas",
+}
 
 interface ClinicsPageProps {
   searchParams: Promise<{
@@ -14,12 +18,17 @@ interface ClinicsPageProps {
 
 async function ClinicsContent({ searchParams }: ClinicsPageProps) {
   const params = await searchParams
-  const search = params.search ?? ''
-  const status = (params.status ?? 'all') as ClinicStatus | 'all'
-  const page = Math.max(1, parseInt(params.page ?? '1', 10))
+  const search = params.search ?? ""
+  const status = (params.status ?? "all") as ClinicStatus | "all"
+  const page = Math.max(1, parseInt(params.page ?? "1", 10))
   const pageSize = 10
 
-  const { clinics, total } = await getClinics({ search, status, page, pageSize })
+  const { clinics, total } = await getClinics({
+    search,
+    status,
+    page,
+    pageSize,
+  })
 
   return (
     <ClinicTableClient

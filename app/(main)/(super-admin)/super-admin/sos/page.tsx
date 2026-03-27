@@ -9,6 +9,10 @@ import {
 } from "@/components/super-admin/sos/sos-summary-cards"
 import type { SosStatus } from "./actions"
 
+export const metadata = {
+  title: "SOS",
+}
+
 interface SosPageProps {
   searchParams: Promise<{
     status?: string

@@ -1,9 +1,13 @@
-import { Suspense } from 'react'
-import { requireSuperAdmin } from '@/lib/auth'
-import { getUsers } from './actions'
-import { UserTableWrapper } from '@/components/super-admin/users/user-table-wrapper'
-import { UserTableSkeleton } from '@/components/super-admin/users/user-table'
-import type { UserRole } from '@/types/database'
+import { Suspense } from "react"
+import { requireSuperAdmin } from "@/lib/auth"
+import { getUsers } from "./actions"
+import { UserTableWrapper } from "@/components/super-admin/users/user-table-wrapper"
+import { UserTableSkeleton } from "@/components/super-admin/users/user-table"
+import type { UserRole } from "@/types/database"
+
+export const metadata = {
+  title: "Usuários",
+}
 
 interface UsersPageProps {
   searchParams: Promise<{
@@ -16,10 +20,10 @@ interface UsersPageProps {
 
 async function UsersContent({ searchParams }: UsersPageProps) {
   const params = await searchParams
-  const search = params.search ?? ''
-  const role = (params.role ?? 'all') as UserRole | 'all'
-  const clinicId = params.clinic_id ?? 'all'
-  const page = Math.max(1, parseInt(params.page ?? '1', 10))
+  const search = params.search ?? ""
+  const role = (params.role ?? "all") as UserRole | "all"
+  const clinicId = params.clinic_id ?? "all"
+  const page = Math.max(1, parseInt(params.page ?? "1", 10))
   const pageSize = 10
 
   const { supabase } = await requireSuperAdmin()
@@ -27,10 +31,10 @@ async function UsersContent({ searchParams }: UsersPageProps) {
   const [{ users, total }, { data: clinics }] = await Promise.all([
     getUsers({ search, role, clinic_id: clinicId, page, pageSize }),
     supabase
-      .from('clinics')
-      .select('id, name')
-      .eq('status', 'active')
-      .order('name'),
+      .from("clinics")
+      .select("id, name")
+      .eq("status", "active")
+      .order("name"),
   ])
 
   return (

@@ -3,6 +3,10 @@ import { getClinicShifts, getShiftSelectOptions } from "./actions"
 import { ShiftTableClient } from "@/components/clinic-admin/shifts/shift-table-client"
 import { ShiftTableSkeleton } from "@/components/clinic-admin/shifts/shift-table"
 
+export const metadata = {
+  title: "Turnos",
+}
+
 interface ShiftsPageProps {
   searchParams: Promise<{
     search?: string

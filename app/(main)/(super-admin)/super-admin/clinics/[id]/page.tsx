@@ -24,6 +24,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+export const metadata = {
+  title: "Detalhes da Clínica",
+}
+
 interface ClinicDetailsPageProps {
   params: Promise<{ id: string }>
 }

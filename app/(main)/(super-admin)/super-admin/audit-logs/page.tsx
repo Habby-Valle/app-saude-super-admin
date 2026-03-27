@@ -7,6 +7,10 @@ import {
 } from "./actions"
 import { AuditLogsTable, AuditLogsTableSkeleton } from "./audit-logs-table"
 
+export const metadata = {
+  title: "Logs de Auditoria",
+}
+
 interface AuditLogsPageProps {
   searchParams: Promise<{
     action?: string

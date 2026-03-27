@@ -4,6 +4,10 @@ import { getPlans, getShiftCategories, getAlertThresholds } from "./actions"
 import { SettingsTabs } from "@/components/super-admin/settings/settings-tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 
+export const metadata = {
+  title: "Configurações",
+}
+
 async function SettingsContent() {
   const [plans, shiftCategories, alertThresholds] = await Promise.all([
     getPlans().catch(() => []),

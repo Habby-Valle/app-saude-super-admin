@@ -30,6 +30,10 @@ import {
 import { PatientEditDialog } from "@/components/clinic-admin/patients/patient-edit-dialog"
 import { revalidatePath } from "next/cache"
 
+export const metadata = {
+  title: "Detalhes do Paciente",
+}
+
 function calculateAge(birthDate: string): number {
   const today = new Date()
   const birth = new Date(birthDate)

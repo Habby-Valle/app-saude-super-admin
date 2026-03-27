@@ -2,6 +2,10 @@ import { Suspense } from "react"
 import { getReportClinics } from "./actions"
 import { ReportsClient, ReportsClientSkeleton } from "./reports-client"
 
+export const metadata = {
+  title: "Relatórios",
+}
+
 async function ReportsContent() {
   const clinics = await getReportClinics()
   return <ReportsClient clinics={clinics} />

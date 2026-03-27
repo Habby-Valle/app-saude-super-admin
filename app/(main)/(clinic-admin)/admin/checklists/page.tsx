@@ -3,6 +3,10 @@ import { getClinicChecklists } from "./actions"
 import { ClinicChecklistTableClient } from "@/components/clinic-admin/checklists/checklist-table-client"
 import { ClinicChecklistTableSkeleton } from "@/components/clinic-admin/checklists/checklist-table"
 
+export const metadata = {
+  title: "Checklists",
+}
+
 interface ChecklistsPageProps {
   searchParams: Promise<{
     search?: string
@@ -18,7 +22,12 @@ async function ChecklistsContent({ searchParams }: ChecklistsPageProps) {
   const page = Math.max(1, parseInt(params.page ?? "1", 10))
   const pageSize = 10
 
-  const { checklists, total } = await getClinicChecklists({ search, scope, page, pageSize })
+  const { checklists, total } = await getClinicChecklists({
+    search,
+    scope,
+    page,
+    pageSize,
+  })
 
   return (
     <ClinicChecklistTableClient

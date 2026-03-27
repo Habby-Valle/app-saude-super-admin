@@ -1,12 +1,7 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import {
-  ArrowLeft,
-  Calendar,
-  CheckSquare,
-  ListChecks,
-} from "lucide-react"
+import { ArrowLeft, Calendar, CheckSquare, ListChecks } from "lucide-react"
 import { getClinicChecklistById } from "../actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,6 +16,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ChecklistEditButton } from "./edit-button"
+
+export const metadata = {
+  title: "Detalhes do Checklist",
+}
 
 interface ChecklistDetailPageProps {
   params: Promise<{ id: string }>
@@ -50,7 +49,8 @@ async function ChecklistDetailContent({ id }: { id: string }) {
     return null
   }
 
-  const items = (checklist.checklist_items as unknown as ChecklistItemData[]) ?? []
+  const items =
+    (checklist.checklist_items as unknown as ChecklistItemData[]) ?? []
 
   return (
     <div className="space-y-6">
@@ -159,24 +159,35 @@ async function ChecklistDetailContent({ id }: { id: string }) {
                         {item.required ? (
                           <Badge variant="destructive">Sim</Badge>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Não</span>
+                          <span className="text-xs text-muted-foreground">
+                            Não
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
                         {item.has_observation ? (
                           <Badge variant="secondary">Sim</Badge>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Não</span>
+                          <span className="text-xs text-muted-foreground">
+                            Não
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
-                        {item.type === "select" && item.checklist_item_options ? (
+                        {item.type === "select" &&
+                        item.checklist_item_options ? (
                           <div className="flex flex-wrap gap-1">
-                            {item.checklist_item_options.slice(0, 3).map((opt) => (
-                              <Badge key={opt.id} variant="outline" className="text-xs">
-                                {opt.label}
-                              </Badge>
-                            ))}
+                            {item.checklist_item_options
+                              .slice(0, 3)
+                              .map((opt) => (
+                                <Badge
+                                  key={opt.id}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {opt.label}
+                                </Badge>
+                              ))}
                             {item.checklist_item_options.length > 3 && (
                               <Badge variant="outline" className="text-xs">
                                 +{item.checklist_item_options.length - 3}
@@ -184,7 +195,9 @@ async function ChecklistDetailContent({ id }: { id: string }) {
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -225,7 +238,9 @@ function ChecklistDetailSkeleton() {
   )
 }
 
-export default async function ChecklistDetailPage({ params }: ChecklistDetailPageProps) {
+export default async function ChecklistDetailPage({
+  params,
+}: ChecklistDetailPageProps) {
   const { id } = await params
 
   return (

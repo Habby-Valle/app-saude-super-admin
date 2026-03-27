@@ -4,7 +4,14 @@ import {
   ClinicReportsClient,
   ClinicReportsClientSkeleton,
 } from "./reports-client"
-import { SummaryCards, SummaryCardsSkeleton } from "@/components/clinic-admin/reports/summary-cards"
+import {
+  SummaryCards,
+  SummaryCardsSkeleton,
+} from "@/components/clinic-admin/reports/summary-cards"
+
+export const metadata = {
+  title: "Relatórios",
+}
 
 async function SummarySection() {
   const summary = await getClinicReportSummary()

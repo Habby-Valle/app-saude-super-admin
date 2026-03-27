@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense } from "react"
 import {
   Building2,
   Users,
@@ -6,14 +6,21 @@ import {
   HeartPulse,
   ClipboardCheck,
   Activity,
-} from 'lucide-react'
+} from "lucide-react"
 
-import { getDashboardKPIs, getClinicStats } from './actions'
-import { KpiCard, KpiCardSkeleton } from '@/components/super-admin/dashboard/kpi-card'
+import { getDashboardKPIs, getClinicStats } from "./actions"
+import {
+  KpiCard,
+  KpiCardSkeleton,
+} from "@/components/super-admin/dashboard/kpi-card"
 import {
   ClinicStatsTable,
   ClinicStatsTableSkeleton,
-} from '@/components/super-admin/dashboard/clinic-stats-table'
+} from "@/components/super-admin/dashboard/clinic-stats-table"
+
+export const metadata = {
+  title: "Dashboard",
+}
 
 // ─── KPI Section ──────────────────────────────────────────────────────────────
 
@@ -45,7 +52,7 @@ async function KpiSection() {
         value={kpis.activeShifts}
         description="Agora"
         icon={Activity}
-        trend={kpis.activeShifts > 0 ? 'up' : 'neutral'}
+        trend={kpis.activeShifts > 0 ? "up" : "neutral"}
       />
       <KpiCard
         title="Checklists hoje"

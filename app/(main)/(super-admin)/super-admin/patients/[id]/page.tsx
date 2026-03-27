@@ -26,6 +26,10 @@ import {
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
+export const metadata = {
+  title: "Detalhes do Paciente",
+}
+
 interface PatientDetailsPageProps {
   params: Promise<{ id: string }>
 }

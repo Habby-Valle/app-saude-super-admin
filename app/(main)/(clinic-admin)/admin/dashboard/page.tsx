@@ -20,6 +20,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+export const metadata = {
+  title: "Dashboard",
+}
+
 function StatCard({
   title,
   value,

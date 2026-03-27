@@ -77,8 +77,8 @@
 | 23  | Server Actions SOS                          | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 24  | Super Admin: Página SOS global              | 11 - SOS | 🔴 Crítico | ✅ Concluído |
 | 25  | Clinic Admin: Página SOS                    | 11 - SOS | 🔴 Crítico | ✅ Concluído |
-| 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ⏸ Pendente  |
-| 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ⏸ Pendente  |
+| 26  | Dashboard Cards SOS                         | 11 - SOS | 🟠 Alto    | ⏸ Pendente   |
+| 27  | Ações: Acknowledge e Resolve                | 11 - SOS | 🟠 Alto    | ⏸ Pendente   |
 
 ---
 
@@ -210,6 +210,8 @@ CREATE TABLE sos_notifications (
 
 ### Resumo das Mudanças Recentes
 
+- ✅ Metadata em todas as páginas: Adicionado `export const metadata` com títulos apropriados para todas as páginas (Super Admin e Clinic Admin)
+- ✅ Correção TypeScript: Tipo de casting no `shifts/actions.ts` para relations do Supabase
 - ✅ Feature 19 — Gestão de Turnos: criar/finalizar/cancelar, validação de duração, badge "Aguardando início", cuidadores filtrados por paciente
 - ✅ Feature 20 — Checklists da Clínica: CRUD completo, escopos global/minha, página de detalhes, duplicar para a clínica, correção de contagem de itens (batch query)
 - ✅ Feature 21 — Relatórios da Clínica: summary cards (turnos, checklists, pacientes, cuidadores), gráficos por período (BarChart/LineChart/AreaChart), exportação CSV

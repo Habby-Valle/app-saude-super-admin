@@ -7,7 +7,10 @@ import type { ShiftStatus } from "@/types/database"
 
 const shiftFiltersSchema = z.object({
   search: z.string().optional().default(""),
-  status: z.enum(["all", "in_progress", "completed", "cancelled"]).optional().default("all"),
+  status: z
+    .enum(["all", "in_progress", "completed", "cancelled"])
+    .optional()
+    .default("all"),
   page: z.coerce.number().int().positive().optional().default(1),
   pageSize: z.coerce.number().int().positive().max(100).optional().default(10),
 })
@@ -86,8 +89,10 @@ export async function getClinicShifts(raw: {
     started_at: row.started_at,
     ended_at: row.ended_at,
     status: row.status as ShiftStatus,
-    patient_name: (row.patient as { name: string } | null)?.name ?? "—",
-    caregiver_name: (row.caregiver as { name: string } | null)?.name ?? "—",
+    patient_name:
+      (row.patient as unknown as { name: string } | null)?.name ?? "—",
+    caregiver_name:
+      (row.caregiver as unknown as { name: string } | null)?.name ?? "—",
   }))
 
   // Filtro de busca em memória (nome de paciente ou cuidador)

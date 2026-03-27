@@ -3,6 +3,10 @@ import { getChecklists, getClinicsForChecklist } from "./actions"
 import { ChecklistTableClient } from "@/components/super-admin/checklists/checklist-table-client"
 import { ChecklistTableSkeleton } from "@/components/super-admin/checklists/checklist-table"
 
+export const metadata = {
+  title: "Checklists",
+}
+
 interface ChecklistsPageProps {
   searchParams: Promise<{
     search?: string

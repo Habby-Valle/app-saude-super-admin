@@ -3,6 +3,10 @@ import { getClinicPatients } from "./actions"
 import { PatientTableClient } from "@/components/clinic-admin/patients/patient-table-client"
 import { PatientTableSkeleton } from "@/components/clinic-admin/patients/patient-table"
 
+export const metadata = {
+  title: "Pacientes",
+}
+
 interface PatientsPageProps {
   searchParams: Promise<{
     search?: string
