@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SeoProvider } from "@/components/layout/seo-provider"
+import { appConfig } from "@/lib/env"
 import { cn } from "@/lib/utils"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
@@ -13,7 +14,17 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br"
+const APP_URL = appConfig.appUrl
+const APP_NAME = appConfig.appName
+const SHOULD_INDEX = appConfig.shouldIndex
+
+const ENV_LABELS = {
+  development: "Dev",
+  homologation: "Homologação",
+  production: "",
+}
+
+const ENV_LABEL = ENV_LABELS[appConfig.env]
 
 export const viewport: Viewport = {
   themeColor: [
@@ -28,9 +39,9 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: "App Saúde",
-    template: "%s | App Saúde",
-    absolute: "App Saúde - Painel Administrativo",
+    default: `${ENV_LABEL ? `${ENV_LABEL} - ` : ""}${APP_NAME}`,
+    template: `%s | ${APP_NAME}`,
+    absolute: `${APP_NAME} - Painel Administrativo`,
   },
   description:
     "Painel Administrativo Unificado para gestão de clínicas, pacientes e cuidadores. Plataforma completa de cuidados de saúde.",
@@ -48,47 +59,56 @@ export const metadata: Metadata = {
   authors: [{ name: "App Saúde" }],
   creator: "App Saúde",
   publisher: "App Saúde",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  robots: SHOULD_INDEX
+    ? {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
+      }
+    : {
+        index: false,
+        follow: false,
+        googleBot: {
+          index: false,
+          follow: false,
+        },
+      },
   openGraph: {
     type: "website",
     locale: "pt_BR",
     url: APP_URL,
-    siteName: "App Saúde",
-    title: "App Saúde - Painel Administrativo",
+    siteName: APP_NAME,
+    title: `${APP_NAME} - Painel Administrativo`,
     description:
       "Painel Administrativo Unificado para gestão de clínicas, pacientes e cuidadores.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "App Saúde - Painel Administrativo",
+        alt: `${APP_NAME} - Painel Administrativo`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "App Saúde - Painel Administrativo",
+    title: `${APP_NAME} - Painel Administrativo`,
     description:
       "Painel Administrativo Unificado para gestão de clínicas, pacientes e cuidadores.",
-    images: ["/og-image.png"],
+    images: ["/og-image.svg"],
     creator: "@appsaude",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "App Saúde",
-    startupImage: ["/icons/apple-touch-icon.png"],
+    title: APP_NAME,
+    startupImage: ["/icons/apple-touch-icon.svg"],
   },
   formatDetection: {
     telephone: false,
@@ -118,6 +138,7 @@ export default function RootLayout({
       )}
     >
       <head>
+        {ENV_LABEL && <meta name="robots" content="noindex, nofollow" />}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg" />

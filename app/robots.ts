@@ -1,20 +1,27 @@
 import { MetadataRoute } from "next"
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br"
+import { SHOULD_INDEX, appConfig } from "@/lib/env"
 
 export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: [
-      {
+  const APP_URL = appConfig.appUrl
+
+  const baseRules = {
+    userAgent: "*",
+    allow: "/",
+    disallow: ["/api/", "/_next/", "/admin/"],
+  }
+
+  if (!SHOULD_INDEX) {
+    return {
+      rules: {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/_next/", "/admin/"],
+        disallow: "/",
       },
-      {
-        userAgent: "Googlebot",
-        allow: "/",
-      },
-    ],
+      sitemap: `${APP_URL}/sitemap.xml`,
+    }
+  }
+
+  return {
+    rules: [baseRules],
     sitemap: `${APP_URL}/sitemap.xml`,
     host: APP_URL,
   }

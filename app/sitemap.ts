@@ -1,8 +1,13 @@
 import { MetadataRoute } from "next"
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br"
+import { SHOULD_INDEX, appConfig } from "@/lib/env"
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!SHOULD_INDEX) {
+    return []
+  }
+
+  const APP_URL = appConfig.appUrl
+
   const routes = [
     "",
     "/login",

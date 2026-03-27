@@ -63,6 +63,35 @@ Otimização para mecanismos de busca:
 - [x] Structured data (JSON-LD) para organização
 - [x] Favicon e ícones PWA
 - [ ] Otimização de performance (Core Web Vitals)
+- [x] Variáveis de ambiente por ambiente (dev/homolog/prod)
+
+---
+
+## Variáveis de Ambiente
+
+### APP_ENV
+
+Controla o ambiente de execução da aplicação:
+
+| Valor          | Ambiente        | Indexação    | Título                    |
+| -------------- | --------------- | ------------ | ------------------------- |
+| `development`  | Desenvolvimento | ❌ Bloqueada | "Dev - App Saúde"         |
+| `homologation` | Homologação     | ✅ Permitida | "Homologação - App Saúde" |
+| `production`   | Produção        | ✅ Permitida | "App Saúde"               |
+
+### Configurações por Ambiente
+
+- **Development**: `robots.txt` bloqueia indexação, sitemap vazio, meta tag `noindex`
+- **Homologation**: Indexação permitida para teste de SEO
+- **Production**: Indexação completa ativada
+
+### Arquivos Configurados
+
+- `lib/env.ts` - Utilitários de ambiente
+- `app/layout.tsx` - Metadata dinâmica por ambiente
+- `app/sitemap.ts` - Sitemap respects `SHOULD_INDEX`
+- `app/robots.ts` - Robots respects `SHOULD_INDEX`
+- `components/layout/seo-provider.tsx` - JSON-LD só em produção
 
 ---
 
