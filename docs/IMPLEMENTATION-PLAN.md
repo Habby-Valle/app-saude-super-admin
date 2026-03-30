@@ -146,18 +146,18 @@ Controla o ambiente de execução da aplicação:
 
 ## Segurança
 
-| #   | Feature                                        | Prioridade | Status                      |
-| --- | ---------------------------------------------- | ---------- | --------------------------- |
-| 30  | RLS Policies restritivas por tabela            | 🔴 Crítico | ✅ Concluído                |
-| 31  | Validação de input em todos os formulários     | 🔴 Crítico | ✅ Concluído                |
-| 32  | Sanitização de dados de saída                  | 🔴 Crítico | ✅ Concluído                |
-| 33  | Rate limiting em endpoints críticos            | 🟠 Alto    | ✅ Concluído (simplificado) |
-| 34  | HTTPS e headers de segurança (CSP, HSTS, etc.) | 🟠 Alto    | ✅ Concluído                |
-| 35  | Logs de auditoria para ações sensíveis         | 🟠 Alto    | ✅ Concluído                |
-| 36  | Criptografia de dados sensíveis (LGPD)         | 🟠 Alto    | ⏸ Pendente                  |
-| 37  | Autenticação 2FA para admins                   | 🟡 Médio   | ⏸ Pendente                  |
-| 38  | Sessoes com timeout automático                 | 🟡 Médio   | ⏸ Pendente                  |
-| 39  | Revisão de dependências (npm audit)            | 🟡 Médio   | ⏸ Pendente                  |
+| #   | Feature                                        | Prioridade | Status                          |
+| --- | ---------------------------------------------- | ---------- | ------------------------------- |
+| 30  | RLS Policies restritivas por tabela            | 🔴 Crítico | ✅ Concluído                    |
+| 31  | Validação de input em todos os formulários     | 🔴 Crítico | ✅ Concluído                    |
+| 32  | Sanitização de dados de saída                  | 🔴 Crítico | ✅ Concluído                    |
+| 33  | Rate limiting em endpoints críticos            | 🟠 Alto    | ✅ Concluído (simplificado)     |
+| 34  | HTTPS e headers de segurança (CSP, HSTS, etc.) | 🟠 Alto    | ✅ Concluído                    |
+| 35  | Logs de auditoria para ações sensíveis         | 🟠 Alto    | ✅ Concluído                    |
+| 36  | Criptografia de dados sensíveis (LGPD)         | 🟠 Alto    | ✅ Concluído                    |
+| 37  | Autenticação 2FA para admins                   | 🟡 Médio   | ⏸ Pulado (não necessário agora) |
+| 38  | Sessoes com timeout automático                 | 🟡 Médio   | ⏸ Pulado (não necessário agora) |
+| 39  | Revisão de dependências (npm audit)            | 🟡 Médio   | ✅ Concluído                    |
 
 ### Detalhamento
 
@@ -244,10 +244,27 @@ Controla o ambiente de execução da aplicação:
 
 #### LGPD/Privacidade (Feature 36)
 
-- [ ] Criptografia de dados de saúde
-- [ ] Política de retenção de dados
-- [ ] Exportação de dados do usuário (GDPR/LGPD)
-- [ ] Consentimento explícito
+- [x] Criptografia de dados de saúde (`lib/crypto.ts` — AES-256-GCM, Node.js built-in)
+- [x] Integração: `sos_alerts.notes` e `location_lat/lng` criptografados
+- [x] Política de retenção de dados (UI + `data_retention_policies` table)
+- [x] Exportação de dados do usuário/paciente em JSON (`lib/lgpd.ts` + `lgpd-actions.ts`)
+- [x] Anonimização (direito ao esquecimento — `anonymizeUser`, `anonymizePatient`)
+- [x] Consentimento explícito (tabela `user_consents` — `docs/SQL/lgpd.sql`)
+
+**Arquivos criados:**
+
+- `lib/crypto.ts` — Utilitário AES-256-GCM (`encrypt`, `decrypt`, `encryptIfPresent`, `decryptIfPresent`)
+- `lib/lgpd.ts` — Exportação e anonimização de titulares
+- `app/.../settings/lgpd-actions.ts` — Server Actions LGPD protegidas por `requireSuperAdmin()`
+- `components/super-admin/settings/lgpd-settings.tsx` — Aba LGPD/Privacidade nas Configurações
+- `docs/SQL/lgpd.sql` — Migração SQL (`user_consents`, `data_retention_policies`, `anonymized_at`)
+
+**Configuração necessária:**
+
+```env
+# .env.local
+ENCRYPTION_KEY=<string segura gerada com: openssl rand -base64 32>
+```
 
 ---
 

@@ -357,3 +357,59 @@ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Apenas para Server Actions!
 - Email/Slack para erros 5xx
 - Dashboard no Supabase para métricas
 - Log-based alerts para ações suspeitas
+
+---
+
+## 8. Criptografia de Dados (LGPD)
+
+### Implementação
+
+O sistema usa **AES-256-GCM** (padrão militar) via módulo nativo do Node.js `crypto`, sem dependências externas.
+
+### Arquivos
+
+| Arquivo         | Descrição                                                                    |
+| --------------- | ---------------------------------------------------------------------------- |
+| `lib/crypto.ts` | Funções `encrypt()`, `decrypt()`, `encryptIfPresent()`, `decryptIfPresent()` |
+| `.env.local`    | `ENCRYPTION_KEY` configurada                                                 |
+
+### Campos Criptografados
+
+| Tabela       | Campo              | Tipo            | Integração   |
+| ------------ | ------------------ | --------------- | ------------ |
+| `sos_alerts` | `notes`            | Observações SOS | ✅ Integrado |
+| `sos_alerts` | `location_lat/lng` | Coordenadas GPS | ✅ Integrado |
+
+### Migração Progressiva
+
+A função `decryptIfPresent()` permite migração progressiva:
+
+- Dados antigos em texto plano são lidos normalmente
+- Novos dados são criptografados automaticamente
+- Sem necessidade de migrar dados existentes
+
+### Uso nos Server Actions
+
+```typescript
+import { encryptIfPresent, decryptIfPresent } from "@/lib/crypto"
+
+// Ao salvar (criptografar)
+updateData.notes = encryptIfPresent(notes)
+
+// Ao ler (descriptografar)
+notes: decryptIfPresent(data.notes)
+```
+
+### Chave de Criptografia
+
+Gerar nova chave (não commitar):
+
+```bash
+openssl rand -base64 32
+```
+
+Adicionar ao `.env.local`:
+
+```
+ENCRYPTION_KEY=<sua-chave-aqui>
+```

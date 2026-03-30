@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { Settings } from "lucide-react"
 import { getPlans, getShiftCategories, getAlertThresholds } from "./actions"
+import { getLgpdConfig } from "./lgpd-actions"
 import { SettingsTabs } from "@/components/super-admin/settings/settings-tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -9,17 +10,24 @@ export const metadata = {
 }
 
 async function SettingsContent() {
-  const [plans, shiftCategories, alertThresholds] = await Promise.all([
-    getPlans().catch(() => []),
-    getShiftCategories().catch(() => []),
-    getAlertThresholds().catch(() => []),
-  ])
+  const [plans, shiftCategories, alertThresholds, lgpdConfig] =
+    await Promise.all([
+      getPlans().catch(() => []),
+      getShiftCategories().catch(() => []),
+      getAlertThresholds().catch(() => []),
+      getLgpdConfig().catch(() => ({
+        retention_policies: [],
+        encryption_key_configured: false,
+        encryption_statuses: [],
+      })),
+    ])
 
   return (
     <SettingsTabs
       plans={plans}
       shiftCategories={shiftCategories}
       alertThresholds={alertThresholds}
+      lgpdConfig={lgpdConfig}
     />
   )
 }

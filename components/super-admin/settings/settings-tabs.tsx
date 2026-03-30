@@ -1,26 +1,30 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CreditCard, AlertTriangle, Clock } from "lucide-react"
+import { CreditCard, AlertTriangle, Clock, Shield } from "lucide-react"
 import { PlansSettings } from "./plans-settings"
 import { ShiftCategoriesSettings } from "./shift-categories-settings"
 import { AlertsSettings } from "./alerts-settings"
+import { LgpdSettings } from "./lgpd-settings"
 import type {
   Plan,
   ShiftCategory,
   AlertThreshold,
 } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
+import type { LgpdConfig } from "@/app/(main)/(super-admin)/super-admin/settings/lgpd-actions"
 
 interface SettingsTabsProps {
   plans: Plan[]
   shiftCategories: ShiftCategory[]
   alertThresholds: AlertThreshold[]
+  lgpdConfig: LgpdConfig
 }
 
 export function SettingsTabs({
   plans,
   shiftCategories,
   alertThresholds,
+  lgpdConfig,
 }: SettingsTabsProps) {
   return (
     <Tabs defaultValue="plans" className="space-y-6">
@@ -37,6 +41,10 @@ export function SettingsTabs({
           <AlertTriangle className="h-4 w-4" />
           Alertas
         </TabsTrigger>
+        <TabsTrigger value="lgpd" className="gap-2">
+          <Shield className="h-4 w-4" />
+          LGPD / Privacidade
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="plans">
@@ -49,6 +57,10 @@ export function SettingsTabs({
 
       <TabsContent value="alerts">
         <AlertsSettings initialThresholds={alertThresholds} />
+      </TabsContent>
+
+      <TabsContent value="lgpd">
+        <LgpdSettings config={lgpdConfig} />
       </TabsContent>
     </Tabs>
   )

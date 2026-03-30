@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { requireClinicAdmin } from "@/lib/auth"
+import { encryptIfPresent, decryptIfPresent } from "@/lib/crypto"
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -72,13 +73,26 @@ export async function getClinicSosAlerts(params: {
     throw new Error(error.message)
   }
 
-  const alerts: ClinicSosAlertWithDetails[] = (data ?? []).map((a) => ({
-    ...a,
-    patient_name: (a.patient as { name: string } | null)?.name ?? null,
-    triggered_by_name: (a.triggerer as { name: string } | null)?.name ?? null,
-    acknowledged_by_name: (a.acknowledger as { name: string } | null)?.name ?? null,
-    resolved_by_name: (a.resolver as { name: string } | null)?.name ?? null,
-  }))
+  const alerts: ClinicSosAlertWithDetails[] = (data ?? []).map((a) => {
+    const decryptedLat = a.location_lat
+      ? decryptIfPresent(a.location_lat.toString())
+      : null
+    const decryptedLng = a.location_lng
+      ? decryptIfPresent(a.location_lng.toString())
+      : null
+
+    return {
+      ...a,
+      patient_name: (a.patient as { name: string } | null)?.name ?? null,
+      triggered_by_name: (a.triggerer as { name: string } | null)?.name ?? null,
+      acknowledged_by_name:
+        (a.acknowledger as { name: string } | null)?.name ?? null,
+      resolved_by_name: (a.resolver as { name: string } | null)?.name ?? null,
+      notes: decryptIfPresent(a.notes),
+      location_lat: decryptedLat ? parseFloat(decryptedLat) : null,
+      location_lng: decryptedLng ? parseFloat(decryptedLng) : null,
+    }
+  })
 
   return { alerts, total: count ?? 0 }
 }
@@ -105,12 +119,24 @@ export async function getClinicSosAlertById(
 
   if (error || !data) return null
 
+  const decryptedLat = data.location_lat
+    ? decryptIfPresent(data.location_lat.toString())
+    : null
+  const decryptedLng = data.location_lng
+    ? decryptIfPresent(data.location_lng.toString())
+    : null
+
   return {
     ...data,
     patient_name: (data.patient as { name: string } | null)?.name ?? null,
-    triggered_by_name: (data.triggerer as { name: string } | null)?.name ?? null,
-    acknowledged_by_name: (data.acknowledger as { name: string } | null)?.name ?? null,
+    triggered_by_name:
+      (data.triggerer as { name: string } | null)?.name ?? null,
+    acknowledged_by_name:
+      (data.acknowledger as { name: string } | null)?.name ?? null,
     resolved_by_name: (data.resolver as { name: string } | null)?.name ?? null,
+    notes: decryptIfPresent(data.notes),
+    location_lat: decryptedLat ? parseFloat(decryptedLat) : null,
+    location_lng: decryptedLng ? parseFloat(decryptedLng) : null,
   }
 }
 
@@ -130,7 +156,7 @@ export async function acknowledgeClinicSosAlert(
     })
     .eq("id", id)
     .eq("clinic_id", clinicId) // garante escopo
-    .eq("status", "active")    // só pode confirmar se ainda ativo
+    .eq("status", "active") // só pode confirmar se ainda ativo
 
   if (error) {
     console.error("[acknowledgeClinicSosAlert] Supabase error:", error)
@@ -152,7 +178,7 @@ export async function resolveClinicSosAlert(
     resolved_by: user.id,
     resolved_at: new Date().toISOString(),
   }
-  if (notes) updateData.notes = notes
+  if (notes) updateData.notes = encryptIfPresent(notes)
 
   const { error } = await supabase
     .from("sos_alerts")
@@ -192,7 +218,8 @@ export async function getClinicSosSummary(): Promise<{
     active: alerts.filter((a) => a.status === "active").length,
     acknowledged: alerts.filter((a) => a.status === "acknowledged").length,
     resolvedToday: alerts.filter(
-      (a) => a.status === "resolved" && a.resolved_at && a.resolved_at >= todayStr
+      (a) =>
+        a.status === "resolved" && a.resolved_at && a.resolved_at >= todayStr
     ).length,
   }
 }
