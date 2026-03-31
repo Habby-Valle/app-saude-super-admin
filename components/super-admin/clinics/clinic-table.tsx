@@ -192,7 +192,7 @@ export function ClinicTable({
                   <TableRow key={clinic.id}>
                     <TableCell className="font-medium">
                       <Link
-                        href={`/clinics/${clinic.id}`}
+                        href={`/super-admin/clinics/${clinic.id}`}
                         className="hover:underline"
                       >
                         {clinic.name}

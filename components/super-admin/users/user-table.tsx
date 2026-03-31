@@ -203,7 +203,7 @@ export function UserTable({
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
                       <Link
-                        href={`/users/${user.id}`}
+                        href={`/super-admin/users/${user.id}`}
                         className="hover:underline"
                       >
                         {user.name}

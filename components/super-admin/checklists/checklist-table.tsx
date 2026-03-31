@@ -248,7 +248,7 @@ export function ChecklistTable({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/checklists/${cl.id}`}>
+                            <Link href={`/super-admin/checklists/${cl.id}`}>
                               Ver detalhes
                             </Link>
                           </DropdownMenuItem>

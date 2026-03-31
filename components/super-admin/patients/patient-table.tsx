@@ -141,7 +141,7 @@ export function PatientTable({
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/patients/${patient.id}`}>Ver</Link>
+                      <Link href={`/super-admin/patients/${patient.id}`}>Ver</Link>
                     </Button>
                   </TableCell>
                 </TableRow>
