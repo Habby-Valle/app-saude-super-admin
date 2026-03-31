@@ -37,7 +37,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ variant, activeSosCount = 0 }: TopbarProps) {
-  const { user } = useCurrentUser()
+  const { user, hasHydrated } = useCurrentUser()
   const { setTheme } = useTheme()
   const [isPending, startTransition] = useTransition()
 
@@ -48,7 +48,9 @@ export function Topbar({ variant, activeSosCount = 0 }: TopbarProps) {
   }
 
   const sosHref = variant === "clinic-admin" ? "/admin/sos" : "/super-admin/sos"
-  const initials = user?.name ? getInitials(user.name) : "SA"
+  const displayName = hasHydrated ? (user?.name ?? "Super Admin") : ""
+  const displayEmail = hasHydrated ? (user?.email ?? "") : ""
+  const initials = displayName ? getInitials(displayName) : "SA"
 
   return (
     <header className="flex h-16 w-full items-center justify-between border-b bg-card px-4 md:px-6">
@@ -79,10 +81,10 @@ export function Topbar({ variant, activeSosCount = 0 }: TopbarProps) {
               </Avatar>
               <div className="hidden text-left sm:block">
                 <p className="text-sm leading-none font-medium">
-                  {user?.name ?? "Super Admin"}
+                  {displayName}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {user?.email ?? ""}
+                  {displayEmail}
                 </p>
               </div>
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
@@ -91,10 +93,8 @@ export function Topbar({ variant, activeSosCount = 0 }: TopbarProps) {
 
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuLabel className="font-normal">
-              <p className="text-sm font-medium">
-                {user?.name ?? "Super Admin"}
-              </p>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
+              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-xs text-muted-foreground">{displayEmail}</p>
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
