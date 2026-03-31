@@ -6,8 +6,8 @@ import { Eye } from "lucide-react"
 import type { PatientWithDetails } from "@/app/(main)/(super-admin)/super-admin/patients/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SearchInput } from "@/components/shared/search-input"
 import {
   Select,
   SelectContent,
@@ -72,15 +72,13 @@ export function PatientTable({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 gap-2">
-          <div className="relative max-w-xs flex-1">
-            <Eye className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar paciente..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={onSearchChange}
+            placeholder="Buscar paciente..."
+            className="max-w-xs flex-1"
+            icon={<Eye className="h-4 w-4" />}
+          />
           <Select value={clinicId} onValueChange={onClinicChange}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Todas as clínicas" />

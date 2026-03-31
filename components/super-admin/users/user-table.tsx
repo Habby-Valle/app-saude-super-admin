@@ -10,7 +10,6 @@ import {
   ShieldOff,
   ShieldCheck,
   Plus,
-  Search,
   Mail,
 } from "lucide-react"
 
@@ -20,8 +19,8 @@ import type { Clinic } from "@/types/database"
 import { UserDialog } from "./user-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SearchInput } from "@/components/shared/search-input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -136,15 +135,12 @@ export function UserTable({
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-wrap gap-2">
-          <div className="relative max-w-xs min-w-48 flex-1">
-            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome ou email..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={onSearchChange}
+            placeholder="Buscar por nome ou email..."
+            className="max-w-xs min-w-48 flex-1"
+          />
           <Select value={role} onValueChange={onRoleChange}>
             <SelectTrigger className="w-40">
               <SelectValue />

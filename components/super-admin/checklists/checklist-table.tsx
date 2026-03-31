@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Copy, Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { Copy, Pencil, Plus, Trash2 } from "lucide-react"
 
 import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import {
@@ -12,8 +12,8 @@ import {
 import { ChecklistDialog } from "./checklist-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SearchInput } from "@/components/shared/search-input"
 import {
   Select,
   SelectContent,
@@ -136,15 +136,12 @@ export function ChecklistTable({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 gap-2">
-          <div className="relative max-w-xs flex-1">
-            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar template..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={onSearchChange}
+            placeholder="Buscar template..."
+            className="max-w-xs flex-1"
+          />
           <Select value={scope} onValueChange={onScopeChange}>
             <SelectTrigger className="w-40">
               <SelectValue />
