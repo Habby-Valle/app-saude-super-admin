@@ -28,9 +28,8 @@ export const clinicSchema = z.object({
     .min(2, "Nome deve ter pelo menos 2 caracteres")
     .max(100, "Nome muito longo"),
   cnpj: z
-    .string()
+    .string({ required_error: "CNPJ é obrigatório", invalid_type_error: "CNPJ é obrigatório" })
     .min(1, "CNPJ é obrigatório")
-    .transform((v) => v.replace(/\D/g, ""))
     .refine(isValidCnpj, "CNPJ inválido"),
   status: z.enum(["active", "inactive", "suspended"], {
     message: "Status é obrigatório",

@@ -92,7 +92,8 @@ export async function createClinic(
   }
 
   const { supabase } = await requireSuperAdmin()
-  const { name, cnpj, status, plan } = result.data
+  const { name, status, plan } = result.data
+  const cnpj = result.data.cnpj.replace(/\D/g, "")
 
   // Verifica CNPJ duplicado
   const { data: existing } = await supabase
@@ -134,7 +135,8 @@ export async function updateClinic(
   }
 
   const { supabase } = await requireSuperAdmin()
-  const { name, cnpj, status, plan } = result.data
+  const { name, status, plan } = result.data
+  const cnpj = result.data.cnpj.replace(/\D/g, "")
 
   // Verifica CNPJ duplicado em outra clínica
   const { data: existing } = await supabase

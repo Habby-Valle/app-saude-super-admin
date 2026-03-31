@@ -42,7 +42,10 @@ export function ClinicForm({ defaultValues, onSubmit, isLoading }: ClinicFormPro
   } = useForm<ClinicFormValues>({
     resolver: zodResolver(clinicSchema),
     defaultValues: {
+      name: '',
+      cnpj: '',
       status: 'active',
+      plan: '',
       ...defaultValues,
     },
   })
