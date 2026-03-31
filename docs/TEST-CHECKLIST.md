@@ -31,19 +31,19 @@
 
 ### Login
 
-- [ ] Usuário consegue fazer login com email e senha corretos
-- [ ] Mensagem de erro exibida para credenciais incorretas
-- [ ] Redirecionamento para dashboard após login bem-sucedido
-- [ ] Sessão persistida ao recarregar a página
-- [ ] Logout limpa sessão e redireciona para login
+- [x] Usuário consegue fazer login com email e senha corretos
+- [x] Mensagem de erro exibida para credenciais incorretas
+- [x] Redirecionamento para dashboard após login bem-sucedido
+- [x] Sessão persistida ao recarregar a página
+- [x] Logout limpa sessão e redireciona para login
 
 ### Autorização
 
-- [ ] Super Admin acessa todas as rotas de Super Admin
+- [x] Super Admin acessa todas as rotas de Super Admin
 - [ ] Super Admin acessa rotas de Clinic Admin
-- [ ] Clinic Admin acessa apenas rotas de Clinic Admin
-- [ ] Clinic Admin **não** acessa rotas de Super Admin (redirecionar)
-- [ ] Usuário não autenticado redirecionado para login
+- [x] Clinic Admin acessa apenas rotas de Clinic Admin
+- [x] Clinic Admin **não** acessa rotas de Super Admin (redirecionar)
+- [x] Usuário não autenticado redirecionado para login
 
 ---
 
@@ -51,25 +51,25 @@
 
 ### Listagem
 
-- [ ] Tabela exibe todas as clínicas cadastradas
+- [x] Tabela exibe todas as clínicas cadastradas
 - [ ] Busca por nome funciona corretamente
-- [ ] Filtro por status funciona (ativa/inativa/pendente)
-- [ ] Paginação funciona corretamente
-- [ ] Contagem de pacientes e cuidadores exibida
+- [x] Filtro por status funciona (ativa/inativa/pendente)
+- [x] Paginação funciona corretamente
+- [x] Contagem de pacientes e cuidadores exibida
 
 ### Criação
 
-- [ ] Botão "Nova Clínica" abre modal
-- [ ] Validação de campos obrigatórios (nome, CNPJ)
-- [ ] CNPJ válido verificado
-- [ ] Clínica criada com sucesso
-- [ ] Clínica aparece na listagem após criação
+- [x] Botão "Nova Clínica" abre modal
+- [x] Validação de campos obrigatórios (nome, CNPJ)
+- [x] CNPJ válido verificado
+- [x] Clínica criada com sucesso
+- [x] Clínica aparece na listagem após criação
 
 ### Edição
 
-- [ ] Botão de editar abre modal com dados preenchidos
-- [ ] Alterações salvas corretamente
-- [ ] Validação funciona na edição
+- [x] Botão de editar abre modal com dados preenchidos
+- [x] Alterações salvas corretamente
+- [x] Validação funciona na edição
 
 ### Exclusão
 
@@ -79,9 +79,9 @@
 
 ### Detalhes
 
-- [ ] Página de detalhes exibe todas informações
-- [ ] Estatísticas corretas (pacientes, cuidadores, turnos)
-- [ ] Lista de pacientes vinculados exibida
+- [x] Página de detalhes exibe todas informações
+- [x] Estatísticas corretas (pacientes, cuidadores, turnos)
+- [x] Lista de pacientes vinculados exibida
 - [ ] Editar a partir da página de detalhes
 
 ---
@@ -90,41 +90,41 @@
 
 ### Listagem
 
-- [ ] Tabela exibe todos os usuários
+- [x] Tabela exibe todos os usuários
 - [ ] Busca por nome/email funciona
-- [ ] Filtro por perfil funciona (super_admin, clinic_admin, caregiver, family)
-- [ ] Filtro por clínica funciona
-- [ ] Paginação funciona
+- [x] Filtro por perfil funciona (super_admin, clinic_admin, caregiver, family)
+- [x] Filtro por clínica funciona
+- [x] Paginação funciona
 
 ### Convite/Criação
 
-- [ ] Botão "Convidar Usuário" abre modal
+- [x] Botão "Convidar Usuário" abre modal
 - [ ] Email válido verificado
-- [ ] Seleção de perfil funciona
-- [ ] Seleção de clínica funciona (exceto super_admin)
+- [x] Seleção de perfil funciona
+- [x] Seleção de clínica funciona (exceto super_admin)
 - [ ] Convite enviado com sucesso
-- [ ] Email de convite recebido (se configurado)
+- [x] Email de convite recebido (se configurado)
 
 ### Edição
 
-- [ ] Nome do usuário editável
+- [x] Nome do usuário editável
 - [ ] Perfil editável
 - [ ] Clínica editável
-- [ ] Alterações salvas corretamente
+- [x] Alterações salvas corretamente
 
 ### Bloquear/Desbloquear
 
-- [ ] Botão bloqueia usuário com sucesso
-- [ ] Badge "Bloqueado" exibido na tabela
-- [ ] Botão desbloqueia usuário
-- [ ] Badge "Ativo" exibido após desbloqueio
+- [x] Botão bloqueia usuário com sucesso
+- [x] Badge "Bloqueado" exibido na tabela
+- [x] Botão desbloqueia usuário
+- [x] Badge "Ativo" exibido após desbloqueio
 - [ ] Usuário bloqueado não consegue fazer login
 
 ### Detalhes
 
-- [ ] Página de detalhes exibe todas informações
+- [x] Página de detalhes exibe todas informações
 - [ ] Data de último acesso exibida
-- [ ] Clínica vinculada exibida
+- [x] Clínica vinculada exibida
 
 ---
 
@@ -132,17 +132,17 @@
 
 ### Listagem
 
-- [ ] Tabela exibe todos os pacientes
+- [x] Tabela exibe todos os pacientes
 - [ ] Busca por nome funciona
 - [ ] Filtro por clínica funciona
-- [ ] Paginação funciona
-- [ ] Clínica de origem exibida
+- [x] Paginação funciona
+- [x] Clínica de origem exibida
 
 ### Detalhes
 
-- [ ] Informações pessoais completas
-- [ ] Idade calculada corretamente
-- [ ] Cuidadores vinculados exibidos
+- [x] Informações pessoais completas
+- [x] Idade calculada corretamente
+- [x] Cuidadores vinculados exibidos
 - [ ] Turnos vinculados exibidos
 - [ ] Checklists executados exibidos
 
@@ -152,22 +152,22 @@
 
 ### Listagem
 
-- [ ] Tabela exibe todos os templates
+- [x] Tabela exibe todos os templates
 - [ ] Busca por nome funciona
-- [ ] Filtro por escopo funciona (global/clínica)
-- [ ] Paginação funciona
-- [ ] Contagem de itens exibida
+- [x] Filtro por escopo funciona (global/clínica)
+- [x] Paginação funciona
+- [x] Contagem de itens exibida
 
 ### Criação de Template
 
-- [ ] Botão "Novo Template" abre modal
-- [ ] Nome do template obrigatório
+- [x] Botão "Novo Template" abre modal
+- [x] Nome do template obrigatório
 - [ ] Ícone selecionável
-- [ ] Items podem ser adicionados (boolean, text, number, select)
-- [ ] Para tipo select, opções podem ser adicionadas
-- [ ] Campo "obrigatório" funciona
-- [ ] Campo "observação" funciona
-- [ ] Template salvo com sucesso
+- [x] Items podem ser adicionados (boolean, text, number, select)
+- [x] Para tipo select, opções podem ser adicionadas
+- [x] Campo "obrigatório" funciona
+- [x] Campo "observação" funciona
+- [x] Template salvo com sucesso
 
 ### Edição de Template
 
@@ -178,14 +178,14 @@
 
 ### Duplicação
 
-- [ ] Botão duplicar copia template
-- [ ] Cópia criada na clínica correta
-- [ ] Mensagem de sucesso exibida
+- [x] Botão duplicar copia template
+- [x] Cópia criada na clínica correta
+- [x] Mensagem de sucesso exibida
 
 ### Exclusão
 
-- [ ] Confirmação antes de excluir
-- [ ] Template removido da listagem
+- [x] Confirmação antes de excluir
+- [x] Template removido da listagem
 
 ---
 
@@ -699,10 +699,30 @@ Antes de publicar em produção, testar **todos** os itens acima em:
 
 > Documentar aqui problemas identificados durante testes que ainda não foram corrigidos.
 
-| #   | Problema | Severidade | Status | Link |
-| --- | -------- | ---------- | ------ | ---- |
-| 1   | -        | -          | -      | -    |
-| 2   | -        | -          | -      | -    |
+| #   | Problema                                                                                                                                                             | Severidade | Status        | Link |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------- | ---- |
+| 1   | **Autenticação**: Ao deslogar e ser redirecionado para o login, e depois tentar logar novamente, o login não acontece - é necessário recarregar a página manualmente | Alta       | **Corrigido** | -    |
+| 2   | **Autenticação**: As informações do usuário logado (session/state) desaparecem quando uma página é recarregada                                                       | Alta       | Pendente      | -    |
+| 3   | **Segurança**: Super Admin pode acessar painéis de Clinic Admin através de URL direta com ID da clínica - deve permitir redirecionamento apenas nas listagens        | Alta       | Pendente      | -    |
+| 4   | **UX - Busca**: Input de busca não está com comportamento adequado (atraso, limpar, feedback visual) em todas as listagens                                           | Média      | Pendente      | -    |
+| 5   | **Validação CNPJ**: Mensagem de erro confusa "Invalid input: expected string, received undefined" ao inserir CNPJ inválido                                           | Média      | Pendente      | -    |
+| 6   | **Navegação**: Links de detail em clínicas não estão redirecionando corretamente                                                                                     | Média      | Pendente      | -    |
+| 7   | **CRUD Clínicas**: Implementar soft delete (marcar como deleted) ao invés de exclusão física                                                                         | Média      | Pendente      | -    |
+| 8   | **Detalhes Clínica**: Página de detalhes da clínica mostra número de usuários zerado (deveria mostrar cuidadores e admins vinculados)                                | Média      | Pendente      | -    |
+| 9   | **Convite Usuário**: Erro "Email address 'renildorabi@gmail.com' is invalid" ao enviar convite para usuário - mesmo com email válido                                 | Alta       | Pendente      | -    |
+| 10  | **Edição Usuário**: Não deve ser permitido editar o perfil (role) do usuário após criação                                                                            | Alta       | Pendente      | -    |
+| 11  | **Edição Usuário**: Não deve ser permitido editar a clínica vinculada ao usuário                                                                                     | Alta       | Pendente      | -    |
+| 12  | **Bloqueio Usuário**: Usuários bloqueados ainda conseguem fazer login no sistema                                                                                     | Alta       | Pendente      | -    |
+| 13  | **Detalhes Usuário**: Campo "Último acesso" não está sendo exibido/populado na página de detalhes do usuário                                                         | Média      | Pendente      | -    |
+| 14  | **Dashboard**: "Histórico de Ações Recentes" não está funcionando - dados não são exibidos                                                                           | Alta       | Pendente      | -    |
+| 15  | **Filtro Pacientes**: Filtro por clínica não está funcionando na listagem de pacientes                                                                               | Alta       | Pendente      | -    |
+| 16  | **Detalhes Paciente**: Checklists executados não estão sendo exibidos na página de detalhes                                                                          | Média      | Pendente      | -    |
+| 17  | **Template Checklist**: Ícone do template deve permitir imagem (PNG/JPG) além dos ícones disponíveis                                                                 | Média      | Pendente      | -    |
+| 18  | **Edição Checklist**: Ao editar um checklist existente, os itens existentes não estão sendo retornados/preenchidos no formulário                                     | Alta       | Pendente      | -    |
+| 19  | **Super Admin - Pacientes**: Total de cuidadores vinculados ao paciente não está correto na listagem                                                                 | Média      | Pendente      | -    |
+| 20  | **Clinic Admin - Pacientes**: Ao adicionar data de nascimento, sempre é exibido 1 dia antes (ex: 15/03/1990 → 14/03/1990)                                            | Alta       | Pendente      | -    |
+| 21  | **Clinic Admin - Cuidadores**: Exclusão de cuidador não está funcionando                                                                                             | Alta       | Pendente      | -    |
+| 22  | **Segurança**: Clinic Admin não possui permissões corretas via RLS policies - não consegue acessar/modificar dados da clínica                                        | Alta       | Pendente      | -    |
 
 ---
 

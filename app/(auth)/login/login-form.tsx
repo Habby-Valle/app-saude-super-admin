@@ -69,6 +69,10 @@ export function LoginForm() {
     setServerError(null)
     const supabase = createClient()
 
+    // Limpa qualquer sessão existente antes de fazer login
+    // Isso evita race conditions quando o usuário faz logout e login rapidamente
+    await supabase.auth.signOut()
+
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
