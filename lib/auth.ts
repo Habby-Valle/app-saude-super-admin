@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
 import { createServerSupabaseClient } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
 import type { SupabaseClient } from "@supabase/supabase-js"
@@ -93,15 +94,23 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
   }
 
   if (profile.role === "super_admin") {
+    // Super Admin impersonating a clinic: read clinic ID from the HttpOnly cookie
+    const cookieStore = await cookies()
+    const clinicId = cookieStore.get("sa-clinic-id")?.value
+
+    if (!clinicId) {
+      redirect("/super-admin/clinics")
+    }
+
     return {
       user: {
         id: user.id,
         email: user.email ?? "",
         name: profile.name,
         role: profile.role as UserRole,
-        clinic_id: profile.clinic_id,
+        clinic_id: clinicId,
       },
-      clinicId: profile.clinic_id ?? "",
+      clinicId,
       supabase,
       isSuperAdmin: true,
     }

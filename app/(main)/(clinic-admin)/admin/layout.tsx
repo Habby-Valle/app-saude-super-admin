@@ -2,6 +2,7 @@ import { Providers } from "@/components/layout/providers"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Topbar } from "@/components/layout/topbar"
 import { getClinicActiveSosCount } from "@/lib/sos-count"
+import { SuperAdminBanner } from "@/components/clinic-admin/super-admin-banner"
 
 export default async function ClinicAdminLayout({
   children,
@@ -18,6 +19,7 @@ export default async function ClinicAdminLayout({
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden">
+          <SuperAdminBanner />
           <Topbar variant="clinic-admin" activeSosCount={activeSosCount} />
 
           <main className="flex-1 overflow-y-auto p-6">{children}</main>

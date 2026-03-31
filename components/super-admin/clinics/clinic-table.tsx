@@ -11,9 +11,11 @@ import {
   Plus,
   Search,
   Eye,
+  LogIn,
 } from "lucide-react"
 
 import { deactivateClinic } from "@/app/(main)/(super-admin)/super-admin/clinics/actions"
+import { enterClinicPanel } from "@/app/actions/clinic-context"
 import type { Clinic, ClinicStatus } from "@/types/database"
 import { ClinicDialog } from "./clinic-dialog"
 import { Badge } from "@/components/ui/badge"
@@ -228,6 +230,18 @@ export function ClinicTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              startTransition(async () => {
+                                await enterClinicPanel(clinic.id)
+                              })
+                            }}
+                            disabled={isPending}
+                          >
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Acessar painel
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => openEdit(clinic)}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
