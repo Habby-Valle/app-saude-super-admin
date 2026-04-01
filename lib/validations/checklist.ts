@@ -26,7 +26,7 @@ export const checklistItemSchema = z.object({
 
 export const checklistFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100),
-  icon: z.string().max(50).optional(),
+  icon: z.string().max(2048).optional(),
   clinic_id: z.string().uuid().nullable().optional(),
   items: z.array(checklistItemSchema).min(1, "Adicione pelo menos 1 item"),
 })

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Plus, Trash2, GripVertical } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Plus, Trash2, GripVertical, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import { useTransition } from "react"
 import {
   createChecklist,
   updateChecklist,
+  uploadChecklistIcon,
 } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import { getClinicsForChecklist } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import type {
@@ -73,7 +74,15 @@ export function ChecklistForm({ checklist, onSuccess }: ChecklistFormProps) {
   }, [shouldLoadClinics, clinics.length])
 
   const [name, setName] = useState(checklist?.name ?? "")
-  const [icon, setIcon] = useState(checklist?.icon ?? "")
+  const existingIcon = checklist?.icon ?? ""
+  const isExistingUrl = existingIcon.startsWith("http")
+  const [iconMode, setIconMode] = useState<"emoji" | "image">(
+    isExistingUrl ? "image" : "emoji"
+  )
+  const [icon, setIcon] = useState(isExistingUrl ? "" : existingIcon)
+  const [iconUrl, setIconUrl] = useState(isExistingUrl ? existingIcon : "")
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [clinicId, setClinicId] = useState<string>(
     checklist?.clinic_id ?? "global"
   )
@@ -97,6 +106,27 @@ export function ChecklistForm({ checklist, onSuccess }: ChecklistFormProps) {
     }
     return [createEmptyItem()]
   })
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    const fd = new FormData()
+    fd.append("file", file)
+
+    const result = await uploadChecklistIcon(fd)
+    setIsUploading(false)
+
+    if (result.success && result.url) {
+      setIconUrl(result.url)
+    } else {
+      toast.error(result.error ?? "Erro ao fazer upload")
+    }
+
+    // Limpa o input para permitir selecionar o mesmo arquivo novamente
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
 
   const addItem = () => {
     setItems((prev) => [...prev, createEmptyItem()])
@@ -170,9 +200,12 @@ export function ChecklistForm({ checklist, onSuccess }: ChecklistFormProps) {
       return
     }
 
+    const resolvedIcon =
+      iconMode === "image" ? iconUrl || undefined : icon.trim() || undefined
+
     const formData: ChecklistFormValues = {
       name: name.trim(),
-      icon: icon.trim() || undefined,
+      icon: resolvedIcon,
       clinic_id: clinicId === "global" ? null : clinicId,
       items: validItems,
     }
@@ -213,14 +246,73 @@ export function ChecklistForm({ checklist, onSuccess }: ChecklistFormProps) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="icon">Ícone (emoji)</Label>
-          <Input
-            id="icon"
-            value={icon}
-            onChange={(e) => setIcon(e.target.value)}
-            placeholder="Ex: ☀️"
-            maxLength={2}
-          />
+          <div className="flex items-center justify-between">
+            <Label>Ícone</Label>
+            <div className="flex rounded-md border text-xs">
+              <button
+                type="button"
+                onClick={() => setIconMode("emoji")}
+                className={`px-2 py-1 transition-colors ${iconMode === "emoji" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Emoji
+              </button>
+              <button
+                type="button"
+                onClick={() => setIconMode("image")}
+                className={`px-2 py-1 transition-colors ${iconMode === "image" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Imagem
+              </button>
+            </div>
+          </div>
+
+          {iconMode === "emoji" ? (
+            <Input
+              id="icon"
+              value={icon}
+              onChange={(e) => setIcon(e.target.value)}
+              placeholder="Ex: ☀️"
+              maxLength={2}
+            />
+          ) : (
+            <div className="flex items-center gap-2">
+              {iconUrl && (
+                <div className="relative h-10 w-10 shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={iconUrl}
+                    alt="Ícone"
+                    className="h-10 w-10 rounded-md object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIconUrl("")}
+                    className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {isUploading ? "Enviando..." : iconUrl ? "Trocar imagem" : "Selecionar PNG/JPG"}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -125,11 +125,20 @@ export async function getPatientCaregivers(
     .filter((c): c is { id: string; name: string; email: string } => c !== null)
 }
 
+export interface ExecutedChecklist {
+  id: string
+  status: string
+  checklist_name: string
+  started_at: string | null
+  caregiver_name: string
+}
+
 export interface PatientDetails {
   patient: Patient
   clinic: { id: string; name: string } | null
   caregivers: { id: string; name: string; email: string }[]
   emergencyContacts: { id: string; name: string; phone: string }[]
+  executedChecklists: ExecutedChecklist[]
   stats: {
     totalShifts: number
     totalChecklists: number
@@ -153,7 +162,7 @@ export async function getPatientById(
     return null
   }
 
-  const [clinicResult, caregiversResult, shiftsResult, auditResult] =
+  const [clinicResult, caregiversResult, shiftsResult] =
     await Promise.all([
       patient.clinic_id
         ? supabase
@@ -168,18 +177,41 @@ export async function getPatientById(
         .eq("patient_id", id),
       supabase
         .from("shifts")
-        .select("id, started_at", { count: "exact", head: false })
+        .select("id, started_at", { count: "exact" })
         .eq("patient_id", id)
-        .order("started_at", { ascending: false })
-        .limit(1),
-      supabase
-        .from("audit_logs")
-        .select("id, action, entity, created_at")
-        .eq("entity_id", id)
-        .eq("entity", "patient")
-        .order("created_at", { ascending: false })
-        .limit(10),
+        .order("started_at", { ascending: false }),
     ])
+
+  // Busca checklists executados via IDs dos turnos do paciente
+  const shiftIds = (shiftsResult.data ?? []).map((s) => s.id)
+  const lastShiftAt = shiftsResult.data?.[0]?.started_at ?? null
+
+  let executedChecklists: ExecutedChecklist[] = []
+  if (shiftIds.length > 0) {
+    const { data: checklistData } = await supabase
+      .from("shift_checklists")
+      .select(`
+        id,
+        status,
+        checklist:checklists!checklist_id(name),
+        shift:shifts!shift_id(started_at, caregiver:users!caregiver_id(name))
+      `)
+      .in("shift_id", shiftIds)
+      .order("id", { ascending: false })
+      .limit(20)
+
+    executedChecklists = (checklistData ?? []).map((sc) => {
+      const checklist = sc.checklist as { name: string } | null
+      const shift = sc.shift as { started_at: string; caregiver: { name: string } | null } | null
+      return {
+        id: sc.id,
+        status: sc.status,
+        checklist_name: checklist?.name ?? "—",
+        started_at: shift?.started_at ?? null,
+        caregiver_name: shift?.caregiver?.name ?? "—",
+      }
+    })
+  }
 
   const caregivers = (caregiversResult.data ?? [])
     .map(
@@ -197,10 +229,11 @@ export async function getPatientById(
     clinic: clinicResult.data ?? null,
     caregivers,
     emergencyContacts: [],
+    executedChecklists,
     stats: {
       totalShifts: shiftsResult.count ?? 0,
-      totalChecklists: 0,
-      lastShiftAt: shiftsResult.data?.[0]?.started_at ?? null,
+      totalChecklists: executedChecklists.length,
+      lastShiftAt,
     },
   }
 }

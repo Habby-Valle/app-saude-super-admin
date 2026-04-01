@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { requireSuperAdmin } from "@/lib/auth"
+import { createAdminClient } from "@/lib/supabase-admin"
 import { checklistFormSchema } from "@/lib/validations/checklist"
 import type {
   ChecklistFormValues,
@@ -9,6 +10,44 @@ import type {
 } from "@/lib/validations/checklist"
 import type { Clinic } from "@/types/database"
 import { logAuditEvent } from "@/app/(main)/(super-admin)/super-admin/audit-logs/actions"
+
+const ALLOWED_MIME = ["image/png", "image/jpeg", "image/webp"]
+const MAX_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
+
+export async function uploadChecklistIcon(
+  formData: FormData
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  await requireSuperAdmin()
+
+  const file = formData.get("file")
+  if (!(file instanceof File)) {
+    return { success: false, error: "Arquivo não enviado" }
+  }
+
+  if (!ALLOWED_MIME.includes(file.type)) {
+    return { success: false, error: "Formato inválido. Use PNG, JPG ou WebP" }
+  }
+
+  if (file.size > MAX_SIZE_BYTES) {
+    return { success: false, error: "Arquivo muito grande. Máximo 2MB" }
+  }
+
+  const ext = file.name.split(".").pop() ?? "png"
+  const fileName = `${crypto.randomUUID()}.${ext}`
+  const admin = createAdminClient()
+
+  const { error: uploadError } = await admin.storage
+    .from("checklist-icons")
+    .upload(fileName, file, { contentType: file.type, upsert: false })
+
+  if (uploadError) {
+    console.error("[uploadChecklistIcon]", uploadError)
+    return { success: false, error: uploadError.message }
+  }
+
+  const { data } = admin.storage.from("checklist-icons").getPublicUrl(fileName)
+  return { success: true, url: data.publicUrl }
+}
 
 export interface ChecklistItemOption {
   id: string

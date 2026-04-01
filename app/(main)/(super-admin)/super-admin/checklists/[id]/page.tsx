@@ -69,7 +69,16 @@ async function ChecklistDetailsContent({ id }: { id: string }) {
         <div className="flex flex-1 items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             {checklist.icon ? (
-              <span className="text-2xl">{checklist.icon}</span>
+              checklist.icon.startsWith("http") ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={checklist.icon}
+                  alt=""
+                  className="h-10 w-10 rounded-md object-cover"
+                />
+              ) : (
+                <span className="text-2xl">{checklist.icon}</span>
+              )
             ) : (
               <ListChecks className="h-6 w-6 text-primary" />
             )}

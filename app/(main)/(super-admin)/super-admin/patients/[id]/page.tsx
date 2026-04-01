@@ -4,12 +4,11 @@ import Link from "next/link"
 import {
   ArrowLeft,
   User,
-  Mail,
   Building2,
   Calendar,
   Clock,
   Phone,
-  Heart,
+  ClipboardCheck,
 } from "lucide-react"
 import { getPatientById } from "../actions"
 import { Badge } from "@/components/ui/badge"
@@ -68,7 +67,7 @@ async function PatientDetailsContent({ id }: { id: string }) {
     return null
   }
 
-  const { patient, clinic, caregivers, emergencyContacts, stats } = details
+  const { patient, clinic, caregivers, emergencyContacts, executedChecklists, stats } = details
 
   const initials = patient.name
     .split(" ")
@@ -262,6 +261,63 @@ async function PatientDetailsContent({ id }: { id: string }) {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ClipboardCheck className="h-4 w-4" />
+            Checklists Executados ({stats.totalChecklists})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {executedChecklists.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Nenhum checklist executado.
+            </p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Checklist</TableHead>
+                    <TableHead>Cuidador</TableHead>
+                    <TableHead>Data do Turno</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {executedChecklists.map((sc) => (
+                    <TableRow key={sc.id}>
+                      <TableCell className="font-medium">
+                        {sc.checklist_name}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {sc.caregiver_name}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {sc.started_at
+                          ? new Date(sc.started_at).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={sc.status === "completed" ? "default" : "secondary"}>
+                          {sc.status === "completed" ? "Concluído" : "Pendente"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
