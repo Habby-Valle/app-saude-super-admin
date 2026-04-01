@@ -8,6 +8,7 @@ import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/super-admi
 import {
   deleteChecklist,
   duplicateChecklist,
+  getChecklistById,
 } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import { ChecklistDialog } from "./checklist-dialog"
 import { Badge } from "@/components/ui/badge"
@@ -85,9 +86,14 @@ export function ChecklistTable({
   const [editChecklist, setEditChecklist] = useState<
     ChecklistWithDetails | undefined
   >()
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false)
 
-  const openEdit = (cl: ChecklistWithDetails) => {
-    setEditChecklist(cl) // Passa o objeto completo
+  const openEdit = async (cl: ChecklistWithDetails) => {
+    // getChecklists() não inclui checklist_items — busca o completo antes de abrir
+    setIsLoadingEdit(true)
+    const full = await getChecklistById(cl.id)
+    setEditChecklist(full ?? cl)
+    setIsLoadingEdit(false)
     setDialogOpen(true)
   }
   const [deleteTarget, setDeleteTarget] = useState<ChecklistWithDetails | null>(
@@ -257,9 +263,9 @@ export function ChecklistTable({
                               Ver detalhes
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEdit(cl)}>
+                          <DropdownMenuItem onClick={() => openEdit(cl)} disabled={isLoadingEdit}>
                             <Pencil className="mr-2 h-4 w-4" />
-                            Editar
+                            {isLoadingEdit ? "Carregando..." : "Editar"}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDuplicateTarget(cl)}
