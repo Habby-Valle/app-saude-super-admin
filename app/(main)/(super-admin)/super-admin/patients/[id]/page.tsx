@@ -48,9 +48,14 @@ const ENTITY_LABELS: Record<string, string> = {
   system: "Sistema",
 }
 
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
 function calculateAge(birthDate: string): number {
   const today = new Date()
-  const birth = new Date(birthDate)
+  const birth = parseLocalDate(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
   const m = today.getMonth() - birth.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
@@ -116,7 +121,7 @@ async function PatientDetailsContent({ id }: { id: string }) {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {new Date(patient.birth_date).toLocaleDateString("pt-BR", {
+            {parseLocalDate(patient.birth_date).toLocaleDateString("pt-BR", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",

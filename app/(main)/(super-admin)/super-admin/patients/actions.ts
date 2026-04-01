@@ -43,8 +43,7 @@ export async function getPatients(raw: {
     .select(
       `
       *,
-      clinic:clinics(name),
-      caregiver_patient(count)
+      clinic:clinics(name)
     `,
       { count: "exact" }
     )
@@ -66,10 +65,26 @@ export async function getPatients(raw: {
     throw new Error(error.message)
   }
 
+  // Busca contagem de cuidadores em lote (evita N queries e o bug do caregiver_patient(count))
+  const patientIds = (data ?? []).map((p) => p.id)
+  const caregiverCounts: Record<string, number> = {}
+
+  if (patientIds.length > 0) {
+    const { data: links } = await supabase
+      .from("caregiver_patient")
+      .select("patient_id")
+      .in("patient_id", patientIds)
+
+    links?.forEach((link) => {
+      caregiverCounts[link.patient_id] =
+        (caregiverCounts[link.patient_id] || 0) + 1
+    })
+  }
+
   const patients: PatientWithDetails[] = (data ?? []).map((p) => ({
     ...p,
     clinic_name: (p.clinic as { name: string } | null)?.name ?? "—",
-    caregiver_count: (p.caregiver_patient as unknown[] | null)?.length ?? 0,
+    caregiver_count: caregiverCounts[p.id] || 0,
     shift_count: 0,
     last_shift_at: null,
   }))

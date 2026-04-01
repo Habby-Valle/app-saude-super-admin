@@ -34,9 +34,15 @@ export const metadata = {
   title: "Detalhes do Paciente",
 }
 
+// Parseia "YYYY-MM-DD" como data local (evita o offset UTC que recua 1 dia no Brasil)
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
 function calculateAge(birthDate: string): number {
   const today = new Date()
-  const birth = new Date(birthDate)
+  const birth = parseLocalDate(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
   const m = today.getMonth() - birth.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
@@ -46,6 +52,10 @@ function calculateAge(birthDate: string): number {
 }
 
 function formatDate(dateStr: string): string {
+  // Para timestamps completos (created_at), usa Date normal; para datas puras, parseia local
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return parseLocalDate(dateStr).toLocaleDateString("pt-BR")
+  }
   return new Date(dateStr).toLocaleDateString("pt-BR")
 }
 

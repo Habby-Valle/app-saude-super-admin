@@ -19,9 +19,15 @@ import {
 import { PatientDialog } from "./patient-dialog"
 import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
+// Parseia "YYYY-MM-DD" como data local (evita o offset UTC que recua 1 dia no Brasil)
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
 function calculateAge(birthDate: string): number {
   const today = new Date()
-  const birth = new Date(birthDate)
+  const birth = parseLocalDate(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
   const m = today.getMonth() - birth.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
@@ -31,8 +37,7 @@ function calculateAge(birthDate: string): number {
 }
 
 function formatBirthDate(birthDate: string): string {
-  const date = new Date(birthDate)
-  return date.toLocaleDateString("pt-BR")
+  return parseLocalDate(birthDate).toLocaleDateString("pt-BR")
 }
 
 interface PatientTableProps {
