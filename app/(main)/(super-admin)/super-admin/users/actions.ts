@@ -107,6 +107,8 @@ export async function inviteUser(
   }
 
   // Envia convite por email via Supabase Auth
+  // Nota: se o email já existir em auth.users (convite pendente), o Supabase
+  // re-envia o convite e retorna o usuário existente com o mesmo UUID.
   const { data: invited, error: inviteError } =
     await admin.auth.admin.inviteUserByEmail(email, {
       data: { name },
@@ -118,6 +120,24 @@ export async function inviteUser(
       success: false,
       error: inviteError?.message ?? "Erro ao enviar convite",
     }
+  }
+
+  // Verifica se já existe perfil para este auth user (evita duplicate key)
+  const { data: existingProfile } = await admin
+    .from("users")
+    .select("id")
+    .eq("id", invited.user.id)
+    .maybeSingle()
+
+  if (existingProfile) {
+    // Perfil já existe — atualiza dados e reenvia convite
+    await admin
+      .from("users")
+      .update({ name, role, clinic_id: clinic_id ?? null, status: "active" })
+      .eq("id", invited.user.id)
+
+    revalidatePath("/users")
+    return { success: true }
   }
 
   // Insere perfil público
