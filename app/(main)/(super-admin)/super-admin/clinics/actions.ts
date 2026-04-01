@@ -5,6 +5,7 @@ import { requireSuperAdmin } from "@/lib/auth"
 import { clinicSchema } from "@/lib/validations/clinic"
 import type { ClinicFormValues } from "@/lib/validations/clinic"
 import type { Clinic, ClinicStatus, User } from "@/types/database"
+import { logAuditEvent } from "@/app/(main)/(super-admin)/super-admin/audit-logs/actions"
 
 export interface ClinicsResult {
   clinics: Clinic[]
@@ -107,18 +108,18 @@ export async function createClinic(
     return { success: false, error: "Já existe uma clínica com este CNPJ" }
   }
 
-  const { error } = await supabase.from("clinics").insert({
-    name,
-    cnpj,
-    status,
-    plan: plan ?? null,
-  })
+  const { data: created, error } = await supabase
+    .from("clinics")
+    .insert({ name, cnpj, status, plan: plan ?? null })
+    .select("id")
+    .single()
 
   if (error) {
     console.error("[createClinic] Supabase error:", error)
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent("create", "clinic", created.id).catch(() => {})
   revalidatePath("/clinics")
   revalidatePath("/dashboard")
   return { success: true }
@@ -161,6 +162,7 @@ export async function updateClinic(
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent("update", "clinic", id).catch(() => {})
   revalidatePath("/clinics")
   revalidatePath("/dashboard")
   return { success: true }
@@ -184,6 +186,7 @@ export async function deactivateClinic(
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent("deactivate", "clinic", id).catch(() => {})
   revalidatePath("/clinics")
   revalidatePath("/dashboard")
   return { success: true }
@@ -218,6 +221,7 @@ export async function deleteClinic(
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent("delete", "clinic", id).catch(() => {})
   revalidatePath("/clinics")
   revalidatePath("/dashboard")
   return { success: true }

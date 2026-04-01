@@ -82,6 +82,39 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
   }
 }
 
+export interface RecentActivity {
+  id: string
+  action: string
+  entity: string
+  user_name: string
+  user_email: string
+  created_at: string
+}
+
+export async function getRecentActivity(): Promise<RecentActivity[]> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select('id, action, entity, created_at, user:users!user_id(name, email)')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  if (error) {
+    console.error('[getRecentActivity]', error)
+    return []
+  }
+
+  return (data ?? []).map((log) => ({
+    id: log.id,
+    action: log.action,
+    entity: log.entity,
+    user_name: (log.user as { name: string } | null)?.name ?? '—',
+    user_email: (log.user as { email: string } | null)?.email ?? '—',
+    created_at: log.created_at,
+  }))
+}
+
 export async function getClinicStats(): Promise<ClinicStat[]> {
   const { supabase } = await requireSuperAdmin()
 

@@ -10,7 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
-import { getDashboardKPIs, getClinicStats } from "./actions"
+import { getDashboardKPIs, getClinicStats, getRecentActivity } from "./actions"
 import {
   KpiCard,
   KpiCardSkeleton,
@@ -19,6 +19,10 @@ import {
   ClinicStatsTable,
   ClinicStatsTableSkeleton,
 } from "@/components/super-admin/dashboard/clinic-stats-table"
+import {
+  RecentActivityTable,
+  RecentActivityTableSkeleton,
+} from "@/components/super-admin/dashboard/recent-activity-table"
 
 export const metadata = {
   title: "Dashboard",
@@ -109,6 +113,13 @@ async function ClinicSection() {
   return <ClinicStatsTable clinics={clinics} />
 }
 
+// ─── Recent Activity Section ──────────────────────────────────────────────────
+
+async function RecentActivitySection() {
+  const logs = await getRecentActivity()
+  return <RecentActivityTable logs={logs} />
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -137,6 +148,11 @@ export default function DashboardPage() {
       {/* Tabela de clínicas */}
       <Suspense fallback={<ClinicStatsTableSkeleton />}>
         <ClinicSection />
+      </Suspense>
+
+      {/* Histórico de ações recentes */}
+      <Suspense fallback={<RecentActivityTableSkeleton />}>
+        <RecentActivitySection />
       </Suspense>
     </div>
   )

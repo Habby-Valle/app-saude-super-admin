@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase-admin"
 import { inviteUserSchema, updateUserSchema } from "@/lib/validations/user"
 import type { InviteUserValues, UpdateUserValues } from "@/lib/validations/user"
 import type { User, UserRole } from "@/types/database"
+import { logAuditEvent } from "@/app/(main)/(super-admin)/super-admin/audit-logs/actions"
 
 export interface UsersResult {
   users: User[]
@@ -157,6 +158,7 @@ export async function inviteUser(
     return { success: false, error: profileError.message }
   }
 
+  await logAuditEvent("invite", "user", invited.user.id).catch(() => {})
   revalidatePath("/users")
   return { success: true }
 }
@@ -188,6 +190,7 @@ export async function updateUser(
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent("update", "user", id).catch(() => {})
   revalidatePath("/users")
   return { success: true }
 }
@@ -214,6 +217,7 @@ export async function toggleUserStatus(
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent(newStatus === "active" ? "activate" : "deactivate", "user", id).catch(() => {})
   revalidatePath("/users")
   return { success: true }
 }

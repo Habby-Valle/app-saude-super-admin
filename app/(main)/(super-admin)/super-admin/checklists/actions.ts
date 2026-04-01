@@ -8,6 +8,7 @@ import type {
   ChecklistItemType,
 } from "@/lib/validations/checklist"
 import type { Clinic } from "@/types/database"
+import { logAuditEvent } from "@/app/(main)/(super-admin)/super-admin/audit-logs/actions"
 
 export interface ChecklistItemOption {
   id: string
@@ -234,6 +235,7 @@ export async function createChecklist(
     }
   }
 
+  await logAuditEvent("create", "checklist", checklist.id).catch(() => {})
   revalidatePath("/checklists")
   return { success: true, id: checklist.id }
 }
@@ -302,6 +304,7 @@ export async function updateChecklist(
     }
   }
 
+  await logAuditEvent("update", "checklist", id).catch(() => {})
   revalidatePath("/checklists")
   return { success: true }
 }
@@ -345,6 +348,7 @@ export async function deleteChecklist(
     return { success: false, error: error.message }
   }
 
+  await logAuditEvent("delete", "checklist", id).catch(() => {})
   revalidatePath("/checklists")
   return { success: true }
 }
@@ -425,6 +429,7 @@ export async function duplicateChecklist(
     }
   }
 
+  await logAuditEvent("create", "checklist", newChecklist.id).catch(() => {})
   revalidatePath("/checklists")
   return { success: true }
 }
