@@ -30,7 +30,7 @@ export function PatientTableClient({
   const updateParams = useCallback(
     (updates: Record<string, string>) => {
       const params = new URLSearchParams()
-      const current = { search, clinicId, page: String(page) }
+      const current = { search, clinic: clinicId, page: String(page) }
       const merged = { ...current, ...updates }
 
       Object.entries(merged).forEach(([k, v]) => {
@@ -57,7 +57,7 @@ export function PatientTableClient({
       clinicId={clinicId}
       clinics={clinics}
       onSearchChange={(v) => updateParams({ search: v, page: "1" })}
-      onClinicChange={(v) => updateParams({ clinicId: v, page: "1" })}
+      onClinicChange={(v) => updateParams({ clinic: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}
       onPageSizeChange={(v) => updateParams({ page: "1", pageSize: String(v) })}
     />
