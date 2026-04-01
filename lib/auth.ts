@@ -43,9 +43,14 @@ export async function requireSuperAdmin(): Promise<SuperAdminContext> {
   // Busca perfil completo
   const { data: profile } = await supabase
     .from("users")
-    .select("name, email, clinic_id")
+    .select("name, email, clinic_id, status")
     .eq("id", user.id)
     .single()
+
+  if (profile?.status === "blocked") {
+    await supabase.auth.signOut()
+    redirect("/login")
+  }
 
   return {
     user: {
@@ -85,12 +90,17 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
-    .select("name, email, role, clinic_id")
+    .select("name, email, role, clinic_id, status")
     .eq("id", user.id)
     .single()
 
   if (profileError || !profile) {
     redirect("/access-denied")
+  }
+
+  if (profile.status === "blocked") {
+    await supabase.auth.signOut()
+    redirect("/login")
   }
 
   if (profile.role === "super_admin") {

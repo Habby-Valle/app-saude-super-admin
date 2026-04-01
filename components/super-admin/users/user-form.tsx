@@ -88,58 +88,62 @@ export function UserForm({
         </div>
       )}
 
-      {/* Perfil */}
-      <div className="space-y-1.5">
-        <Label>Perfil</Label>
-        <Select
-          value={roleValue}
-          onValueChange={(v) =>
-            setValue("role", v as InviteUserValues["role"], {
-              shouldValidate: true,
-            })
-          }
-        >
-          <SelectTrigger aria-invalid={!!errors.role}>
-            <SelectValue placeholder="Selecione o perfil" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="clinic_admin">Admin Clínica</SelectItem>
-            <SelectItem value="caregiver">Cuidador</SelectItem>
-            <SelectItem value="family">Familiar</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.role && (
-          <p className="text-xs text-destructive">{errors.role.message}</p>
-        )}
-      </div>
+      {/* Perfil — somente no convite, não editável após criação */}
+      {!isEditing && (
+        <div className="space-y-1.5">
+          <Label>Perfil</Label>
+          <Select
+            value={roleValue}
+            onValueChange={(v) =>
+              setValue("role", v as InviteUserValues["role"], {
+                shouldValidate: true,
+              })
+            }
+          >
+            <SelectTrigger aria-invalid={!!errors.role}>
+              <SelectValue placeholder="Selecione o perfil" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="clinic_admin">Admin Clínica</SelectItem>
+              <SelectItem value="caregiver">Cuidador</SelectItem>
+              <SelectItem value="family">Familiar</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.role && (
+            <p className="text-xs text-destructive">{errors.role.message}</p>
+          )}
+        </div>
+      )}
 
-      {/* Clínica */}
-      <div className="space-y-1.5">
-        <Label>Clínica</Label>
-        <Select
-          value={clinicValue ?? "none"}
-          onValueChange={(v) =>
-            setValue("clinic_id", v === "none" ? null : v, {
-              shouldValidate: true,
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione a clínica" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Sem clínica</SelectItem>
-            {clinics.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.clinic_id && (
-          <p className="text-xs text-destructive">{errors.clinic_id.message}</p>
-        )}
-      </div>
+      {/* Clínica — somente no convite, não editável após criação */}
+      {!isEditing && (
+        <div className="space-y-1.5">
+          <Label>Clínica</Label>
+          <Select
+            value={clinicValue ?? "none"}
+            onValueChange={(v) =>
+              setValue("clinic_id", v === "none" ? null : v, {
+                shouldValidate: true,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione a clínica" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sem clínica</SelectItem>
+              {clinics.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.clinic_id && (
+            <p className="text-xs text-destructive">{errors.clinic_id.message}</p>
+          )}
+        </div>
+      )}
 
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading

@@ -15,7 +15,7 @@ export const userFormSchema = z.object({
 export const inviteUserSchema = userFormSchema.extend({
   email: z.string().email("Email inválido"),
 })
-export const updateUserSchema = userFormSchema.omit({ email: true })
+export const updateUserSchema = userFormSchema.omit({ email: true, role: true, clinic_id: true })
 
 export type InviteUserValues = z.infer<typeof inviteUserSchema>
 export type UpdateUserValues = z.infer<typeof updateUserSchema>

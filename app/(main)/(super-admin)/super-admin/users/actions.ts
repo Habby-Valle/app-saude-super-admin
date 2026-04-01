@@ -175,11 +175,11 @@ export async function updateUser(
   }
 
   const admin = createAdminClient()
-  const { name, role, clinic_id } = result.data
+  const { name } = result.data
 
   const { error } = await admin
     .from("users")
-    .update({ name, role, clinic_id: clinic_id ?? null })
+    .update({ name })
     .eq("id", id)
     .neq("role", "super_admin") // garante que super_admin não seja alterado
 

@@ -31,11 +31,16 @@ async function getRedirectPath(
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, clinic_id")
+    .select("role, clinic_id, status")
     .eq("id", user.id)
     .single()
 
   if (!profile) return "/access-denied"
+
+  if (profile.status === "blocked") {
+    await supabase.auth.signOut()
+    return "/access-denied?reason=blocked"
+  }
 
   switch (profile.role) {
     case "super_admin":
@@ -88,6 +93,12 @@ export function LoginForm() {
     }
 
     const redirectTo = await getRedirectPath(supabase)
+
+    if (redirectTo === "/access-denied?reason=blocked") {
+      setServerError("Sua conta está bloqueada. Entre em contato com o administrador.")
+      return
+    }
+
     router.push(redirectTo)
     router.refresh()
   }
