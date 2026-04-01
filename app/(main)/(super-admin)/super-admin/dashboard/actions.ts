@@ -1,6 +1,6 @@
-'use server'
+"use server"
 
-import { requireSuperAdmin } from '@/lib/auth'
+import { requireSuperAdmin } from "@/lib/auth"
 
 export interface DashboardKPIs {
   totalClinics: number
@@ -36,37 +36,37 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
     { count: activeSosAlerts },
     { count: acknowledgedSosAlerts },
   ] = await Promise.all([
-    supabase.from('clinics').select('*', { count: 'exact', head: true }),
+    supabase.from("clinics").select("*", { count: "exact", head: true }),
     supabase
-      .from('clinics')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active'),
-    supabase.from('patients').select('*', { count: 'exact', head: true }),
+      .from("clinics")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "active"),
+    supabase.from("patients").select("*", { count: "exact", head: true }),
     supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .neq('role', 'super_admin'),
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .neq("role", "super_admin"),
     supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'caregiver'),
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "caregiver"),
     supabase
-      .from('shifts')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'in_progress'),
+      .from("shifts")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "in_progress"),
     supabase
-      .from('shift_checklists')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'completed')
-      .gte('created_at', new Date().toISOString().split('T')[0]),
+      .from("shift_checklists")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "completed")
+      .gte("created_at", new Date().toISOString().split("T")[0]),
     supabase
-      .from('sos_alerts')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active'),
+      .from("sos_alerts")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "active"),
     supabase
-      .from('sos_alerts')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'acknowledged'),
+      .from("sos_alerts")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "acknowledged"),
   ])
 
   return {
@@ -95,13 +95,13 @@ export async function getRecentActivity(): Promise<RecentActivity[]> {
   const { supabase } = await requireSuperAdmin()
 
   const { data, error } = await supabase
-    .from('audit_logs')
-    .select('id, action, entity, created_at, user:users!user_id(name, email)')
-    .order('created_at', { ascending: false })
+    .from("audit_logs")
+    .select("id, action, entity, created_at, user:users!user_id(name, email)")
+    .order("created_at", { ascending: false })
     .limit(10)
 
   if (error) {
-    console.error('[getRecentActivity]', error)
+    console.error("[getRecentActivity]", error)
     return []
   }
 
@@ -109,8 +109,8 @@ export async function getRecentActivity(): Promise<RecentActivity[]> {
     id: log.id,
     action: log.action,
     entity: log.entity,
-    user_name: (log.user as { name: string } | null)?.name ?? '—',
-    user_email: (log.user as { email: string } | null)?.email ?? '—',
+    user_name: (log.user as { name: string }[] | null)?.[0]?.name ?? "—",
+    user_email: (log.user as { email: string }[] | null)?.[0]?.email ?? "—",
     created_at: log.created_at,
   }))
 }
@@ -119,9 +119,9 @@ export async function getClinicStats(): Promise<ClinicStat[]> {
   const { supabase } = await requireSuperAdmin()
 
   const { data: clinics } = await supabase
-    .from('clinics')
-    .select('id, name, status')
-    .order('name')
+    .from("clinics")
+    .select("id, name, status")
+    .order("name")
     .limit(10)
 
   if (!clinics?.length) return []
@@ -131,14 +131,14 @@ export async function getClinicStats(): Promise<ClinicStat[]> {
       const [{ count: patientCount }, { count: caregiverCount }] =
         await Promise.all([
           supabase
-            .from('patients')
-            .select('*', { count: 'exact', head: true })
-            .eq('clinic_id', clinic.id),
+            .from("patients")
+            .select("*", { count: "exact", head: true })
+            .eq("clinic_id", clinic.id),
           supabase
-            .from('users')
-            .select('*', { count: 'exact', head: true })
-            .eq('clinic_id', clinic.id)
-            .eq('role', 'caregiver'),
+            .from("users")
+            .select("*", { count: "exact", head: true })
+            .eq("clinic_id", clinic.id)
+            .eq("role", "caregiver"),
         ])
 
       return {
@@ -148,7 +148,7 @@ export async function getClinicStats(): Promise<ClinicStat[]> {
         patientCount: patientCount ?? 0,
         caregiverCount: caregiverCount ?? 0,
       }
-    }),
+    })
   )
 
   return stats

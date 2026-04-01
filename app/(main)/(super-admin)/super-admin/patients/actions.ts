@@ -177,25 +177,24 @@ export async function getPatientById(
     return null
   }
 
-  const [clinicResult, caregiversResult, shiftsResult] =
-    await Promise.all([
-      patient.clinic_id
-        ? supabase
-            .from("clinics")
-            .select("id, name")
-            .eq("id", patient.clinic_id)
-            .single()
-        : Promise.resolve({ data: null }),
-      supabase
-        .from("caregiver_patient")
-        .select("caregiver:users!caregiver_id(id, name, email)")
-        .eq("patient_id", id),
-      supabase
-        .from("shifts")
-        .select("id, started_at", { count: "exact" })
-        .eq("patient_id", id)
-        .order("started_at", { ascending: false }),
-    ])
+  const [clinicResult, caregiversResult, shiftsResult] = await Promise.all([
+    patient.clinic_id
+      ? supabase
+          .from("clinics")
+          .select("id, name")
+          .eq("id", patient.clinic_id)
+          .single()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("caregiver_patient")
+      .select("caregiver:users!caregiver_id(id, name, email)")
+      .eq("patient_id", id),
+    supabase
+      .from("shifts")
+      .select("id, started_at", { count: "exact" })
+      .eq("patient_id", id)
+      .order("started_at", { ascending: false }),
+  ])
 
   // Busca checklists executados via IDs dos turnos do paciente
   const shiftIds = (shiftsResult.data ?? []).map((s) => s.id)
@@ -205,25 +204,31 @@ export async function getPatientById(
   if (shiftIds.length > 0) {
     const { data: checklistData } = await supabase
       .from("shift_checklists")
-      .select(`
+      .select(
+        `
         id,
         status,
         checklist:checklists!checklist_id(name),
         shift:shifts!shift_id(started_at, caregiver:users!caregiver_id(name))
-      `)
+      `
+      )
       .in("shift_id", shiftIds)
       .order("id", { ascending: false })
       .limit(20)
 
     executedChecklists = (checklistData ?? []).map((sc) => {
-      const checklist = sc.checklist as { name: string } | null
-      const shift = sc.shift as { started_at: string; caregiver: { name: string } | null } | null
+      const checklist = (sc.checklist as { name: string }[] | null)?.[0]
+      const shift = (
+        sc.shift as
+          | { started_at: string; caregiver: { name: string }[] | null }[]
+          | null
+      )?.[0]
       return {
         id: sc.id,
         status: sc.status,
         checklist_name: checklist?.name ?? "—",
         started_at: shift?.started_at ?? null,
-        caregiver_name: shift?.caregiver?.name ?? "—",
+        caregiver_name: shift?.caregiver?.[0]?.name ?? "—",
       }
     })
   }

@@ -24,7 +24,7 @@ import {
 interface UserFormProps {
   user?: User
   clinics: Pick<Clinic, "id" | "name">[]
-  onSubmit: (data: InviteUserValues | UpdateUserValues) => Promise<void>
+  onSubmit: (data: UserFormValues) => Promise<void>
   isLoading: boolean
 }
 
@@ -43,7 +43,9 @@ export function UserForm({
     watch,
     formState: { errors },
   } = useForm<UserFormValues>({
-    resolver: zodResolver(isEditing ? updateUserSchema : inviteUserSchema),
+    resolver: zodResolver(
+      isEditing ? updateUserSchema : inviteUserSchema
+    ) as any,
     defaultValues: {
       name: user?.name ?? "",
       email: user?.email ?? "",
@@ -140,7 +142,9 @@ export function UserForm({
             </SelectContent>
           </Select>
           {errors.clinic_id && (
-            <p className="text-xs text-destructive">{errors.clinic_id.message}</p>
+            <p className="text-xs text-destructive">
+              {errors.clinic_id.message}
+            </p>
           )}
         </div>
       )}
