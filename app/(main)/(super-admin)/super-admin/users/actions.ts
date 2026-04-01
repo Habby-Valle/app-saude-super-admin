@@ -222,6 +222,7 @@ export async function toggleUserStatus(
 
 export async function getUserById(id: string): Promise<UserDetails | null> {
   const { supabase } = await requireSuperAdmin()
+  const admin = createAdminClient()
 
   const { data: user, error: userError } = await supabase
     .from("users")
@@ -233,6 +234,10 @@ export async function getUserById(id: string): Promise<UserDetails | null> {
     console.error("[getUserById] User not found:", userError)
     return null
   }
+
+  // Busca last_sign_in_at de auth.users, que é onde o Supabase atualiza de fato
+  const { data: authUser } = await admin.auth.admin.getUserById(id)
+  const lastSignInAt = authUser?.user?.last_sign_in_at ?? null
 
   const [clinicResult, patientsResult, shiftsResult, auditResult] =
     await Promise.all([
@@ -272,7 +277,7 @@ export async function getUserById(id: string): Promise<UserDetails | null> {
   })
 
   return {
-    user,
+    user: { ...user, last_sign_in_at: lastSignInAt ?? user.last_sign_in_at },
     clinic: clinicResult.data ?? null,
     patients,
     auditLogs: auditResult.data ?? [],
