@@ -16,6 +16,7 @@ export interface Clinic {
   plan?: string
   created_at: string
   updated_at?: string
+  deleted_at?: string | null
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────

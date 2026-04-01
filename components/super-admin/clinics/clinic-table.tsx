@@ -9,11 +9,14 @@ import {
   Pencil,
   PowerOff,
   Plus,
-  Eye,
+  Trash2,
   LogIn,
 } from "lucide-react"
 
-import { deactivateClinic } from "@/app/(main)/(super-admin)/super-admin/clinics/actions"
+import {
+  deactivateClinic,
+  deleteClinic,
+} from "@/app/(main)/(super-admin)/super-admin/clinics/actions"
 import { enterClinicPanel } from "@/app/actions/clinic-context"
 import type { Clinic, ClinicStatus } from "@/types/database"
 import { ClinicDialog } from "./clinic-dialog"
@@ -103,6 +106,7 @@ export function ClinicTable({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editClinic, setEditClinic] = useState<Clinic | undefined>()
   const [deactivateTarget, setDeactivateTarget] = useState<Clinic | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Clinic | null>(null)
 
   const totalPages = Math.ceil(total / pageSize)
 
@@ -129,6 +133,20 @@ export function ClinicTable({
       setDeactivateTarget(null)
     })
   }, [deactivateTarget, router])
+
+  const handleDelete = useCallback(() => {
+    if (!deleteTarget) return
+    startTransition(async () => {
+      const result = await deleteClinic(deleteTarget.id)
+      if (result.success) {
+        toast.success(`Clínica "${deleteTarget.name}" excluída.`)
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Erro ao excluir")
+      }
+      setDeleteTarget(null)
+    })
+  }, [deleteTarget, router])
 
   return (
     <div className="space-y-4">
@@ -254,6 +272,14 @@ export function ClinicTable({
                               </DropdownMenuItem>
                             </>
                           )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setDeleteTarget(clinic)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -305,6 +331,33 @@ export function ClinicTable({
               className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
             >
               Desativar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm excluir (soft delete) */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir clínica?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A clínica <strong>{deleteTarget?.name}</strong> será excluída
+              logicamente e não aparecerá mais no sistema. Esta ação não pode
+              ser desfeita pela interface.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isPending}
+              className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+            >
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

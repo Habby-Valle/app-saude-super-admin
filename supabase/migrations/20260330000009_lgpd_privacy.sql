@@ -69,21 +69,20 @@ ALTER TABLE patients ADD COLUMN IF NOT EXISTS anonymized_at TIMESTAMPTZ;
 COMMENT ON COLUMN users.anonymized_at    IS 'Data em que os dados do usuário foram anonimizados (LGPD Art. 18, VI).';
 COMMENT ON COLUMN patients.anonymized_at IS 'Data em que os dados do paciente foram anonimizados (LGPD Art. 18, VI).';
 
--- ─── 5. RLS Policies ─────────────────────────────────────────────────────────
+-- ─── 5. RLS Policies (Simplified) ─────────────────────────────────────────
 
 ALTER TABLE user_consents           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE data_retention_policies ENABLE ROW LEVEL SECURITY;
 
--- user_consents: super_admin vê tudo; titular vê apenas os próprios
-CREATE POLICY "super_admin full access on user_consents"
+-- For user_consents: Users can only see their own consents
+CREATE POLICY "users access own consents"
   ON user_consents FOR ALL
-  USING (auth.is_super_admin());
-
-CREATE POLICY "users read own consents"
-  ON user_consents FOR SELECT
   USING (user_id = auth.uid());
 
--- data_retention_policies: somente super_admin gerencia
-CREATE POLICY "super_admin full access on data_retention_policies"
-  ON data_retention_policies FOR ALL
-  USING (auth.is_super_admin());
+-- For data_retention_policies: Read-only for all authenticated users
+CREATE POLICY "authenticated users view retention policies"
+  ON data_retention_policies FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+-- Admin operations would need to be done via a service role or migration scripts
+-- You can also create a separate admin-only function if needed

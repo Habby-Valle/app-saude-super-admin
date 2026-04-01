@@ -60,6 +60,7 @@ export async function getClinics(params: {
   let query = supabase
     .from("clinics")
     .select("*", { count: "exact" })
+    .is("deleted_at", null) // exclui clínicas com soft delete
     .order("created_at", { ascending: false })
     .range(from, to)
 
@@ -165,7 +166,7 @@ export async function updateClinic(
   return { success: true }
 }
 
-// ─── Desativar clínica (soft delete via status) ───────────────────────────────
+// ─── Desativar clínica (status → inactive) ───────────────────────────────────
 
 export async function deactivateClinic(
   id: string
@@ -176,9 +177,44 @@ export async function deactivateClinic(
     .from("clinics")
     .update({ status: "inactive" })
     .eq("id", id)
+    .is("deleted_at", null) // nunca alterar uma clínica já deletada
 
   if (error) {
     console.error("[deactivateClinic] Supabase error:", error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath("/clinics")
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+// ─── Soft delete de clínica (deleted_at = now()) ──────────────────────────────
+
+export async function deleteClinic(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  const { supabase } = await requireSuperAdmin()
+
+  // Garante que a clínica existe e não foi deletada antes
+  const { data: clinic, error: fetchError } = await supabase
+    .from("clinics")
+    .select("id, name")
+    .eq("id", id)
+    .is("deleted_at", null)
+    .single()
+
+  if (fetchError || !clinic) {
+    return { success: false, error: "Clínica não encontrada ou já excluída" }
+  }
+
+  const { error } = await supabase
+    .from("clinics")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+
+  if (error) {
+    console.error("[deleteClinic] Supabase error:", error)
     return { success: false, error: error.message }
   }
 
@@ -196,6 +232,7 @@ export async function getClinicById(id: string): Promise<ClinicDetails | null> {
     .from("clinics")
     .select("*")
     .eq("id", id)
+    .is("deleted_at", null)
     .single()
 
   if (clinicError || !clinic) {
