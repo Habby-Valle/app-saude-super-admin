@@ -249,17 +249,24 @@ export async function getClinicById(id: string): Promise<ClinicDetails | null> {
 
   const [
     patientsResult,
+    patientsTotalResult,
     usersResult,
     checklistsResult,
     shiftsResult,
     shiftsMonthResult,
   ] = await Promise.all([
+    // dados para exibição (limitado a 10)
     supabase
       .from("patients")
       .select("id, name, birth_date, created_at")
       .eq("clinic_id", id)
       .order("name")
       .limit(10),
+    // contagem real de pacientes (sem limit)
+    supabase
+      .from("patients")
+      .select("id", { count: "exact", head: true })
+      .eq("clinic_id", id),
     supabase
       .from("users")
       .select("id, name, email, role, last_sign_in_at")
@@ -281,18 +288,19 @@ export async function getClinicById(id: string): Promise<ClinicDetails | null> {
       .gte("started_at", monthStart),
   ])
 
-  const caregiverCount = (usersResult.data ?? []).filter(
-    (u) => u.role === "caregiver"
-  ).length
+  const allUsers = usersResult.data ?? []
+  const caregiverCount = allUsers.filter((u) => u.role === "caregiver").length
 
   return {
     clinic,
     patients: patientsResult.data ?? [],
-    users: usersResult.data ?? [],
+    users: allUsers,
     checklists: checklistsResult.data ?? [],
     stats: {
-      patient_count: patientsResult.count ?? 0,
-      user_count: usersResult.count ?? 0,
+      // usa a query de count dedicada para não ser limitado pelo .limit(10) da query de exibição
+      patient_count: patientsTotalResult.count ?? 0,
+      // usersResult.data contém todos (sem limit), então .length é o total real
+      user_count: allUsers.length,
       caregiver_count: caregiverCount,
       shift_count: shiftsResult.count ?? 0,
       shift_count_month: shiftsMonthResult.count ?? 0,
