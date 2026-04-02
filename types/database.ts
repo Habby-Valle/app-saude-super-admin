@@ -41,6 +41,7 @@ export interface Patient {
   contractor_id: string | null
   name: string
   birth_date: string
+  status: 'active' | 'inactive'
   created_at: string
 }
 

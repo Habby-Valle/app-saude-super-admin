@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Trash2, Users, Calendar } from "lucide-react"
+import { ArrowLeft, PowerOff, RotateCcw, Users, Calendar } from "lucide-react"
 
 import {
   getClinicPatientById,
   getPatientCaregivers,
-  deletePatient,
+  togglePatientStatus,
 } from "../actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -52,7 +52,6 @@ function calculateAge(birthDate: string): number {
 }
 
 function formatDate(dateStr: string): string {
-  // Para timestamps completos (created_at), usa Date normal; para datas puras, parseia local
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return parseLocalDate(dateStr).toLocaleDateString("pt-BR")
   }
@@ -74,6 +73,7 @@ export default async function PatientDetailPage({
   }
 
   const caregivers = await getPatientCaregivers(id)
+  const isActive = patient.status !== "inactive"
 
   return (
     <div className="space-y-6">
@@ -84,7 +84,12 @@ export default async function PatientDetailPage({
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">{patient.name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">{patient.name}</h1>
+            {!isActive && (
+              <Badge variant="secondary">Inativo</Badge>
+            )}
+          </div>
           <p className="text-muted-foreground">Detalhes do paciente</p>
         </div>
         <div className="flex gap-2">
@@ -93,35 +98,56 @@ export default async function PatientDetailPage({
             patientName={patient.name}
             patientBirthDate={patient.birth_date}
           />
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
+
+          {isActive ? (
+            /* Desativar paciente */
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline">
+                  <PowerOff className="mr-2 h-4 w-4" />
+                  Desativar
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Desativar paciente?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    O paciente <strong>{patient.name}</strong> será marcado como
+                    inativo. Os dados serão preservados e o paciente poderá ser
+                    reativado a qualquer momento.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <form
+                    action={async () => {
+                      "use server"
+                      await togglePatientStatus(id, "inactive")
+                      revalidatePath(`/admin/patients/${id}`)
+                    }}
+                  >
+                    <AlertDialogAction type="submit">
+                      Desativar
+                    </AlertDialogAction>
+                  </form>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            /* Reativar paciente */
+            <form
+              action={async () => {
+                "use server"
+                await togglePatientStatus(id, "active")
+                revalidatePath(`/admin/patients/${id}`)
+              }}
+            >
+              <Button type="submit" variant="outline">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reativar
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir paciente</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir este paciente? Esta ação não
-                  pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <form
-                  action={async () => {
-                    "use server"
-                    await deletePatient(id)
-                    revalidatePath("/admin/patients")
-                  }}
-                >
-                  <AlertDialogAction type="submit">Excluir</AlertDialogAction>
-                </form>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            </form>
+          )}
         </div>
       </div>
 

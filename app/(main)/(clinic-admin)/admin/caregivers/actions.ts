@@ -278,6 +278,39 @@ export async function deleteCaregiver(
   }
 }
 
+/**
+ * Bloqueia ou reativa um cuidador.
+ * Exclusão permanente é restrita ao super admin.
+ */
+export async function toggleCaregiverStatus(
+  id: string,
+  newStatus: "active" | "blocked"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase, clinicId } = await requireClinicAdmin()
+
+    const { error } = await supabase
+      .from("users")
+      .update({ status: newStatus })
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+      .eq("role", "caregiver")
+
+    if (error) {
+      console.error("[toggleCaregiverStatus] error:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (err) {
+    console.error("[toggleCaregiverStatus] Unexpected error:", err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro inesperado",
+    }
+  }
+}
+
 export async function setCaregiverPassword(
   userId: string,
   password: string

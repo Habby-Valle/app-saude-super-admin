@@ -1,5 +1,6 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { requireClinicAdmin } from "@/lib/auth"
 import { z } from "zod"
 import type { Patient } from "@/types/database"
@@ -305,6 +306,43 @@ export async function updatePatient(
   }
 }
 
+/**
+ * Altera o status do paciente (ativo ↔ inativo).
+ * Exclusão permanente é restrita ao super admin.
+ */
+export async function togglePatientStatus(
+  id: string,
+  newStatus: "active" | "inactive"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase, clinicId } = await requireClinicAdmin()
+
+    const { error } = await supabase
+      .from("patients")
+      .update({ status: newStatus })
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+
+    if (error) {
+      console.error("[togglePatientStatus] error:", error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath("/admin/patients")
+    return { success: true }
+  } catch (err) {
+    console.error("[togglePatientStatus] Unexpected error:", err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro inesperado",
+    }
+  }
+}
+
+/**
+ * Exclui permanentemente um paciente.
+ * Mantida apenas para uso interno / super admin via admin client.
+ */
 export async function deletePatient(
   id: string
 ): Promise<{ success: boolean; error?: string }> {

@@ -1,15 +1,12 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Copy, Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { Copy, Pencil, Plus, Search } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 import type { ClinicChecklistWithDetails } from "@/app/(main)/(clinic-admin)/admin/checklists/actions"
-import {
-  deleteClinicChecklist,
-  duplicateToClinic,
-} from "@/app/(main)/(clinic-admin)/admin/checklists/actions"
+import { duplicateToClinic } from "@/app/(main)/(clinic-admin)/admin/checklists/actions"
 import { ClinicChecklistDialog } from "./checklist-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -82,8 +79,6 @@ export function ClinicChecklistTable({
   const [editTarget, setEditTarget] = useState<
     ClinicChecklistWithDetails | undefined
   >()
-  const [deleteTarget, setDeleteTarget] =
-    useState<ClinicChecklistWithDetails | null>(null)
   const [duplicateTarget, setDuplicateTarget] =
     useState<ClinicChecklistWithDetails | null>(null)
 
@@ -95,20 +90,6 @@ export function ClinicChecklistTable({
   const openEdit = (cl: ClinicChecklistWithDetails) => {
     setEditTarget(cl)
     setDialogOpen(true)
-  }
-
-  const handleDelete = () => {
-    if (!deleteTarget) return
-    startTransition(async () => {
-      const result = await deleteClinicChecklist(deleteTarget.id)
-      if (result.success) {
-        toast.success("Checklist excluído com sucesso.")
-        router.refresh()
-      } else {
-        toast.error(result.error ?? "Erro ao excluir")
-      }
-      setDeleteTarget(null)
-    })
   }
 
   const handleDuplicate = () => {
@@ -223,13 +204,6 @@ export function ClinicChecklistTable({
                               <Pencil className="mr-2 h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => setDeleteTarget(cl)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Excluir
-                            </DropdownMenuItem>
                           </>
                         )}
                       </DropdownMenuContent>
@@ -255,33 +229,6 @@ export function ClinicChecklistTable({
         onOpenChange={setDialogOpen}
         checklist={editTarget}
       />
-
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
-        }}
-      >
-        <AlertDialogContent className="clinic-admin">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir checklist?</AlertDialogTitle>
-            <AlertDialogDescription>
-              O checklist <strong>{deleteTarget?.name}</strong> será excluído
-              permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isPending}
-              className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog
         open={!!duplicateTarget}
