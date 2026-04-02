@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { requireClinicAdmin } from "@/lib/auth"
 import { createAdminClient } from "@/lib/supabase-admin"
+import { CLINIC_THEMES, type ClinicThemeId } from "@/lib/clinic-themes"
 
 /**
  * Faz upload da logo para o Supabase Storage usando service role key
@@ -80,18 +81,48 @@ export async function removeClinicLogo(): Promise<{ success: boolean; error?: st
 }
 
 /**
+ * Atualiza o tema de cores da clínica.
+ */
+export async function updateClinicTheme(
+  themeId: ClinicThemeId
+): Promise<{ success: boolean; error?: string }> {
+  const { clinicId } = await requireClinicAdmin()
+
+  const valid = CLINIC_THEMES.some((t) => t.id === themeId)
+  if (!valid) {
+    return { success: false, error: "Tema inválido" }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from("clinics")
+    .update({ theme_color: themeId })
+    .eq("id", clinicId)
+
+  if (error) {
+    console.error("[updateClinicTheme] error:", error.message)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath("/admin/settings")
+  revalidatePath("/admin", "layout")
+  return { success: true }
+}
+
+/**
  * Retorna os dados básicos da clínica do admin autenticado.
  */
 export async function getMyClinic(): Promise<{
   id: string
   name: string
   logo_url: string | null
+  theme_color: string | null
 } | null> {
   const { supabase, clinicId } = await requireClinicAdmin()
 
   const { data, error } = await supabase
     .from("clinics")
-    .select("id, name, logo_url")
+    .select("id, name, logo_url, theme_color")
     .eq("id", clinicId)
     .is("deleted_at", null)
     .single()

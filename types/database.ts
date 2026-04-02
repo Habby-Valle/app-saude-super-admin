@@ -15,6 +15,7 @@ export interface Clinic {
   status: ClinicStatus
   plan?: string
   logo_url?: string | null
+  theme_color?: string | null
   created_at: string
   updated_at?: string
   deleted_at?: string | null

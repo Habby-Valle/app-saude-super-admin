@@ -1,8 +1,11 @@
 import { Suspense } from "react"
 import { getMyClinic } from "./actions"
 import { ClinicLogoManager } from "./clinic-logo-manager"
+import { ClinicThemePicker } from "./clinic-theme-picker"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DEFAULT_THEME } from "@/lib/clinic-themes"
+import type { ClinicThemeId } from "@/lib/clinic-themes"
 
 export const metadata = {
   title: "Configurações da Clínica",
@@ -38,6 +41,20 @@ async function SettingsContent() {
           <ClinicLogoManager
             clinicId={clinic.id}
             currentLogoUrl={clinic.logo_url}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-lg">
+        <CardHeader>
+          <CardTitle>Tema de cores</CardTitle>
+          <CardDescription>
+            Escolha a cor principal do painel da sua clínica.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ClinicThemePicker
+            currentTheme={(clinic.theme_color as ClinicThemeId) ?? DEFAULT_THEME}
           />
         </CardContent>
       </Card>

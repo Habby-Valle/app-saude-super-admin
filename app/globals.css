@@ -137,78 +137,85 @@
 }
 
 /* ============================
-   CLINIC ADMIN - Tema Roxo
+   CLINIC ADMIN - Tema dinâmico
+   Cada tema sobrescreve apenas --theme-hue.
+   Todos os tokens derivam dele via oklch().
    ============================ */
 
-/* Light Mode - Roxo */
+/* Light Mode */
 .clinic-admin {
-  --background: oklch(0.97 0.01 300);
+  --theme-hue: 300; /* padrão: roxo */
+
+  --background: oklch(0.97 0.01 var(--theme-hue));
   --foreground: oklch(0.15 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.15 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.45 0.15 300);
+  --primary: oklch(0.45 0.15 var(--theme-hue));
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.92 0.03 300);
-  --secondary-foreground: oklch(0.25 0.05 300);
-  --muted: oklch(0.93 0.02 300);
-  --muted-foreground: oklch(0.45 0.05 300);
-  --accent: oklch(0.92 0.03 300);
-  --accent-foreground: oklch(0.25 0.05 300);
+  --secondary: oklch(0.92 0.03 var(--theme-hue));
+  --secondary-foreground: oklch(0.25 0.05 var(--theme-hue));
+  --muted: oklch(0.93 0.02 var(--theme-hue));
+  --muted-foreground: oklch(0.45 0.05 var(--theme-hue));
+  --accent: oklch(0.92 0.03 var(--theme-hue));
+  --accent-foreground: oklch(0.25 0.05 var(--theme-hue));
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.88 0.02 300);
-  --input: oklch(0.92 0.02 300);
-  --ring: oklch(0.45 0.15 300);
-  --chart-1: oklch(0.55 0.15 300);
-  --chart-2: oklch(0.5 0.12 300);
-  --chart-3: oklch(0.45 0.1 300);
-  --chart-4: oklch(0.6 0.18 300);
-  --chart-5: oklch(0.4 0.08 300);
+  --border: oklch(0.88 0.02 var(--theme-hue));
+  --input: oklch(0.92 0.02 var(--theme-hue));
+  --ring: oklch(0.45 0.15 var(--theme-hue));
+  --chart-1: oklch(0.55 0.15 var(--theme-hue));
+  --chart-2: oklch(0.5 0.12 var(--theme-hue));
+  --chart-3: oklch(0.45 0.1 var(--theme-hue));
+  --chart-4: oklch(0.6 0.18 var(--theme-hue));
+  --chart-5: oklch(0.4 0.08 var(--theme-hue));
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.45 0.15 300);
+  --sidebar-primary: oklch(0.45 0.15 var(--theme-hue));
   --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.92 0.03 300);
-  --sidebar-accent-foreground: oklch(0.25 0.05 300);
-  --sidebar-border: oklch(0.88 0.02 300);
-  --sidebar-ring: oklch(0.45 0.15 300);
+  --sidebar-accent: oklch(0.92 0.03 var(--theme-hue));
+  --sidebar-accent-foreground: oklch(0.25 0.05 var(--theme-hue));
+  --sidebar-border: oklch(0.88 0.02 var(--theme-hue));
+  --sidebar-ring: oklch(0.45 0.15 var(--theme-hue));
 }
 
-/* Dark Mode - Roxo */
+/* Dark Mode */
 .dark .clinic-admin,
 .clinic-admin.dark {
-  --background: oklch(0.15 0.02 300);
+  --background: oklch(0.15 0.02 var(--theme-hue));
   --foreground: oklch(0.95 0 0);
-  --card: oklch(0.2 0.02 300);
+  --card: oklch(0.2 0.02 var(--theme-hue));
   --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.2 0.02 300);
+  --popover: oklch(0.2 0.02 var(--theme-hue));
   --popover-foreground: oklch(0.95 0 0);
-  --primary: oklch(0.65 0.15 300);
-  --primary-foreground: oklch(0.15 0.02 300);
-  --secondary: oklch(0.3 0.04 300);
+  --primary: oklch(0.65 0.15 var(--theme-hue));
+  --primary-foreground: oklch(0.15 0.02 var(--theme-hue));
+  --secondary: oklch(0.3 0.04 var(--theme-hue));
   --secondary-foreground: oklch(0.95 0 0);
-  --muted: oklch(0.28 0.03 300);
-  --muted-foreground: oklch(0.7 0.02 300);
-  --accent: oklch(0.3 0.04 300);
+  --muted: oklch(0.28 0.03 var(--theme-hue));
+  --muted-foreground: oklch(0.7 0.02 var(--theme-hue));
+  --accent: oklch(0.3 0.04 var(--theme-hue));
   --accent-foreground: oklch(0.95 0 0);
   --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.3 0.03 300);
-  --input: oklch(0.25 0.03 300);
-  --ring: oklch(0.65 0.15 300);
-  --chart-1: oklch(0.65 0.15 300);
-  --chart-2: oklch(0.6 0.12 300);
-  --chart-3: oklch(0.55 0.1 300);
-  --chart-4: oklch(0.7 0.18 300);
-  --chart-5: oklch(0.5 0.08 300);
-  --sidebar: oklch(0.18 0.02 300);
+  --border: oklch(0.3 0.03 var(--theme-hue));
+  --input: oklch(0.25 0.03 var(--theme-hue));
+  --ring: oklch(0.65 0.15 var(--theme-hue));
+  --chart-1: oklch(0.65 0.15 var(--theme-hue));
+  --chart-2: oklch(0.6 0.12 var(--theme-hue));
+  --chart-3: oklch(0.55 0.1 var(--theme-hue));
+  --chart-4: oklch(0.7 0.18 var(--theme-hue));
+  --chart-5: oklch(0.5 0.08 var(--theme-hue));
+  --sidebar: oklch(0.18 0.02 var(--theme-hue));
   --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.65 0.15 300);
-  --sidebar-primary-foreground: oklch(0.15 0.02 300);
-  --sidebar-accent: oklch(0.28 0.03 300);
+  --sidebar-primary: oklch(0.65 0.15 var(--theme-hue));
+  --sidebar-primary-foreground: oklch(0.15 0.02 var(--theme-hue));
+  --sidebar-accent: oklch(0.28 0.03 var(--theme-hue));
   --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(0.3 0.03 300);
-  --sidebar-ring: oklch(0.65 0.15 300);
+  --sidebar-border: oklch(0.3 0.03 var(--theme-hue));
+  --sidebar-ring: oklch(0.65 0.15 var(--theme-hue));
 }
+
+/* --theme-hue é injetado como inline style pelo layout (Server Component).
+   O valor 300 (roxo) acima é apenas o fallback caso o style não esteja presente. */
