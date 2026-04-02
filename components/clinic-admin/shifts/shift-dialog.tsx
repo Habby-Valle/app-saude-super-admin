@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -25,18 +26,26 @@ import { Input } from "@/components/ui/input"
 import {
   createShift,
   getCaregiversByPatient,
+  getShiftTemplates,
 } from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
-import type { SelectOption } from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
+import type {
+  SelectOption,
+  ShiftTemplate,
+} from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
 
 interface ShiftDialogProps {
   patients: SelectOption[]
+  templates: SelectOption[]
 }
 
-export function ShiftDialog({ patients }: ShiftDialogProps) {
+export function ShiftDialog({ patients, templates }: ShiftDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [patientId, setPatientId] = useState("")
   const [caregiverId, setCaregiverId] = useState("")
+  const [templateId, setTemplateId] = useState("")
+  const [instructions, setInstructions] = useState("")
+  const [allTemplates, setAllTemplates] = useState<ShiftTemplate[]>([])
   const [caregivers, setCaregivers] = useState<SelectOption[]>([])
   const [loadingCaregivers, setLoadingCaregivers] = useState(false)
   const [startedAt, setStartedAt] = useState(() => {
@@ -50,11 +59,23 @@ export function ShiftDialog({ patients }: ShiftDialogProps) {
     started_at?: string
   }>({})
 
+  useEffect(() => {
+    async function loadTemplates() {
+      const t = await getShiftTemplates()
+      setAllTemplates(t)
+    }
+    if (isOpen) loadTemplates()
+  }, [isOpen])
+
   async function handlePatientChange(id: string) {
     setPatientId(id)
     setCaregiverId("")
     setCaregivers([])
-    setErrors((prev) => ({ ...prev, patient_id: undefined, caregiver_id: undefined }))
+    setErrors((prev) => ({
+      ...prev,
+      patient_id: undefined,
+      caregiver_id: undefined,
+    }))
 
     setLoadingCaregivers(true)
     const result = await getCaregiversByPatient(id)
@@ -62,9 +83,23 @@ export function ShiftDialog({ patients }: ShiftDialogProps) {
     setLoadingCaregivers(false)
   }
 
+  function handleTemplateChange(id: string) {
+    setTemplateId(id)
+    const template = allTemplates.find((t) => t.id === id)
+    if (template) {
+      setInstructions(template.instructions ?? "")
+      const now = new Date()
+      const [hours, minutes] = template.start_time.split(":")
+      now.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+      setStartedAt(now.toISOString().slice(0, 16))
+    }
+  }
+
   function resetForm() {
     setPatientId("")
     setCaregiverId("")
+    setTemplateId("")
+    setInstructions("")
     setCaregivers([])
     const now = new Date()
     now.setSeconds(0, 0)
@@ -91,6 +126,8 @@ export function ShiftDialog({ patients }: ShiftDialogProps) {
       patient_id: patientId,
       caregiver_id: caregiverId,
       started_at: new Date(startedAt).toISOString(),
+      template_id: templateId || undefined,
+      instructions: instructions || undefined,
     })
 
     if (result.success) {
@@ -128,6 +165,31 @@ export function ShiftDialog({ patients }: ShiftDialogProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Template (opcional)</Label>
+            <Select value={templateId} onValueChange={handleTemplateChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um template" />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.length === 0 ? (
+                  <SelectItem value="_empty" disabled>
+                    Nenhum template disponível
+                  </SelectItem>
+                ) : (
+                  templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Selecione um template para pré-preencher horário e instruções
+            </p>
+          </div>
+
           <div className="space-y-1.5">
             <Label>Paciente *</Label>
             <Select value={patientId} onValueChange={handlePatientChange}>
@@ -208,6 +270,17 @@ export function ShiftDialog({ patients }: ShiftDialogProps) {
             {errors.started_at && (
               <p className="text-xs text-destructive">{errors.started_at}</p>
             )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="instructions">Instruções</Label>
+            <Textarea
+              id="instructions"
+              placeholder="Instruções para este turno..."
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              rows={3}
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

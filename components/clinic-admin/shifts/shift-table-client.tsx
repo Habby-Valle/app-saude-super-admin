@@ -16,6 +16,7 @@ interface ShiftTableClientProps {
   search: string
   status: string
   patients: SelectOption[]
+  templates: SelectOption[]
 }
 
 export function ShiftTableClient({
@@ -26,6 +27,7 @@ export function ShiftTableClient({
   search,
   status,
   patients,
+  templates,
 }: ShiftTableClientProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -59,6 +61,7 @@ export function ShiftTableClient({
       search={search}
       status={status}
       patients={patients}
+      templates={templates}
       onSearchChange={(v) => updateParams({ search: v, page: "1" })}
       onStatusChange={(v) => updateParams({ status: v, page: "1" })}
       onPageChange={(v) => updateParams({ page: String(v) })}

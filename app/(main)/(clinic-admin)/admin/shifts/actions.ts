@@ -1,25 +1,35 @@
 "use server"
 
 import { requireClinicAdmin } from "@/lib/auth"
-import { z } from "zod"
+import {
+  createShiftTemplateSchema,
+  updateShiftTemplateSchema,
+  createShiftSchema,
+  shiftFiltersSchema,
+  createCheckpointSchema,
+} from "@/lib/validations/shift"
 import { revalidatePath } from "next/cache"
 import type { ShiftStatus } from "@/types/database"
 
-const shiftFiltersSchema = z.object({
-  search: z.string().optional().default(""),
-  status: z
-    .enum(["all", "in_progress", "completed", "cancelled"])
-    .optional()
-    .default("all"),
-  page: z.coerce.number().int().positive().optional().default(1),
-  pageSize: z.coerce.number().int().positive().max(100).optional().default(10),
-})
+export interface ShiftTemplate {
+  id: string
+  clinic_id: string
+  name: string
+  start_time: string
+  end_time: string
+  instructions: string | null
+  is_active: boolean
+  created_at: string
+}
 
-const createShiftSchema = z.object({
-  patient_id: z.string().uuid("Paciente inválido"),
-  caregiver_id: z.string().uuid("Cuidador inválido"),
-  started_at: z.string().min(1, "Data de início obrigatória"),
-})
+export interface ShiftCheckpoint {
+  id: string
+  shift_id: string
+  caregiver_id: string
+  caregiver_name: string
+  notes: string | null
+  checked_at: string
+}
 
 export interface ShiftWithDetails {
   id: string
@@ -31,11 +41,31 @@ export interface ShiftWithDetails {
   status: ShiftStatus
   patient_name: string
   caregiver_name: string
+  instructions: string | null
+  last_checkpoint_at: string | null
+  completed_with_justification: boolean
 }
 
 export interface ClinicShiftsResult {
   shifts: ShiftWithDetails[]
   total: number
+}
+
+export interface PendingChecklist {
+  id: string
+  name: string
+}
+
+export interface FinishShiftResult {
+  success: boolean
+  error?: string
+  hasPendingChecklists?: boolean
+  pendingChecklists?: PendingChecklist[]
+}
+
+export interface SelectOption {
+  id: string
+  name: string
 }
 
 export async function getClinicShifts(raw: {
@@ -59,7 +89,7 @@ export async function getClinicShifts(raw: {
     .from("shifts")
     .select(
       `
-      id, clinic_id, patient_id, caregiver_id, started_at, ended_at, status,
+      id, clinic_id, patient_id, caregiver_id, started_at, ended_at, status, instructions, last_checkpoint_at, completed_with_justification,
       patient:patients(name),
       caregiver:users(name)
     `,
@@ -80,7 +110,6 @@ export async function getClinicShifts(raw: {
     throw new Error(error.message)
   }
 
-  // Filtro de busca por nome (client-side após join)
   const shifts: ShiftWithDetails[] = (rows ?? []).map((row) => ({
     id: row.id,
     clinic_id: row.clinic_id,
@@ -93,9 +122,11 @@ export async function getClinicShifts(raw: {
       (row.patient as unknown as { name: string } | null)?.name ?? "—",
     caregiver_name:
       (row.caregiver as unknown as { name: string } | null)?.name ?? "—",
+    instructions: row.instructions,
+    last_checkpoint_at: row.last_checkpoint_at,
+    completed_with_justification: row.completed_with_justification ?? false,
   }))
 
-  // Filtro de busca em memória (nome de paciente ou cuidador)
   const filtered = search.trim()
     ? shifts.filter(
         (s) =>
@@ -107,29 +138,53 @@ export async function getClinicShifts(raw: {
   return { shifts: filtered, total: count ?? 0 }
 }
 
-export interface SelectOption {
-  id: string
-  name: string
-}
-
 export async function getShiftSelectOptions(): Promise<{
   patients: SelectOption[]
+  templates: SelectOption[]
 }> {
   const { supabase, clinicId } = await requireClinicAdmin()
 
+  const [patientsRes, templatesRes] = await Promise.all([
+    supabase
+      .from("patients")
+      .select("id, name")
+      .eq("clinic_id", clinicId)
+      .order("name"),
+    supabase
+      .from("shift_templates")
+      .select("id, name")
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .order("name"),
+  ])
+
+  return {
+    patients: (patientsRes.data ?? []).map((p) => ({
+      id: p.id,
+      name: p.name as string,
+    })),
+    templates: (templatesRes.data ?? []).map((t) => ({
+      id: t.id,
+      name: t.name,
+    })),
+  }
+}
+
+export async function getShiftTemplates(): Promise<ShiftTemplate[]> {
+  const { supabase, clinicId } = await requireClinicAdmin()
+
   const { data, error } = await supabase
-    .from("patients")
-    .select("id, name")
+    .from("shift_templates")
+    .select("*")
     .eq("clinic_id", clinicId)
     .order("name")
 
   if (error) {
-    console.error("[getShiftSelectOptions] patients error:", error)
+    console.error("[getShiftTemplates] error:", error)
+    return []
   }
 
-  return {
-    patients: (data ?? []).map((p) => ({ id: p.id, name: p.name as string })),
-  }
+  return (data ?? []) as ShiftTemplate[]
 }
 
 export async function getCaregiversByPatient(
@@ -137,7 +192,6 @@ export async function getCaregiversByPatient(
 ): Promise<SelectOption[]> {
   const { supabase, clinicId } = await requireClinicAdmin()
 
-  // Busca os IDs dos cuidadores vinculados ao paciente
   const { data: links, error: linksError } = await supabase
     .from("caregiver_patient")
     .select("caregiver_id")
@@ -166,9 +220,13 @@ export async function getCaregiversByPatient(
   return (users ?? []).map((u) => ({ id: u.id, name: u.name as string }))
 }
 
-export async function createShift(
-  data: z.infer<typeof createShiftSchema>
-): Promise<{ success: boolean; error?: string }> {
+export async function createShift(data: {
+  patient_id: string
+  caregiver_id: string
+  started_at: string
+  template_id?: string
+  instructions?: string
+}): Promise<{ success: boolean; error?: string }> {
   try {
     const { supabase, clinicId } = await requireClinicAdmin()
 
@@ -182,6 +240,7 @@ export async function createShift(
       patient_id: parsed.data.patient_id,
       caregiver_id: parsed.data.caregiver_id,
       started_at: parsed.data.started_at,
+      instructions: parsed.data.instructions ?? null,
       status: "in_progress",
     })
 
@@ -201,13 +260,123 @@ export async function createShift(
   }
 }
 
-export async function finishShift(
+export async function createShiftTemplate(data: {
+  name: string
+  start_time: string
+  end_time: string
+  instructions?: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase, clinicId } = await requireClinicAdmin()
+
+    const parsed = createShiftTemplateSchema.safeParse(data)
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
+    }
+
+    const { error } = await supabase.from("shift_templates").insert({
+      clinic_id: clinicId,
+      name: parsed.data.name,
+      start_time: parsed.data.start_time,
+      end_time: parsed.data.end_time,
+      instructions: parsed.data.instructions ?? null,
+    })
+
+    if (error) {
+      console.error("[createShiftTemplate] error:", error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath("/admin/shifts")
+    return { success: true }
+  } catch (err) {
+    console.error("[createShiftTemplate] unexpected error:", err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro inesperado",
+    }
+  }
+}
+
+export async function updateShiftTemplate(data: {
+  id: string
+  name: string
+  start_time: string
+  end_time: string
+  instructions?: string
+  is_active: boolean
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase, clinicId } = await requireClinicAdmin()
+
+    const parsed = updateShiftTemplateSchema.safeParse(data)
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
+    }
+
+    const { error } = await supabase
+      .from("shift_templates")
+      .update({
+        name: parsed.data.name,
+        start_time: parsed.data.start_time,
+        end_time: parsed.data.end_time,
+        instructions: parsed.data.instructions ?? null,
+        is_active: parsed.data.is_active,
+      })
+      .eq("id", parsed.data.id)
+      .eq("clinic_id", clinicId)
+
+    if (error) {
+      console.error("[updateShiftTemplate] error:", error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath("/admin/shifts")
+    return { success: true }
+  } catch (err) {
+    console.error("[updateShiftTemplate] unexpected error:", err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro inesperado",
+    }
+  }
+}
+
+export async function deleteShiftTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { supabase, clinicId } = await requireClinicAdmin()
 
-    // Busca o turno para validar o horário de início antes de finalizar
+    const { error } = await supabase
+      .from("shift_templates")
+      .delete()
+      .eq("id", id)
+      .eq("clinic_id", clinicId)
+
+    if (error) {
+      console.error("[deleteShiftTemplate] error:", error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath("/admin/shifts")
+    return { success: true }
+  } catch (err) {
+    console.error("[deleteShiftTemplate] unexpected error:", err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro inesperado",
+    }
+  }
+}
+
+export async function finishShift(
+  id: string,
+  justifications: { checklist_id: string; justification: string }[] = []
+): Promise<FinishShiftResult> {
+  try {
+    const { supabase, clinicId } = await requireClinicAdmin()
+
     const { data: shift, error: fetchError } = await supabase
       .from("shifts")
       .select("started_at")
@@ -228,9 +397,46 @@ export async function finishShift(
       }
     }
 
+    // Verificar checklists pendentes
+    const { data: pendingChecklists } = await supabase
+      .from("shift_checklists")
+      .select("id, checklist:checklists(name)")
+      .eq("shift_id", id)
+      .eq("status", "pending")
+
+    const pendingList = (pendingChecklists ?? []).map((c) => ({
+      id: c.id,
+      name:
+        (c.checklist as unknown as { name: string } | null)?.name ??
+        "Checklist",
+    }))
+
+    if (pendingList.length > 0) {
+      if (justifications.length === 0) {
+        return {
+          success: false,
+          error: "Existem checklists pendentes",
+          hasPendingChecklists: true,
+          pendingChecklists: pendingList,
+        }
+      }
+
+      // Salvar justificativas
+      for (const just of justifications) {
+        await supabase
+          .from("shift_checklists")
+          .update({ justification: just.justification })
+          .eq("id", just.checklist_id)
+      }
+    }
+
     const { error } = await supabase
       .from("shifts")
-      .update({ status: "completed", ended_at: now.toISOString() })
+      .update({
+        status: "completed",
+        ended_at: now.toISOString(),
+        completed_with_justification: justifications.length > 0,
+      })
       .eq("id", id)
       .eq("clinic_id", clinicId)
 
@@ -256,7 +462,6 @@ export async function cancelShift(
   try {
     const { supabase, clinicId } = await requireClinicAdmin()
 
-    // Busca o turno para validar o horário de início antes de cancelar
     const { data: shift, error: fetchError } = await supabase
       .from("shifts")
       .select("started_at")
@@ -297,4 +502,86 @@ export async function cancelShift(
       error: err instanceof Error ? err.message : "Erro inesperado",
     }
   }
+}
+
+export async function createCheckpoint(
+  shiftId: string,
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { supabase, clinicId, user } = await requireClinicAdmin()
+
+    // Verificar se o turno existe e está em andamento
+    const { data: shift, error: shiftError } = await supabase
+      .from("shifts")
+      .select("id, status")
+      .eq("id", shiftId)
+      .eq("clinic_id", clinicId)
+      .eq("status", "in_progress")
+      .single()
+
+    if (shiftError || !shift) {
+      return { success: false, error: "Turno não encontrado ou já encerrado." }
+    }
+
+    const now = new Date()
+    const { error } = await supabase.from("shift_checkpoints").insert({
+      shift_id: shiftId,
+      caregiver_id: user.id,
+      notes: notes ?? null,
+      checked_at: now.toISOString(),
+    })
+
+    if (error) {
+      console.error("[createCheckpoint] error:", error)
+      return { success: false, error: error.message }
+    }
+
+    // Atualizar last_checkpoint_at no turno
+    await supabase
+      .from("shifts")
+      .update({ last_checkpoint_at: now.toISOString() })
+      .eq("id", shiftId)
+
+    revalidatePath("/admin/shifts")
+    return { success: true }
+  } catch (err) {
+    console.error("[createCheckpoint] unexpected error:", err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro inesperado",
+    }
+  }
+}
+
+export async function getShiftCheckpoints(
+  shiftId: string
+): Promise<ShiftCheckpoint[]> {
+  const { supabase, clinicId } = await requireClinicAdmin()
+
+  const { data, error } = await supabase
+    .from("shift_checkpoints")
+    .select(
+      `
+      id, shift_id, caregiver_id, notes, checked_at,
+      caregiver:users(name)
+    `
+    )
+    .eq("shift_id", shiftId)
+    .order("checked_at", { ascending: false })
+
+  if (error) {
+    console.error("[getShiftCheckpoints] error:", error)
+    return []
+  }
+
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    shift_id: c.shift_id,
+    caregiver_id: c.caregiver_id,
+    caregiver_name:
+      (c.caregiver as unknown as { name: string } | null)?.name ?? "—",
+    notes: c.notes,
+    checked_at: c.checked_at,
+  }))
 }

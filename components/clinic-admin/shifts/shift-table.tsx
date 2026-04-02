@@ -1,6 +1,6 @@
 "use client"
 
-import { Search } from "lucide-react"
+import { Search, CheckCircle2, AlertCircle, Clock } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -65,6 +65,54 @@ const STATUS_VARIANTS: Record<
   cancelled: "destructive",
 }
 
+type CheckpointStatus = "ok" | "warning" | "no-data"
+
+function getCheckpointStatus(shift: ShiftWithDetails): CheckpointStatus {
+  if (shift.status !== "in_progress") return "no-data"
+  if (!shift.last_checkpoint_at) return "no-data"
+
+  const now = new Date()
+  const last = new Date(shift.last_checkpoint_at)
+  const diffMs = now.getTime() - last.getTime()
+  const diffHours = diffMs / (1000 * 60 * 60)
+
+  if (diffHours >= 2) return "warning"
+  return "ok"
+}
+
+function renderCheckpointBadge(shift: ShiftWithDetails) {
+  const status = getCheckpointStatus(shift)
+
+  if (status === "no-data") {
+    if (shift.status !== "in_progress") return null
+    return (
+      <div className="flex items-center gap-1" title="Sem checkpoint">
+        <Clock className="h-4 w-4 text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (status === "ok") {
+    return (
+      <div
+        className="flex items-center gap-1 text-green-600"
+        title="Check-in recente"
+      >
+        <CheckCircle2 className="h-4 w-4" />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="flex items-center gap-1 text-yellow-600"
+      title="Atenção: mais de 2h sem check-in"
+    >
+      <AlertCircle className="h-4 w-4" />
+    </div>
+  )
+}
+
 interface ShiftTableProps {
   shifts: ShiftWithDetails[]
   total: number
@@ -73,6 +121,7 @@ interface ShiftTableProps {
   search: string
   status: string
   patients: SelectOption[]
+  templates: SelectOption[]
   onSearchChange: (v: string) => void
   onStatusChange: (v: string) => void
   onPageChange: (v: number) => void
@@ -87,6 +136,7 @@ export function ShiftTable({
   search,
   status,
   patients,
+  templates,
   onSearchChange,
   onStatusChange,
   onPageChange,
@@ -117,7 +167,7 @@ export function ShiftTable({
             </SelectContent>
           </Select>
         </div>
-        <ShiftDialog patients={patients} />
+        <ShiftDialog patients={patients} templates={templates} />
       </div>
 
       <div className="rounded-md border">
@@ -129,6 +179,7 @@ export function ShiftTable({
               <TableHead>Início</TableHead>
               <TableHead>Fim</TableHead>
               <TableHead>Duração</TableHead>
+              <TableHead className="w-10">Check</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -137,7 +188,7 @@ export function ShiftTable({
             {shifts.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="py-10 text-center text-muted-foreground"
                 >
                   Nenhum turno encontrado.
@@ -161,16 +212,27 @@ export function ShiftTable({
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDuration(shift.started_at, shift.ended_at)}
                   </TableCell>
+                  <TableCell>{renderCheckpointBadge(shift)}</TableCell>
                   <TableCell>
                     {shift.status === "in_progress" &&
                     new Date(shift.started_at) > new Date() ? (
                       <Badge variant="outline">Aguardando início</Badge>
                     ) : (
-                      <Badge
-                        variant={STATUS_VARIANTS[shift.status] ?? "outline"}
-                      >
-                        {STATUS_LABELS[shift.status] ?? shift.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={STATUS_VARIANTS[shift.status] ?? "outline"}
+                        >
+                          {STATUS_LABELS[shift.status] ?? shift.status}
+                        </Badge>
+                        {shift.completed_with_justification && (
+                          <Badge
+                            variant="outline"
+                            className="border-yellow-600 text-yellow-600"
+                          >
+                            c/ justificativa
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>
@@ -211,6 +273,7 @@ export function ShiftTableSkeleton() {
                 "Início",
                 "Fim",
                 "Duração",
+                "Check",
                 "Status",
                 "",
               ].map((h) => (
@@ -235,6 +298,12 @@ export function ShiftTableSkeleton() {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-10" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-5 w-24 rounded-full" />
