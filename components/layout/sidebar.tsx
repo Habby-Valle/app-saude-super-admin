@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
@@ -39,6 +40,7 @@ const clinicAdminNavItems = [
   { label: "Checklists", href: "/admin/checklists", icon: ClipboardList },
   { label: "SOS", href: "/admin/sos", icon: AlertTriangle, isSos: true },
   { label: "Relatórios", href: "/admin/reports", icon: BarChart3 },
+  { label: "Configurações", href: "/admin/settings", icon: Settings },
 ]
 
 type SidebarVariant = "super-admin" | "clinic-admin"
@@ -46,27 +48,53 @@ type SidebarVariant = "super-admin" | "clinic-admin"
 interface SidebarProps {
   variant?: SidebarVariant
   activeSosCount?: number
+  clinicLogoUrl?: string | null
+  clinicName?: string | null
 }
 
-export function Sidebar({ variant = "super-admin", activeSosCount = 0 }: SidebarProps) {
+export function Sidebar({
+  variant = "super-admin",
+  activeSosCount = 0,
+  clinicLogoUrl,
+  clinicName,
+}: SidebarProps) {
   const pathname = usePathname()
 
   const navItems =
     variant === "super-admin" ? superAdminNavItems : clinicAdminNavItems
 
-  const title = variant === "super-admin" ? "Super Admin" : "Admin Clínica"
+  const isClinicAdmin = variant === "clinic-admin"
+  const title = isClinicAdmin ? (clinicName ?? "Admin Clínica") : "Super Admin"
 
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-card">
       <div className="flex h-16 items-center gap-3 border-b px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <ShieldCheck className="h-4 w-4 text-primary-foreground" />
-        </div>
-        <div className="leading-none">
+        {/* Clinic admin: logo da clínica ou ícone fallback */}
+        {isClinicAdmin ? (
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+            {clinicLogoUrl ? (
+              <Image
+                src={clinicLogoUrl}
+                alt={title}
+                fill
+                sizes="36px"
+                className="object-contain p-0.5"
+                unoptimized
+              />
+            ) : (
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+        ) : (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
+            <ShieldCheck className="h-4 w-4 text-primary-foreground" />
+          </div>
+        )}
+        <div className="min-w-0 leading-none">
           <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
             App Saúde
           </p>
-          <p className="text-sm font-bold">{title}</p>
+          <p className="truncate text-sm font-bold">{title}</p>
         </div>
       </div>
 

@@ -702,27 +702,27 @@ Antes de publicar em produção, testar **todos** os itens acima em:
 | #   | Problema                                                                                                                                                             | Severidade | Status        | Link |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------- | ---- |
 | 1   | **Autenticação**: Ao deslogar e ser redirecionado para o login, e depois tentar logar novamente, o login não acontece - é necessário recarregar a página manualmente | Alta       | **Corrigido** | -    |
-| 2   | **Autenticação**: As informações do usuário logado (session/state) desaparecem quando uma página é recarregada                                                       | Alta       | Pendente      | -    |
-| 3   | **Segurança**: Super Admin pode acessar painéis de Clinic Admin através de URL direta com ID da clínica - deve permitir redirecionamento apenas nas listagens        | Alta       | Pendente      | -    |
-| 4   | **UX - Busca**: Input de busca não está com comportamento adequado (atraso, limpar, feedback visual) em todas as listagens                                           | Média      | Pendente      | -    |
-| 5   | **Validação CNPJ**: Mensagem de erro confusa "Invalid input: expected string, received undefined" ao inserir CNPJ inválido                                           | Média      | Pendente      | -    |
-| 6   | **Navegação**: Links de detail em clínicas não estão redirecionando corretamente                                                                                     | Média      | Pendente      | -    |
-| 7   | **CRUD Clínicas**: Implementar soft delete (marcar como deleted) ao invés de exclusão física                                                                         | Média      | Pendente      | -    |
-| 8   | **Detalhes Clínica**: Página de detalhes da clínica mostra número de usuários zerado (deveria mostrar cuidadores e admins vinculados)                                | Média      | Pendente      | -    |
-| 9   | **Convite Usuário**: Erro "Email address 'renildorabi@gmail.com' is invalid" ao enviar convite para usuário - mesmo com email válido                                 | Alta       | Pendente      | -    |
-| 10  | **Edição Usuário**: Não deve ser permitido editar o perfil (role) do usuário após criação                                                                            | Alta       | Pendente      | -    |
-| 11  | **Edição Usuário**: Não deve ser permitido editar a clínica vinculada ao usuário                                                                                     | Alta       | Pendente      | -    |
-| 12  | **Bloqueio Usuário**: Usuários bloqueados ainda conseguem fazer login no sistema                                                                                     | Alta       | Pendente      | -    |
-| 13  | **Detalhes Usuário**: Campo "Último acesso" não está sendo exibido/populado na página de detalhes do usuário                                                         | Média      | Pendente      | -    |
-| 14  | **Dashboard**: "Histórico de Ações Recentes" não está funcionando - dados não são exibidos                                                                           | Alta       | Pendente      | -    |
-| 15  | **Filtro Pacientes**: Filtro por clínica não está funcionando na listagem de pacientes                                                                               | Alta       | Pendente      | -    |
-| 16  | **Detalhes Paciente**: Checklists executados não estão sendo exibidos na página de detalhes                                                                          | Média      | Pendente      | -    |
-| 17  | **Template Checklist**: Ícone do template deve permitir imagem (PNG/JPG) além dos ícones disponíveis                                                                 | Média      | Pendente      | -    |
-| 18  | **Edição Checklist**: Ao editar um checklist existente, os itens existentes não estão sendo retornados/preenchidos no formulário                                     | Alta       | Pendente      | -    |
-| 19  | **Super Admin - Pacientes**: Total de cuidadores vinculados ao paciente não está correto na listagem                                                                 | Média      | Pendente      | -    |
-| 20  | **Clinic Admin - Pacientes**: Ao adicionar data de nascimento, sempre é exibido 1 dia antes (ex: 15/03/1990 → 14/03/1990)                                            | Alta       | Pendente      | -    |
-| 21  | **Clinic Admin - Cuidadores**: Exclusão de cuidador não está funcionando                                                                                             | Alta       | Pendente      | -    |
-| 22  | **Segurança**: Clinic Admin não possui permissões corretas via RLS policies - não consegue acessar/modificar dados da clínica                                        | Alta       | Pendente      | -    |
+| 2   | **Autenticação**: As informações do usuário logado (session/state) desaparecem quando uma página é recarregada                                                       | Alta       | **Corrigido** | -    |
+| 3   | **Segurança**: Super Admin pode acessar painéis de Clinic Admin através de URL direta com ID da clínica - deve permitir redirecionamento apenas nas listagens        | Alta       | **Corrigido** | -    |
+| 4   | **UX - Busca**: Input de busca não está com comportamento adequado (atraso, limpar, feedback visual) em todas as listagens                                           | Média      | **Corrigido** | -    |
+| 5   | **Validação CNPJ**: Mensagem de erro confusa "Invalid input: expected string, received undefined" ao inserir CNPJ inválido                                           | Média      | **Corrigido** | -    |
+| 6   | **Navegação**: Links de detail em clínicas não estão redirecionando corretamente                                                                                     | Média      | **Corrigido** | -    |
+| 7   | **CRUD Clínicas**: Implementar soft delete (marcar como deleted) ao invés de exclusão física                                                                         | Média      | **Corrigido** | -    |
+| 8   | **Detalhes Clínica**: Página de detalhes da clínica mostra número de usuários zerado (deveria mostrar cuidadores e admins vinculados)                                | Média      | **Corrigido** | -    |
+| 9   | **Convite Usuário**: Erro "Email address 'renildorabi@gmail.com' is invalid" ao enviar convite para usuário - mesmo com email válido                                 | Alta       | **Corrigido** | -    |
+| 10  | **Edição Usuário**: Não deve ser permitido editar o perfil (role) do usuário após criação                                                                            | Alta       | **Corrigido** | -    |
+| 11  | **Edição Usuário**: Não deve ser permitido editar a clínica vinculada ao usuário                                                                                     | Alta       | **Corrigido** | -    |
+| 12  | **Bloqueio Usuário**: Usuários bloqueados ainda conseguem fazer login no sistema                                                                                     | Alta       | **Corrigido** | -    |
+| 13  | **Detalhes Usuário**: Campo "Último acesso" não está sendo exibido/populado na página de detalhes do usuário                                                         | Média      | **Corrigido** | -    |
+| 14  | **Dashboard**: "Histórico de Ações Recentes" não está funcionando - dados não são exibidos                                                                           | Alta       | **Corrigido** | -    |
+| 15  | **Filtro Pacientes**: Filtro por clínica não está funcionando na listagem de pacientes                                                                               | Alta       | **Corrigido** | -    |
+| 16  | **Detalhes Paciente**: Checklists executados não estão sendo exibidos na página de detalhes                                                                          | Média      | **Corrigido** | -    |
+| 17  | **Template Checklist**: Ícone do template deve permitir imagem (PNG/JPG) além dos ícones disponíveis                                                                 | Média      | **Corrigido** | -    |
+| 18  | **Edição Checklist**: Ao editar um checklist existente, os itens existentes não estão sendo retornados/preenchidos no formulário                                     | Alta       | **Corrigido** | -    |
+| 19  | **Super Admin - Pacientes**: Total de cuidadores vinculados ao paciente não está correto na listagem                                                                 | Média      | **Corrigido** | -    |
+| 20  | **Clinic Admin - Pacientes**: Ao adicionar data de nascimento, sempre é exibido 1 dia antes (ex: 15/03/1990 → 14/03/1990)                                            | Alta       | **Corrigido** | -    |
+| 21  | **Clinic Admin - Cuidadores**: Exclusão de cuidador não está funcionando                                                                                             | Alta       | **Corrigido** | -    |
+| 22  | **Segurança**: Clinic Admin não possui permissões corretas via RLS policies - não consegue acessar/modificar dados da clínica                                        | Alta       | **Corrigido** | -    |
 
 ---
 
@@ -736,4 +736,4 @@ Antes de publicar em produção, testar **todos** os itens acima em:
 
 ---
 
-_Última atualização: 2026-03-27_
+_Última atualização: 2026-04-01_

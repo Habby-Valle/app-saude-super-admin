@@ -1,8 +1,10 @@
 'use client'
 
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Upload, X } from 'lucide-react'
+import Image from 'next/image'
 
 import { clinicSchema, type ClinicFormValues } from '@/lib/validations/clinic'
 import { Button } from '@/components/ui/button'
@@ -18,7 +20,8 @@ import {
 
 interface ClinicFormProps {
   defaultValues?: Partial<ClinicFormValues>
-  onSubmit: (values: ClinicFormValues) => Promise<void>
+  defaultLogoUrl?: string | null
+  onSubmit: (values: ClinicFormValues, logoFile: File | null) => Promise<void>
   isLoading?: boolean
 }
 
@@ -32,7 +35,7 @@ function formatCnpj(value: string): string {
     .replace(/(\d{4})(\d)/, '$1-$2')
 }
 
-export function ClinicForm({ defaultValues, onSubmit, isLoading }: ClinicFormProps) {
+export function ClinicForm({ defaultValues, defaultLogoUrl, onSubmit, isLoading }: ClinicFormProps) {
   const {
     register,
     handleSubmit,
@@ -53,8 +56,79 @@ export function ClinicForm({ defaultValues, onSubmit, isLoading }: ClinicFormPro
   const cnpjValue = watch('cnpj') ?? ''
   const statusValue = watch('status')
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(defaultLogoUrl ?? null)
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setLogoFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  function removeLogo() {
+    setLogoFile(null)
+    setLogoPreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handleFormSubmit(values: ClinicFormValues) {
+    await onSubmit(values, logoFile)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      {/* Logo */}
+      <div className="space-y-1.5">
+        <Label>Logo da clínica</Label>
+        <div className="flex items-center gap-4">
+          {logoPreview ? (
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border">
+              <Image
+                src={logoPreview}
+                alt="Preview da logo"
+                fill
+                className="object-contain p-1"
+                unoptimized
+              />
+              <button
+                type="button"
+                onClick={removeLogo}
+                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed bg-muted text-muted-foreground">
+              <Upload className="h-5 w-5" />
+            </div>
+          )}
+          <div className="flex flex-col gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {logoPreview ? 'Alterar logo' : 'Escolher logo'}
+            </Button>
+            <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP. Máx 2MB.</p>
+          </div>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
       {/* Nome */}
       <div className="space-y-1.5">
         <Label htmlFor="name">Nome da clínica *</Label>

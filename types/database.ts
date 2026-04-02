@@ -14,6 +14,7 @@ export interface Clinic {
   cnpj: string
   status: ClinicStatus
   plan?: string
+  logo_url?: string | null
   created_at: string
   updated_at?: string
   deleted_at?: string | null

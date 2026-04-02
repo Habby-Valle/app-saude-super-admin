@@ -6,6 +6,41 @@ import { clinicSchema } from "@/lib/validations/clinic"
 import type { ClinicFormValues } from "@/lib/validations/clinic"
 import type { Clinic, ClinicStatus, User } from "@/types/database"
 import { logAuditEvent } from "@/app/(main)/(super-admin)/super-admin/audit-logs/actions"
+import { createAdminClient } from "@/lib/supabase-admin"
+
+// ─── Upload de logo (SA usa service role key, bypassa RLS) ────────────────────
+
+export async function uploadClinicLogoSA(
+  formData: FormData,
+  folderId: string
+): Promise<{ success: boolean; logoUrl?: string; error?: string }> {
+  await requireSuperAdmin()
+
+  const file = formData.get("logo") as File | null
+  if (!file || file.size === 0) {
+    return { success: false, error: "Nenhum arquivo enviado" }
+  }
+
+  const admin = createAdminClient()
+  const ext = file.name.split(".").pop() ?? "png"
+  const path = `${folderId}/logo.${ext}`
+
+  const bytes = await file.arrayBuffer()
+  const { data: uploadData, error: uploadError } = await admin.storage
+    .from("clinic-logos")
+    .upload(path, bytes, { upsert: true, contentType: file.type })
+
+  if (uploadError) {
+    console.error("[uploadClinicLogoSA] upload error:", uploadError.message)
+    return { success: false, error: "Falha no upload da imagem" }
+  }
+
+  const {
+    data: { publicUrl },
+  } = admin.storage.from("clinic-logos").getPublicUrl(uploadData.path)
+
+  return { success: true, logoUrl: `${publicUrl}?t=${Date.now()}` }
+}
 
 export interface ClinicsResult {
   clinics: Clinic[]
@@ -86,7 +121,8 @@ export async function getClinics(params: {
 // ─── Criar clínica ────────────────────────────────────────────────────────────
 
 export async function createClinic(
-  raw: ClinicFormValues
+  raw: ClinicFormValues,
+  logoUrl?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   const result = clinicSchema.safeParse(raw)
   if (!result.success) {
@@ -110,7 +146,7 @@ export async function createClinic(
 
   const { data: created, error } = await supabase
     .from("clinics")
-    .insert({ name, cnpj, status, plan: plan ?? null })
+    .insert({ name, cnpj, status, plan: plan ?? null, logo_url: logoUrl ?? null })
     .select("id")
     .single()
 
@@ -129,7 +165,8 @@ export async function createClinic(
 
 export async function updateClinic(
   id: string,
-  raw: ClinicFormValues
+  raw: ClinicFormValues,
+  logoUrl?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   const result = clinicSchema.safeParse(raw)
   if (!result.success) {
@@ -152,9 +189,15 @@ export async function updateClinic(
     return { success: false, error: "Já existe outra clínica com este CNPJ" }
   }
 
+  // Monta payload: logo_url só é alterado se foi passado explicitamente
+  const updatePayload: Record<string, unknown> = { name, cnpj, status, plan: plan ?? null }
+  if (logoUrl !== undefined) {
+    updatePayload.logo_url = logoUrl
+  }
+
   const { error } = await supabase
     .from("clinics")
-    .update({ name, cnpj, status, plan: plan ?? null })
+    .update(updatePayload)
     .eq("id", id)
 
   if (error) {
@@ -165,6 +208,31 @@ export async function updateClinic(
   await logAuditEvent("update", "clinic", id).catch(() => {})
   revalidatePath("/clinics")
   revalidatePath("/dashboard")
+  return { success: true }
+}
+
+// ─── Atualizar apenas logo_url de uma clínica ─────────────────────────────────
+// Usado pelo clinic_admin para gerenciar a logo da própria clínica
+export async function updateClinicLogo(
+  clinicId: string,
+  logoUrl: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { error } = await supabase
+    .from("clinics")
+    .update({ logo_url: logoUrl })
+    .eq("id", clinicId)
+    .is("deleted_at", null)
+
+  if (error) {
+    console.error("[updateClinicLogo] Supabase error:", error)
+    return { success: false, error: error.message }
+  }
+
+  await logAuditEvent("update_logo", "clinic", clinicId).catch(() => {})
+  revalidatePath(`/super-admin/clinics/${clinicId}`)
+  revalidatePath("/super-admin/clinics")
   return { success: true }
 }
 

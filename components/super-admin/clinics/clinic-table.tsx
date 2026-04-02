@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -11,6 +12,7 @@ import {
   Plus,
   Trash2,
   LogIn,
+  Building2,
 } from "lucide-react"
 
 import {
@@ -211,8 +213,23 @@ export function ClinicTable({
                     <TableCell className="font-medium">
                       <Link
                         href={`/super-admin/clinics/${clinic.id}`}
-                        className="hover:underline"
+                        className="flex items-center gap-2.5 hover:underline"
                       >
+                        {/* Logo ou placeholder */}
+                        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+                          {clinic.logo_url ? (
+                            <Image
+                              src={clinic.logo_url}
+                              alt={`Logo ${clinic.name}`}
+                              fill
+                              sizes="32px"
+                              className="object-contain p-0.5"
+                              unoptimized
+                            />
+                          ) : (
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
                         {clinic.name}
                       </Link>
                     </TableCell>

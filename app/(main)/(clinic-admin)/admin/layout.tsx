@@ -3,19 +3,28 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { Topbar } from "@/components/layout/topbar"
 import { getClinicActiveSosCount } from "@/lib/sos-count"
 import { SuperAdminBanner } from "@/components/clinic-admin/super-admin-banner"
+import { getMyClinic } from "./settings/actions"
 
 export default async function ClinicAdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const activeSosCount = await getClinicActiveSosCount()
+  const [activeSosCount, clinic] = await Promise.all([
+    getClinicActiveSosCount(),
+    getMyClinic(),
+  ])
 
   return (
     <Providers>
       <div className="clinic-admin flex h-screen overflow-hidden bg-background">
         <div className="hidden md:flex md:shrink-0">
-          <Sidebar variant="clinic-admin" activeSosCount={activeSosCount} />
+          <Sidebar
+            variant="clinic-admin"
+            activeSosCount={activeSosCount}
+            clinicLogoUrl={clinic?.logo_url}
+            clinicName={clinic?.name}
+          />
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden">
