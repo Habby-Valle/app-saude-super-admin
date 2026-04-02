@@ -279,6 +279,32 @@ export async function deleteClinic(
     return { success: false, error: "Clínica não encontrada ou já excluída" }
   }
 
+  // Bloqueia exclusão se houver pacientes ou usuários vinculados
+  const [{ count: patientCount }, { count: userCount }] = await Promise.all([
+    supabase
+      .from("patients")
+      .select("id", { count: "exact", head: true })
+      .eq("clinic_id", id),
+    supabase
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .eq("clinic_id", id),
+  ])
+
+  if (patientCount && patientCount > 0) {
+    return {
+      success: false,
+      error: `Não é possível excluir: a clínica possui ${patientCount} paciente(s) vinculado(s).`,
+    }
+  }
+
+  if (userCount && userCount > 0) {
+    return {
+      success: false,
+      error: `Não é possível excluir: a clínica possui ${userCount} usuário(s) vinculado(s).`,
+    }
+  }
+
   const { error } = await supabase
     .from("clinics")
     .update({ deleted_at: new Date().toISOString() })

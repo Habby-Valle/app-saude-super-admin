@@ -247,6 +247,32 @@ export async function deleteCaregiver(
   try {
     const { supabase, clinicId } = await requireClinicAdmin()
 
+    // Bloqueia exclusão se houver pacientes ou turnos vinculados
+    const [{ count: patientCount }, { count: shiftCount }] = await Promise.all([
+      supabase
+        .from("caregiver_patient")
+        .select("patient_id", { count: "exact", head: true })
+        .eq("caregiver_id", id),
+      supabase
+        .from("shifts")
+        .select("id", { count: "exact", head: true })
+        .eq("caregiver_id", id),
+    ])
+
+    if (patientCount && patientCount > 0) {
+      return {
+        success: false,
+        error: `Não é possível excluir: o cuidador possui ${patientCount} paciente(s) vinculado(s).`,
+      }
+    }
+
+    if (shiftCount && shiftCount > 0) {
+      return {
+        success: false,
+        error: `Não é possível excluir: o cuidador possui ${shiftCount} turno(s) registrado(s).`,
+      }
+    }
+
     const { error: deleteLinksError } = await supabase
       .from("caregiver_patient")
       .delete()
