@@ -11,9 +11,13 @@ import {
   ShieldCheck,
   Plus,
   Mail,
+  Send,
 } from "lucide-react"
 
-import { toggleUserStatus } from "@/app/(main)/(super-admin)/super-admin/users/actions"
+import {
+  toggleUserStatus,
+  resendInvite,
+} from "@/app/(main)/(super-admin)/super-admin/users/actions"
 import type { User, UserRole } from "@/types/database"
 import type { Clinic } from "@/types/database"
 import { UserDialog } from "./user-dialog"
@@ -100,6 +104,7 @@ export function UserTable({
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | undefined>()
   const [toggleTarget, setToggleTarget] = useState<User | null>(null)
+  const [resendTarget, setResendTarget] = useState<User | null>(null)
 
   const openInvite = () => {
     setEditUser(undefined)
@@ -129,6 +134,19 @@ export function UserTable({
       setToggleTarget(null)
     })
   }, [toggleTarget, router])
+
+  const handleResendInvite = useCallback(() => {
+    if (!resendTarget) return
+    startTransition(async () => {
+      const result = await resendInvite(resendTarget.id)
+      if (result.success) {
+        toast.success(`Convite reenviado para "${resendTarget.name}".`)
+      } else {
+        toast.error(result.error ?? "Erro ao reenviar convite")
+      }
+      setResendTarget(null)
+    })
+  }, [resendTarget])
 
   return (
     <div className="space-y-4">
@@ -228,13 +246,15 @@ export function UserTable({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          user.status === "active" ? "default" : "destructive"
-                        }
-                      >
-                        {user.status === "active" ? "Ativo" : "Bloqueado"}
-                      </Badge>
+                      {user.status === "active" && (
+                        <Badge variant="default">Ativo</Badge>
+                      )}
+                      {user.status === "blocked" && (
+                        <Badge variant="destructive">Bloqueado</Badge>
+                      )}
+                      {user.status === "pending" && (
+                        <Badge variant="secondary">Pendente</Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {user.last_sign_in_at
@@ -260,26 +280,35 @@ export function UserTable({
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className={
-                              user.status === "active"
-                                ? "text-destructive focus:text-destructive"
-                                : ""
-                            }
-                            onClick={() => setToggleTarget(user)}
-                          >
-                            {user.status === "active" ? (
-                              <>
-                                <ShieldOff className="mr-2 h-4 w-4" />
-                                Bloquear
-                              </>
-                            ) : (
-                              <>
-                                <ShieldCheck className="mr-2 h-4 w-4" />
-                                Desbloquear
-                              </>
-                            )}
-                          </DropdownMenuItem>
+                          {user.status === "pending" ? (
+                            <DropdownMenuItem
+                              onClick={() => setResendTarget(user)}
+                            >
+                              <Send className="mr-2 h-4 w-4" />
+                              Reenviar convite
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              className={
+                                user.status === "active"
+                                  ? "text-destructive focus:text-destructive"
+                                  : ""
+                              }
+                              onClick={() => setToggleTarget(user)}
+                            >
+                              {user.status === "active" ? (
+                                <>
+                                  <ShieldOff className="mr-2 h-4 w-4" />
+                                  Bloquear
+                                </>
+                              ) : (
+                                <>
+                                  <ShieldCheck className="mr-2 h-4 w-4" />
+                                  Desbloquear
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -309,6 +338,28 @@ export function UserTable({
         user={editUser}
         clinics={clinics}
       />
+
+      {/* Confirm reenviar convite */}
+      <AlertDialog
+        open={!!resendTarget}
+        onOpenChange={(open) => !open && setResendTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reenviar convite?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Um novo e-mail de convite será enviado para{" "}
+              <strong>{resendTarget?.email}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResendInvite} disabled={isPending}>
+              Reenviar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Confirm bloquear/desbloquear */}
       <AlertDialog

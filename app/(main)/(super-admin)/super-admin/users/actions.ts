@@ -131,24 +131,24 @@ export async function inviteUser(
     .maybeSingle()
 
   if (existingProfile) {
-    // Perfil já existe — atualiza dados e reenvia convite
+    // Perfil já existe — atualiza dados e remarca como pendente (convite reenviado)
     await admin
       .from("users")
-      .update({ name, role, clinic_id: clinic_id ?? null, status: "active" })
+      .update({ name, role, clinic_id: clinic_id ?? null, status: "pending" })
       .eq("id", invited.user.id)
 
     revalidatePath("/users")
     return { success: true }
   }
 
-  // Insere perfil público
+  // Insere perfil público com status pendente — só ativa após aceitar o convite
   const { error: profileError } = await admin.from("users").insert({
     id: invited.user.id,
     name,
     email,
     role,
     clinic_id: clinic_id ?? null,
-    status: "active",
+    status: "pending",
   })
 
   if (profileError) {
@@ -195,13 +195,46 @@ export async function updateUser(
   return { success: true }
 }
 
+// ─── Reenviar convite ─────────────────────────────────────────────────────────
+
+export async function resendInvite(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  await requireSuperAdmin()
+  const admin = createAdminClient()
+
+  const { data: user } = await admin
+    .from("users")
+    .select("email, status")
+    .eq("id", userId)
+    .single()
+
+  if (!user) return { success: false, error: "Usuário não encontrado" }
+  if (user.status !== "pending") {
+    return { success: false, error: "Usuário já aceitou o convite" }
+  }
+
+  const { error } = await admin.auth.admin.inviteUserByEmail(user.email)
+  if (error) {
+    console.error("[resendInvite]", error)
+    return { success: false, error: error.message }
+  }
+
+  await logAuditEvent("resend_invite", "user", userId).catch(() => {})
+  return { success: true }
+}
+
 // ─── Bloquear / desbloquear usuário ──────────────────────────────────────────
 
 export async function toggleUserStatus(
   id: string,
-  currentStatus: "active" | "blocked"
+  currentStatus: "active" | "blocked" | "pending"
 ): Promise<{ success: boolean; error?: string }> {
   await requireSuperAdmin()
+
+  if (currentStatus === "pending") {
+    return { success: false, error: "Usuário ainda não aceitou o convite" }
+  }
 
   const newStatus = currentStatus === "active" ? "blocked" : "active"
   const admin = createAdminClient()

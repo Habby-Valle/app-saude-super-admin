@@ -29,7 +29,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
-  status: 'active' | 'blocked'
+  status: 'active' | 'blocked' | 'pending'
   created_at: string
   last_sign_in_at?: string
 }
