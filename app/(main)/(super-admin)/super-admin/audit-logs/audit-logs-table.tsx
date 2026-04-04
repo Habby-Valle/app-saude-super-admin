@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useTransition } from "react"
+import { useCallback, useTransition } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { Download, Filter, Shield } from "lucide-react"
+import { Download, Shield } from "lucide-react"
 import type { AuditLogWithUser } from "./actions"
 import { exportAuditLogsCsv } from "./actions"
 import { Badge } from "@/components/ui/badge"
@@ -102,7 +102,7 @@ export function AuditLogsTable({
 }: AuditLogsTableProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [isPending, startTransition] = useTransition()
+  const [isPending] = useTransition()
 
   const totalPages = Math.ceil(total / pageSize)
 

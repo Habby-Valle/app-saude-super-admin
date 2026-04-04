@@ -239,7 +239,7 @@ export async function createChecklist(
   }
 
   if (items.length > 0) {
-    const itemsToInsert = items.map((item, index) => ({
+    const itemsToInsert = items.map((item) => ({
       checklist_id: checklist.id,
       name: item.name,
       type: item.type as ChecklistItemType,

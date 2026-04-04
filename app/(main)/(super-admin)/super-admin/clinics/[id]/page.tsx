@@ -3,12 +3,10 @@ import { Suspense } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
-  Building2,
   Users,
   UserRound,
   ClipboardList,
   Calendar,
-  BadgeCheck,
 } from "lucide-react"
 import { getClinicById } from "../actions"
 import { Badge } from "@/components/ui/badge"

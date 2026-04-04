@@ -1,17 +1,25 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Menu, AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Sidebar } from './sidebar'
+import { useState } from "react"
+import { Menu } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Sidebar } from "./sidebar"
 
 interface MobileSidebarProps {
   variant?: "super-admin" | "clinic-admin"
   activeSosCount?: number
 }
 
-export function MobileSidebar({ variant, activeSosCount = 0 }: MobileSidebarProps) {
+export function MobileSidebar({
+  variant,
+  activeSosCount = 0,
+}: MobileSidebarProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -20,7 +28,7 @@ export function MobileSidebar({ variant, activeSosCount = 0 }: MobileSidebarProp
         <Button variant="ghost" size="icon" className="relative md:hidden">
           <Menu className="h-5 w-5" />
           {activeSosCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+            <span className="text-destructive-foreground absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold">
               {activeSosCount > 9 ? "9+" : activeSosCount}
             </span>
           )}

@@ -73,7 +73,6 @@ export function ChecklistTable({
   pageSize,
   search,
   scope,
-  clinics,
   onSearchChange,
   onScopeChange,
   onPageChange,
@@ -194,12 +193,17 @@ export function ChecklistTable({
                   <TableRow key={cl.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        {cl.icon && (
-                          cl.icon.startsWith("http")
+                        {cl.icon &&
+                          (cl.icon.startsWith("http") ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            ? <img src={cl.icon} alt="" className="h-5 w-5 rounded object-cover" />
-                            : <span className="text-lg">{cl.icon}</span>
-                        )}
+                            <img
+                              src={cl.icon}
+                              alt=""
+                              className="h-5 w-5 rounded object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg">{cl.icon}</span>
+                          ))}
                         {cl.name}
                       </div>
                     </TableCell>
@@ -263,7 +267,10 @@ export function ChecklistTable({
                               Ver detalhes
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEdit(cl)} disabled={isLoadingEdit}>
+                          <DropdownMenuItem
+                            onClick={() => openEdit(cl)}
+                            disabled={isLoadingEdit}
+                          >
                             <Pencil className="mr-2 h-4 w-4" />
                             {isLoadingEdit ? "Carregando..." : "Editar"}
                           </DropdownMenuItem>

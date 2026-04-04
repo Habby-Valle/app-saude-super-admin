@@ -20,12 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ClinicSosAcknowledgeDialog, ClinicSosResolveDialog } from "./sos-resolve-dialog"
+import {
+  ClinicSosAcknowledgeDialog,
+  ClinicSosResolveDialog,
+} from "./sos-resolve-dialog"
 import type {
   ClinicSosAlertWithDetails,
   SosStatus,
 } from "@/app/(main)/(clinic-admin)/admin/sos/actions"
-import { DataTablePagination } from "@/components/shared/data-table-pagination"
 
 const STATUS_LABELS: Record<SosStatus, string> = {
   active: "Ativo",
@@ -33,7 +35,10 @@ const STATUS_LABELS: Record<SosStatus, string> = {
   resolved: "Resolvido",
 }
 
-const STATUS_VARIANTS: Record<SosStatus, "destructive" | "secondary" | "outline"> = {
+const STATUS_VARIANTS: Record<
+  SosStatus,
+  "destructive" | "secondary" | "outline"
+> = {
   active: "destructive",
   acknowledged: "secondary",
   resolved: "outline",
@@ -65,8 +70,10 @@ export function ClinicSosTable({
   onStatusChange,
   onPageChange,
 }: ClinicSosTableProps) {
-  const [acknowledgeTarget, setAcknowledgeTarget] = useState<ClinicSosAlertWithDetails | null>(null)
-  const [resolveTarget, setResolveTarget] = useState<ClinicSosAlertWithDetails | null>(null)
+  const [acknowledgeTarget, setAcknowledgeTarget] =
+    useState<ClinicSosAlertWithDetails | null>(null)
+  const [resolveTarget, setResolveTarget] =
+    useState<ClinicSosAlertWithDetails | null>(null)
 
   const totalPages = Math.ceil(total / pageSize)
 
@@ -87,7 +94,8 @@ export function ClinicSosTable({
         </Select>
 
         <p className="text-sm text-muted-foreground">
-          {total} alerta{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
+          {total} alerta{total !== 1 ? "s" : ""} encontrado
+          {total !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -243,23 +251,43 @@ export function ClinicSosTableSkeleton() {
         <Table>
           <TableHeader>
             <TableRow>
-              {["Paciente", "Disparado por", "Status", "Data/Hora", "Confirmado por", "Observações", ""].map(
-                (h) => (
-                  <TableHead key={h}>{h}</TableHead>
-                )
-              )}
+              {[
+                "Paciente",
+                "Disparado por",
+                "Status",
+                "Data/Hora",
+                "Confirmado por",
+                "Observações",
+                "",
+              ].map((h) => (
+                <TableHead key={h}>{h}</TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 6 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-8 w-8 rounded" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

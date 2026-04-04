@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Search, AlertTriangle, CheckCircle2, Clock } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
@@ -22,8 +21,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { SosAcknowledgeDialog, SosResolveDialog } from "./sos-resolve-dialog"
-import type { SosAlertWithDetails, SosStatus } from "@/app/(main)/(super-admin)/super-admin/sos/actions"
-import { DataTablePagination } from "@/components/shared/data-table-pagination"
+import type {
+  SosAlertWithDetails,
+  SosStatus,
+} from "@/app/(main)/(super-admin)/super-admin/sos/actions"
 
 const STATUS_LABELS: Record<SosStatus, string> = {
   active: "Ativo",
@@ -31,7 +32,10 @@ const STATUS_LABELS: Record<SosStatus, string> = {
   resolved: "Resolvido",
 }
 
-const STATUS_VARIANTS: Record<SosStatus, "destructive" | "secondary" | "outline"> = {
+const STATUS_VARIANTS: Record<
+  SosStatus,
+  "destructive" | "secondary" | "outline"
+> = {
   active: "destructive",
   acknowledged: "secondary",
   resolved: "outline",
@@ -69,8 +73,10 @@ export function SosTable({
   onClinicChange,
   onPageChange,
 }: SosTableProps) {
-  const [acknowledgeTarget, setAcknowledgeTarget] = useState<SosAlertWithDetails | null>(null)
-  const [resolveTarget, setResolveTarget] = useState<SosAlertWithDetails | null>(null)
+  const [acknowledgeTarget, setAcknowledgeTarget] =
+    useState<SosAlertWithDetails | null>(null)
+  const [resolveTarget, setResolveTarget] =
+    useState<SosAlertWithDetails | null>(null)
 
   const totalPages = Math.ceil(total / pageSize)
 
@@ -107,7 +113,8 @@ export function SosTable({
         </div>
 
         <p className="text-sm text-muted-foreground">
-          {total} alerta{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
+          {total} alerta{total !== 1 ? "s" : ""} encontrado
+          {total !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -128,7 +135,10 @@ export function SosTable({
           <TableBody>
             {alerts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="py-10 text-center text-muted-foreground"
+                >
                   Nenhum alerta SOS encontrado.
                 </TableCell>
               </TableRow>
@@ -233,11 +243,15 @@ export function SosTable({
 
       <SosAcknowledgeDialog
         alert={acknowledgeTarget}
-        onOpenChange={(open) => { if (!open) setAcknowledgeTarget(null) }}
+        onOpenChange={(open) => {
+          if (!open) setAcknowledgeTarget(null)
+        }}
       />
       <SosResolveDialog
         alert={resolveTarget}
-        onOpenChange={(open) => { if (!open) setResolveTarget(null) }}
+        onOpenChange={(open) => {
+          if (!open) setResolveTarget(null)
+        }}
       />
     </div>
   )
@@ -254,7 +268,15 @@ export function SosTableSkeleton() {
         <Table>
           <TableHeader>
             <TableRow>
-              {["Paciente", "Clínica", "Disparado por", "Status", "Data/Hora", "Confirmado por", ""].map((h) => (
+              {[
+                "Paciente",
+                "Clínica",
+                "Disparado por",
+                "Status",
+                "Data/Hora",
+                "Confirmado por",
+                "",
+              ].map((h) => (
                 <TableHead key={h}>{h}</TableHead>
               ))}
             </TableRow>
@@ -262,13 +284,27 @@ export function SosTableSkeleton() {
           <TableBody>
             {Array.from({ length: 6 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-8 w-8 rounded" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

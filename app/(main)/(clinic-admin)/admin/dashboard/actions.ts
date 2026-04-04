@@ -1,7 +1,7 @@
 "use server"
 
 import { requireClinicAdmin } from "@/lib/auth"
-import type { Patient, User, Shift } from "@/types/database"
+import type {} from "@/types/database"
 
 export interface ClinicDashboardStats {
   patients: {
@@ -38,8 +38,7 @@ export interface ClinicDashboardStats {
 
 export async function getClinicDashboardStats(): Promise<ClinicDashboardStats | null> {
   try {
-    const { supabase, clinicId, isSuperAdmin, user } =
-      await requireClinicAdmin()
+    const { supabase, clinicId } = await requireClinicAdmin()
 
     const effectiveClinicId = clinicId
 
@@ -123,7 +122,8 @@ export async function getClinicDashboardStats(): Promise<ClinicDashboardStats | 
         active: patientsResult.count ?? 0,
         newThisMonth: (patientsResult.data ?? []).filter(
           (p: Record<string, unknown>) =>
-            typeof p.created_at === "string" && p.created_at >= startOfMonth.toISOString()
+            typeof p.created_at === "string" &&
+            p.created_at >= startOfMonth.toISOString()
         ).length,
       },
       caregivers: {

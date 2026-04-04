@@ -13,10 +13,7 @@ interface ClinicLogoManagerProps {
   currentLogoUrl: string | null
 }
 
-export function ClinicLogoManager({
-  clinicId: _clinicId,
-  currentLogoUrl,
-}: ClinicLogoManagerProps) {
+export function ClinicLogoManager({ currentLogoUrl }: ClinicLogoManagerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [logoUrl, setLogoUrl] = useState<string | null>(currentLogoUrl)
   const [isPending, startTransition] = useTransition()

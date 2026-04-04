@@ -6,7 +6,6 @@ import {
   updateShiftTemplateSchema,
   createShiftSchema,
   shiftFiltersSchema,
-  createCheckpointSchema,
 } from "@/lib/validations/shift"
 import { revalidatePath } from "next/cache"
 import type { ShiftStatus } from "@/types/database"
@@ -557,7 +556,7 @@ export async function createCheckpoint(
 export async function getShiftCheckpoints(
   shiftId: string
 ): Promise<ShiftCheckpoint[]> {
-  const { supabase, clinicId } = await requireClinicAdmin()
+  const { supabase } = await requireClinicAdmin()
 
   const { data, error } = await supabase
     .from("shift_checkpoints")

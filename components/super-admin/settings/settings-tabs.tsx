@@ -1,11 +1,12 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CreditCard, AlertTriangle, Clock, Shield } from "lucide-react"
+import { CreditCard, AlertTriangle, Clock, Shield, User } from "lucide-react"
 import { PlansSettings } from "./plans-settings"
 import { ShiftCategoriesSettings } from "./shift-categories-settings"
 import { AlertsSettings } from "./alerts-settings"
 import { LgpdSettings } from "./lgpd-settings"
+import { AccountSettings } from "./account-settings"
 import type {
   Plan,
   ShiftCategory,
@@ -29,6 +30,10 @@ export function SettingsTabs({
   return (
     <Tabs defaultValue="plans" className="space-y-6">
       <TabsList>
+        <TabsTrigger value="account" className="gap-2">
+          <User className="h-4 w-4" />
+          Conta
+        </TabsTrigger>
         <TabsTrigger value="plans" className="gap-2">
           <CreditCard className="h-4 w-4" />
           Planos
@@ -46,6 +51,10 @@ export function SettingsTabs({
           LGPD / Privacidade
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="account">
+        <AccountSettings />
+      </TabsContent>
 
       <TabsContent value="plans">
         <PlansSettings initialPlans={plans} />

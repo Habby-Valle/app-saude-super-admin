@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react"
 import {
-  Shield,
   Download,
   UserX,
   Clock,
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import {
   AlertDialog,
@@ -94,10 +92,12 @@ function EncryptionStatusSection({
       </div>
 
       <Card>
-        <CardContent className="pt-4 space-y-3">
+        <CardContent className="space-y-3 pt-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium">Chave de criptografia (ENCRYPTION_KEY)</span>
+              <span className="font-medium">
+                Chave de criptografia (ENCRYPTION_KEY)
+              </span>
             </div>
             {keyConfigured ? (
               <Badge variant="default" className="gap-1 bg-green-600">
@@ -116,8 +116,15 @@ function EncryptionStatusSection({
             <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>
-                Adicione <code className="rounded bg-amber-100 px-1 dark:bg-amber-900">ENCRYPTION_KEY=&lt;string segura&gt;</code> no arquivo{" "}
-                <code className="rounded bg-amber-100 px-1 dark:bg-amber-900">.env.local</code> para habilitar a criptografia.
+                Adicione{" "}
+                <code className="rounded bg-amber-100 px-1 dark:bg-amber-900">
+                  ENCRYPTION_KEY=&lt;string segura&gt;
+                </code>{" "}
+                no arquivo{" "}
+                <code className="rounded bg-amber-100 px-1 dark:bg-amber-900">
+                  .env.local
+                </code>{" "}
+                para habilitar a criptografia.
               </span>
             </div>
           )}
@@ -125,7 +132,7 @@ function EncryptionStatusSection({
           {statuses.length > 0 && (
             <>
               <Separator />
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Campos monitorados
               </p>
               {statuses.map((s) => (
@@ -141,11 +148,16 @@ function EncryptionStatusSection({
                   </div>
                   <div className="flex items-center gap-2">
                     {!s.sample_checked && (
-                      <span className="text-xs text-muted-foreground">sem dados</span>
+                      <span className="text-xs text-muted-foreground">
+                        sem dados
+                      </span>
                     )}
-                    {s.sample_checked && (
-                      s.encrypted ? (
-                        <Badge variant="default" className="gap-1 bg-green-600 text-xs">
+                    {s.sample_checked &&
+                      (s.encrypted ? (
+                        <Badge
+                          variant="default"
+                          className="gap-1 bg-green-600 text-xs"
+                        >
                           <Lock className="h-3 w-3" />
                           Cifrado
                         </Badge>
@@ -154,8 +166,7 @@ function EncryptionStatusSection({
                           <Info className="h-3 w-3" />
                           Texto plano
                         </Badge>
-                      )
-                    )}
+                      ))}
                   </div>
                 </div>
               ))}
@@ -169,7 +180,11 @@ function EncryptionStatusSection({
 
 // ─── Seção: Políticas de Retenção ────────────────────────────────────────────
 
-function RetentionPoliciesSection({ policies }: { policies: RetentionPolicy[] }) {
+function RetentionPoliciesSection({
+  policies,
+}: {
+  policies: RetentionPolicy[]
+}) {
   const [isPending, startTransition] = useTransition()
   const [editing, setEditing] = useState<Record<string, string>>({})
 
@@ -309,7 +324,8 @@ function ExportSection() {
           Exportação de Dados (Portabilidade)
         </h2>
         <p className="text-sm text-muted-foreground">
-          Exporte todos os dados de um titular em formato JSON (LGPD Art. 18, V).
+          Exporte todos os dados de um titular em formato JSON (LGPD Art. 18,
+          V).
         </p>
       </div>
 
@@ -388,7 +404,9 @@ function ExportSection() {
               >
                 <div>
                   <p className="font-medium">{p.name}</p>
-                  <p className="text-xs text-muted-foreground">{p.clinic_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.clinic_name}
+                  </p>
                 </div>
                 <Button
                   variant="outline"
@@ -569,15 +587,15 @@ function AnonymizeSection() {
               >
                 <div>
                   <p className="font-medium">{p.name}</p>
-                  <p className="text-xs text-muted-foreground">{p.clinic_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.clinic_name}
+                  </p>
                 </div>
                 <Button
                   variant="destructive"
                   size="sm"
                   disabled={isPending}
-                  onClick={() =>
-                    setConfirmPatient({ id: p.id, name: p.name })
-                  }
+                  onClick={() => setConfirmPatient({ id: p.id, name: p.name })}
                 >
                   <UserX className="mr-1 h-3 w-3" />
                   Anonimizar
@@ -598,8 +616,8 @@ function AnonymizeSection() {
             <AlertDialogTitle>Anonimizar usuário?</AlertDialogTitle>
             <AlertDialogDescription>
               Os dados pessoais de <strong>{confirmUser?.name}</strong> serão
-              substituídos por valores anônimos e o acesso será bloqueado.
-              Esta ação é <strong>irreversível</strong>.
+              substituídos por valores anônimos e o acesso será bloqueado. Esta
+              ação é <strong>irreversível</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -624,8 +642,8 @@ function AnonymizeSection() {
           <AlertDialogHeader>
             <AlertDialogTitle>Anonimizar paciente?</AlertDialogTitle>
             <AlertDialogDescription>
-              Os dados pessoais de <strong>{confirmPatient?.name}</strong>{" "}
-              (nome e data de nascimento) serão removidos. Esta ação é{" "}
+              Os dados pessoais de <strong>{confirmPatient?.name}</strong> (nome
+              e data de nascimento) serão removidos. Esta ação é{" "}
               <strong>irreversível</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>

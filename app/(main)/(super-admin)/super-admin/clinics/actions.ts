@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { requireSuperAdmin } from "@/lib/auth"
 import { clinicSchema } from "@/lib/validations/clinic"
 import type { ClinicFormValues } from "@/lib/validations/clinic"
-import type { Clinic, ClinicStatus, User } from "@/types/database"
+import type { Clinic, ClinicStatus } from "@/types/database"
 import { logAuditEvent } from "@/app/(main)/(super-admin)/super-admin/audit-logs/actions"
 import { createAdminClient } from "@/lib/supabase-admin"
 
@@ -146,7 +146,13 @@ export async function createClinic(
 
   const { data: created, error } = await supabase
     .from("clinics")
-    .insert({ name, cnpj, status, plan: plan ?? null, logo_url: logoUrl ?? null })
+    .insert({
+      name,
+      cnpj,
+      status,
+      plan: plan ?? null,
+      logo_url: logoUrl ?? null,
+    })
     .select("id")
     .single()
 
@@ -190,7 +196,12 @@ export async function updateClinic(
   }
 
   // Monta payload: logo_url só é alterado se foi passado explicitamente
-  const updatePayload: Record<string, unknown> = { name, cnpj, status, plan: plan ?? null }
+  const updatePayload: Record<string, unknown> = {
+    name,
+    cnpj,
+    status,
+    plan: plan ?? null,
+  }
   if (logoUrl !== undefined) {
     updatePayload.logo_url = logoUrl
   }

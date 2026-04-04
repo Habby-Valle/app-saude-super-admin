@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { createServerSupabaseClient } from "@/lib/supabase-server"
-import { createAdminClient } from "@/lib/supabase-admin"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import type { AuthUser } from "@/types/auth"
 import type { UserRole } from "@/types/database"

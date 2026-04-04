@@ -2,12 +2,8 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { inviteUserSchema, updateUserSchema } from "@/lib/validations/user"
-import type {
-  InviteUserValues,
-  UpdateUserValues,
-  UserFormValues,
-} from "@/lib/validations/user"
+import { userFormSchema } from "@/lib/validations/user"
+import type { InviteUserValues, UserFormValues } from "@/lib/validations/user"
 import type { User } from "@/types/database"
 import type { Clinic } from "@/types/database"
 import { Button } from "@/components/ui/button"
@@ -43,9 +39,7 @@ export function UserForm({
     watch,
     formState: { errors },
   } = useForm<UserFormValues>({
-    resolver: zodResolver(
-      isEditing ? updateUserSchema : inviteUserSchema
-    ) as any,
+    resolver: zodResolver(userFormSchema),
     defaultValues: {
       name: user?.name ?? "",
       email: user?.email ?? "",

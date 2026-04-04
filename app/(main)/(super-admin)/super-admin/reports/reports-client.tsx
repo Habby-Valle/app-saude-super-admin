@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useTransition } from "react"
 import {
-  getReportClinics,
   getShiftsByPeriod,
   getChecklistsByPeriod,
   getPatientsGrowth,
@@ -23,6 +22,11 @@ interface ReportsClientProps {
   clinics: { id: string; name: string }[]
 }
 
+type ReportFilters = {
+  clinicId: string
+  dateRange: { from: string; to: string }
+}
+
 export function ReportsClient({ clinics }: ReportsClientProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -32,10 +36,7 @@ export function ReportsClient({ clinics }: ReportsClientProps) {
   )
   const [patientsData, setPatientsData] = useState<PatientsGrowthData[]>([])
 
-  const [filters, setFilters] = useState<{
-    clinicId: string
-    dateRange: { from: string; to: string }
-  }>(() => {
+  const [, setFilters] = useState<ReportFilters>(() => {
     const now = new Date()
     const from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     return {
@@ -47,7 +48,7 @@ export function ReportsClient({ clinics }: ReportsClientProps) {
     }
   })
 
-  const loadReports = useCallback((newFilters: typeof filters) => {
+  const loadReports = useCallback((newFilters: ReportFilters) => {
     startTransition(async () => {
       const [shifts, checklists, patients] = await Promise.all([
         getShiftsByPeriod(newFilters.dateRange, newFilters.clinicId),
@@ -61,7 +62,7 @@ export function ReportsClient({ clinics }: ReportsClientProps) {
   }, [])
 
   const handleFilterChange = useCallback(
-    (newFilters: typeof filters) => {
+    (newFilters: ReportFilters) => {
       setFilters(newFilters)
       loadReports(newFilters)
     },

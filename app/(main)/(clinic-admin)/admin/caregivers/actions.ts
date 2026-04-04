@@ -157,7 +157,7 @@ export async function createCaregiver(
   data: z.infer<typeof createCaregiverSchema>
 ): Promise<{ success: boolean; error?: string; userId?: string }> {
   try {
-    const { supabase, clinicId } = await requireClinicAdmin()
+    await requireClinicAdmin()
     const adminClient = createAdminClient()
 
     const parsed = createCaregiverSchema.safeParse(data)

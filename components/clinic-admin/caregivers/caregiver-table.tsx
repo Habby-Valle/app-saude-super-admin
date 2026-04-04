@@ -4,7 +4,6 @@ import { Search } from "lucide-react"
 
 import type { ClinicCaregiver } from "@/app/(main)/(clinic-admin)/admin/caregivers/actions"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import {

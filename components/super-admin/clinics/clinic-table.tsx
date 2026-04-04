@@ -110,8 +110,6 @@ export function ClinicTable({
   const [deactivateTarget, setDeactivateTarget] = useState<Clinic | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Clinic | null>(null)
 
-  const totalPages = Math.ceil(total / pageSize)
-
   const openCreate = () => {
     setEditClinic(undefined)
     setDialogOpen(true)

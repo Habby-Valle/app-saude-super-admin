@@ -33,21 +33,6 @@ interface PatientDetailsPageProps {
   params: Promise<{ id: string }>
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  create: "Criação",
-  update: "Atualização",
-  delete: "Exclusão",
-}
-
-const ENTITY_LABELS: Record<string, string> = {
-  clinic: "Clínica",
-  user: "Usuário",
-  patient: "Paciente",
-  checklist: "Checklist",
-  shift: "Turno",
-  system: "Sistema",
-}
-
 function parseLocalDate(dateStr: string): Date {
   const [year, month, day] = dateStr.split("-").map(Number)
   return new Date(year, month - 1, day)
@@ -72,7 +57,14 @@ async function PatientDetailsContent({ id }: { id: string }) {
     return null
   }
 
-  const { patient, clinic, caregivers, emergencyContacts, executedChecklists, stats } = details
+  const {
+    patient,
+    clinic,
+    caregivers,
+    emergencyContacts,
+    executedChecklists,
+    stats,
+  } = details
 
   const initials = patient.name
     .split(" ")
@@ -299,19 +291,26 @@ async function PatientDetailsContent({ id }: { id: string }) {
                       <TableCell className="text-sm text-muted-foreground">
                         {sc.caregiver_name}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                         {sc.started_at
-                          ? new Date(sc.started_at).toLocaleDateString("pt-BR", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
+                          ? new Date(sc.started_at).toLocaleDateString(
+                              "pt-BR",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
                           : "—"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={sc.status === "completed" ? "default" : "secondary"}>
+                        <Badge
+                          variant={
+                            sc.status === "completed" ? "default" : "secondary"
+                          }
+                        >
                           {sc.status === "completed" ? "Concluído" : "Pendente"}
                         </Badge>
                       </TableCell>

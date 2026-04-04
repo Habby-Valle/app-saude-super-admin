@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useTransition } from "react"
 import { ClipboardList } from "lucide-react"
 import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import { ChecklistForm } from "./checklist-form"
@@ -22,7 +22,7 @@ export function ChecklistDialog({
   onOpenChange,
   checklist,
 }: ChecklistDialogProps) {
-  const [isPending, startTransition] = useTransition()
+  const [isPending] = useTransition()
   // Usar o checklist diretamente da prop, sem estado interno
   const data = checklist
 
