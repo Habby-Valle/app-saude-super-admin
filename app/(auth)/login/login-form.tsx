@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeOff, ShieldCheck, Loader2 } from "lucide-react"
+import Link from "next/link"
 
 import { createClient } from "@/lib/supabase"
 import { loginSchema, type LoginSchema } from "@/lib/validations/auth"
@@ -199,6 +200,16 @@ export function LoginForm() {
               "Entrar"
             )}
           </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Esqueceu a senha?{" "}
+            <Link
+              href="/forgot-password"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Recuperar senha
+            </Link>
+          </p>
         </form>
       </CardContent>
     </Card>
