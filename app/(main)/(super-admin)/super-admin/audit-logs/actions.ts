@@ -12,6 +12,8 @@ export type AuditAction =
   | "invite"
   | "activate"
   | "deactivate"
+  | "update_logo"
+  | "resend_invite"
 
 export type AuditEntity =
   | "clinic"

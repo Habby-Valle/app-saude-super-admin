@@ -17,9 +17,57 @@ import {
   CalendarClock,
   UserCog,
   CreditCard,
+  Bug,
+  TestTube,
+  CheckCircle,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+
+type Environment = "development" | "homologation" | "production"
+
+const envConfig: Record<
+  Environment,
+  { label: string; icon: typeof Bug; color: string; bgColor: string }
+> = {
+  development: {
+    label: "DESENVOLVIMENTO",
+    icon: Bug,
+    color: "text-yellow-700",
+    bgColor: "bg-yellow-100",
+  },
+  homologation: {
+    label: "HOMOLOGAÇÃO",
+    icon: TestTube,
+    color: "text-orange-700",
+    bgColor: "bg-orange-100",
+  },
+  production: {
+    label: "PRODUÇÃO",
+    icon: CheckCircle,
+    color: "text-green-700",
+    bgColor: "bg-green-100",
+  },
+}
+
+function EnvironmentBadge() {
+  const env = (process.env.NEXT_PUBLIC_APP_ENV ?? "development") as Environment
+  const config = envConfig[env] ?? envConfig.development
+  const EnvIcon = config.icon
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-bold tracking-wider uppercase",
+        config.color,
+        config.bgColor
+      )}
+    >
+      <EnvIcon className="h-3 w-3" />
+      <span>{config.label}</span>
+    </div>
+  )
+}
 
 const superAdminNavItems = [
   { label: "Dashboard", href: "/super-admin/dashboard", icon: LayoutDashboard },
@@ -141,7 +189,11 @@ export function Sidebar({
       </nav>
 
       <div className="border-t px-4 py-3">
-        <p className="text-[11px] text-muted-foreground">v0.1.0 · {title}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] text-muted-foreground">v0.1.0</p>
+          <EnvironmentBadge />
+        </div>
+        <p className="mt-1 text-[10px] text-muted-foreground">{title}</p>
       </div>
     </aside>
   )

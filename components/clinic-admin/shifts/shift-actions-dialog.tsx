@@ -36,6 +36,7 @@ import {
 import type {
   ShiftWithDetails,
   ShiftCheckpoint,
+  FinishShiftResult,
 } from "@/app/(main)/(clinic-admin)/admin/shifts/actions"
 
 interface ShiftActionsDialogProps {
@@ -69,10 +70,14 @@ export function ShiftActionsDialog({ shift }: ShiftActionsDialogProps) {
           justification,
         }))
 
-      const result =
-        confirmAction === "finish"
-          ? await finishShift(shift.id, justificationsList)
-          : await cancelShift(shift.id)
+      let result: FinishShiftResult = { success: false, error: "Unknown error" }
+
+      if (confirmAction === "finish") {
+        result = await finishShift(shift.id, justificationsList)
+      } else {
+        const cancelResult = await cancelShift(shift.id)
+        result = { success: cancelResult.success, error: cancelResult.error }
+      }
 
       if (result.success) {
         toast.success(
