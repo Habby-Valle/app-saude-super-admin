@@ -148,6 +148,91 @@ sos_notifications {
 }
 
 %% =========================
+%% PLANOS E BENEFÍCIOS
+%% =========================
+
+plans {
+  uuid id PK
+  string name
+  text description
+  decimal price
+  string billing_cycle "monthly|quarterly|annual"
+  boolean is_active
+  jsonb features
+  int max_users
+  int max_patients
+  int max_storage
+  int sort_order
+  timestamptz created_at
+  timestamptz updated_at
+}
+
+plan_benefits {
+  uuid id PK
+  string name
+  string code
+  string category "feature|limit|addon|integration"
+  string icon
+  boolean is_active
+  timestamptz created_at
+}
+
+plan_benefit_relations {
+  uuid id PK
+  uuid plan_id FK
+  uuid benefit_id FK
+  boolean is_enabled
+  timestamptz created_at
+}
+
+clinic_plans {
+  uuid id PK
+  uuid clinic_id FK
+  uuid plan_id FK
+  string status "trial|active|expired|cancelled"
+  timestamptz started_at
+  timestamptz expires_at
+  timestamptz trial_ends_at
+  timestamptz created_at
+  timestamptz updated_at
+}
+
+clinic_plan_benefits {
+  uuid id PK
+  uuid clinic_plan_id FK
+  uuid benefit_id FK
+  boolean is_enabled
+  timestamptz created_at
+  timestamptz updated_at
+}
+
+user_benefits {
+  uuid id PK
+  uuid user_id FK
+  uuid benefit_id FK
+  boolean is_enabled
+  timestamptz expires_at
+  uuid granted_by FK
+  timestamptz created_at
+  timestamptz updated_at
+}
+
+%% =========================
+%% RELACIONAMENTOS PLANOS
+%% =========================
+
+plans ||--o{ plan_benefit_relations : "benefícios"
+plan_benefits ||--o{ plan_benefit_relations : "planos"
+plan_benefits ||--o{ clinic_plan_benefits : "benefícios clínica"
+plan_benefits ||--o{ user_benefits : "benefícios usuário"
+
+clinics ||--o{ clinic_plans : "plano ativo"
+plans ||--o{ clinic_plans : "assinatura"
+clinic_plans ||--o{ clinic_plan_benefits : "benefícios customizados"
+
+users ||--o{ user_benefits : "benefícios pessoais"
+
+%% =========================
 %% RELACIONAMENTOS
 %% =========================
 

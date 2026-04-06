@@ -121,6 +121,78 @@ export interface ShiftChecklistItem {
   observation: string | null
 }
 
+// ─── Plans ────────────────────────────────────────────────────────────────────
+
+export type PlanStatus = 'trial' | 'active' | 'expired' | 'cancelled'
+export type BillingCycle = 'monthly' | 'quarterly' | 'annual'
+export type BenefitCategory = 'feature' | 'limit' | 'addon' | 'integration'
+
+export interface Plan {
+  id: string
+  name: string
+  description: string
+  price: number
+  billing_cycle: BillingCycle
+  is_active: boolean
+  features: string[]
+  max_users: number
+  max_patients: number
+  max_storage: number
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface PlanBenefit {
+  id: string
+  name: string
+  code: string
+  category: BenefitCategory
+  icon: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface PlanBenefitRelation {
+  id: string
+  plan_id: string
+  benefit_id: string
+  is_enabled: boolean
+  created_at: string
+}
+
+export interface ClinicPlan {
+  id: string
+  clinic_id: string
+  plan_id: string
+  status: PlanStatus
+  started_at: string
+  expires_at: string
+  trial_ends_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ClinicPlanBenefit {
+  id: string
+  clinic_plan_id: string
+  benefit_id: string
+  is_enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface UserBenefit {
+  id: string
+  user_id: string
+  benefit_id: string
+  is_enabled: boolean
+  expires_at: string | null
+  granted_by: string
+  created_at: string
+  updated_at: string
+}
+
 // ─── Audit Log (futuro) ───────────────────────────────────────────────────────
 
 export interface AuditLog {
