@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   CalendarClock,
   UserCog,
+  CreditCard,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils"
 const superAdminNavItems = [
   { label: "Dashboard", href: "/super-admin/dashboard", icon: LayoutDashboard },
   { label: "Clínicas", href: "/super-admin/clinics", icon: Building2 },
+  { label: "Planos", href: "/super-admin/plans", icon: CreditCard },
   { label: "Usuários", href: "/super-admin/users", icon: Users },
   { label: "Pacientes", href: "/super-admin/patients", icon: UserRound },
   { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
@@ -39,6 +41,7 @@ const clinicAdminNavItems = [
   { label: "Turnos", href: "/admin/shifts", icon: CalendarClock },
   { label: "Checklists", href: "/admin/checklists", icon: ClipboardList },
   { label: "SOS", href: "/admin/sos", icon: AlertTriangle, isSos: true },
+  { label: "Plano", href: "/admin/plan", icon: CreditCard },
   { label: "Relatórios", href: "/admin/reports", icon: BarChart3 },
   { label: "Configurações", href: "/admin/settings", icon: Settings },
 ]
@@ -126,7 +129,7 @@ export function Sidebar({
                     "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
                     isActive
                       ? "bg-primary-foreground text-primary"
-                      : "bg-destructive text-destructive-foreground"
+                      : "text-destructive-foreground bg-destructive"
                   )}
                 >
                   {activeSosCount > 99 ? "99+" : activeSosCount}

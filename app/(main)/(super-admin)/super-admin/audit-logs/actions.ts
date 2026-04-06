@@ -20,6 +20,8 @@ export type AuditEntity =
   | "checklist"
   | "shift"
   | "system"
+  | "plan"
+  | "plan_benefit"
 
 export interface AuditLogWithUser extends AuditLog {
   user_name: string
