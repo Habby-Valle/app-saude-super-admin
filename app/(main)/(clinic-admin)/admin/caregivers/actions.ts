@@ -1,6 +1,6 @@
 "use server"
 
-import { requireClinicAdmin } from "@/lib/auth"
+import { requireClinicAdmin, requireActiveSubscription } from "@/lib/auth"
 import { createAdminClient } from "@/lib/supabase-admin"
 import { z } from "zod"
 import type { User } from "@/types/database"
@@ -158,6 +158,8 @@ export async function createCaregiver(
 ): Promise<{ success: boolean; error?: string; userId?: string }> {
   try {
     const { clinicId } = await requireClinicAdmin()
+    await requireActiveSubscription(clinicId)
+
     const adminClient = createAdminClient()
 
     const parsed = createCaregiverSchema.safeParse(data)

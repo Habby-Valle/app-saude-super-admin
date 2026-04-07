@@ -1,6 +1,6 @@
 "use server"
 
-import { requireClinicAdmin } from "@/lib/auth"
+import { requireClinicAdmin, requireActiveSubscription } from "@/lib/auth"
 import {
   createShiftTemplateSchema,
   updateShiftTemplateSchema,
@@ -228,6 +228,7 @@ export async function createShift(data: {
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const { supabase, clinicId } = await requireClinicAdmin()
+    await requireActiveSubscription(clinicId)
 
     const parsed = createShiftSchema.safeParse(data)
     if (!parsed.success) {

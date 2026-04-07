@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireClinicAdmin } from "@/lib/auth"
+import { requireClinicAdmin, requireActiveSubscription } from "@/lib/auth"
 import { encryptIfPresent, decryptIfPresent } from "@/lib/crypto"
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -146,6 +146,7 @@ export async function acknowledgeClinicSosAlert(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const { supabase, clinicId, user } = await requireClinicAdmin()
+  await requireActiveSubscription(clinicId)
 
   const { error } = await supabase
     .from("sos_alerts")
@@ -172,6 +173,7 @@ export async function resolveClinicSosAlert(
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
   const { supabase, clinicId, user } = await requireClinicAdmin()
+  await requireActiveSubscription(clinicId)
 
   const updateData: Record<string, unknown> = {
     status: "resolved",

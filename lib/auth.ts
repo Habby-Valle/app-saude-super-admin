@@ -146,3 +146,73 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
     isSuperAdmin: false,
   }
 }
+
+export interface SubscriptionStatus {
+  isActive: boolean
+  status: "trial" | "active" | "expired" | "cancelled" | null
+  expiresAt: string | null
+  daysRemaining: number | null
+  isTrial: boolean
+}
+
+export async function getClinicSubscriptionStatus(
+  clinicId: string
+): Promise<SubscriptionStatus> {
+  if (!clinicId) {
+    return {
+      isActive: false,
+      status: null,
+      expiresAt: null,
+      daysRemaining: null,
+      isTrial: false,
+    }
+  }
+
+  const supabase = await createServerSupabaseClient()
+
+  const { data: clinicPlan, error } = await supabase
+    .from("clinic_plans")
+    .select("status, expires_at, trial_ends_at")
+    .eq("clinic_id", clinicId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error || !clinicPlan) {
+    return {
+      isActive: false,
+      status: null,
+      expiresAt: null,
+      daysRemaining: null,
+      isTrial: false,
+    }
+  }
+
+  const isActive =
+    clinicPlan.status === "trial" || clinicPlan.status === "active"
+  const now = new Date()
+  const expiresAt = new Date(clinicPlan.expires_at)
+  const daysRemaining = Math.ceil(
+    (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  )
+
+  return {
+    isActive,
+    status: clinicPlan.status as "trial" | "active" | "expired" | "cancelled",
+    expiresAt: clinicPlan.expires_at,
+    daysRemaining: isActive ? daysRemaining : null,
+    isTrial: clinicPlan.status === "trial",
+  }
+}
+
+export async function requireActiveSubscription(
+  clinicId: string
+): Promise<SubscriptionStatus> {
+  const subscription = await getClinicSubscriptionStatus(clinicId)
+
+  if (!subscription.isActive) {
+    throw new Error("SUBSCRIPTION_EXPIRED")
+  }
+
+  return subscription
+}

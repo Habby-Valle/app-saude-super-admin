@@ -1,8 +1,11 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireClinicAdmin } from "@/lib/auth"
-import type { ChecklistFormValues, ChecklistItemType } from "@/lib/validations/checklist"
+import { requireClinicAdmin, requireActiveSubscription } from "@/lib/auth"
+import type {
+  ChecklistFormValues,
+  ChecklistItemType,
+} from "@/lib/validations/checklist"
 import { checklistFormSchema } from "@/lib/validations/checklist"
 
 export interface ChecklistItemOption {
@@ -29,7 +32,7 @@ export interface ClinicChecklistWithDetails {
   created_at: string
   item_count: number
   is_global: boolean // clinic_id IS NULL
-  is_mine: boolean   // clinic_id = clinicId (pode editar/excluir)
+  is_mine: boolean // clinic_id = clinicId (pode editar/excluir)
   checklist_items?: ChecklistItemWithOptions[]
 }
 
@@ -129,6 +132,7 @@ export async function createClinicChecklist(
   raw: ChecklistFormValues
 ): Promise<{ success: boolean; error?: string }> {
   const { supabase, clinicId } = await requireClinicAdmin()
+  await requireActiveSubscription(clinicId)
 
   const result = checklistFormSchema.safeParse(raw)
   if (!result.success) {
@@ -192,6 +196,7 @@ export async function updateClinicChecklist(
   raw: ChecklistFormValues
 ): Promise<{ success: boolean; error?: string }> {
   const { supabase, clinicId } = await requireClinicAdmin()
+  await requireActiveSubscription(clinicId)
 
   // Garante que só edita checklists da própria clínica
   const { data: existing } = await supabase
@@ -201,7 +206,10 @@ export async function updateClinicChecklist(
     .single()
 
   if (!existing || existing.clinic_id !== clinicId) {
-    return { success: false, error: "Você não tem permissão para editar este checklist." }
+    return {
+      success: false,
+      error: "Você não tem permissão para editar este checklist.",
+    }
   }
 
   const result = checklistFormSchema.safeParse(raw)
@@ -266,6 +274,7 @@ export async function deleteClinicChecklist(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const { supabase, clinicId } = await requireClinicAdmin()
+  await requireActiveSubscription(clinicId)
 
   // Garante que só exclui checklists da própria clínica
   const { data: existing } = await supabase
@@ -275,7 +284,10 @@ export async function deleteClinicChecklist(
     .single()
 
   if (!existing || existing.clinic_id !== clinicId) {
-    return { success: false, error: "Você não tem permissão para excluir este checklist." }
+    return {
+      success: false,
+      error: "Você não tem permissão para excluir este checklist.",
+    }
   }
 
   // Verifica se já foi utilizado em turnos
@@ -285,7 +297,10 @@ export async function deleteClinicChecklist(
     .eq("checklist_id", id)
 
   if (count && count > 0) {
-    return { success: false, error: "Este checklist já foi utilizado e não pode ser excluído." }
+    return {
+      success: false,
+      error: "Este checklist já foi utilizado e não pode ser excluído.",
+    }
   }
 
   // Remove opções → itens → checklist
@@ -298,7 +313,10 @@ export async function deleteClinicChecklist(
     await supabase
       .from("checklist_item_options")
       .delete()
-      .in("checklist_item_id", itemIds.map((i) => i.id))
+      .in(
+        "checklist_item_id",
+        itemIds.map((i) => i.id)
+      )
   }
 
   await supabase.from("checklist_items").delete().eq("checklist_id", id)
@@ -340,7 +358,8 @@ export async function duplicateToClinic(
     return { success: false, error: clError.message }
   }
 
-  const originalItems = (checklist.checklist_items ?? []) as ChecklistItemWithOptions[]
+  const originalItems = (checklist.checklist_items ??
+    []) as ChecklistItemWithOptions[]
 
   if (originalItems.length > 0) {
     const itemsToInsert = originalItems.map((item) => ({

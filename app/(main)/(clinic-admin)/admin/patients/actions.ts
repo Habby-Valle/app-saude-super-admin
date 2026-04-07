@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { requireClinicAdmin } from "@/lib/auth"
+import { requireClinicAdmin, requireActiveSubscription } from "@/lib/auth"
 import { z } from "zod"
 import type { Patient } from "@/types/database"
 
@@ -185,6 +185,9 @@ export async function createPatient(
 ): Promise<{ success: boolean; error?: string; patientId?: string }> {
   try {
     const { supabase, clinicId } = await requireClinicAdmin()
+
+    // Verifica assinatura ativa (ação premium)
+    await requireActiveSubscription(clinicId)
 
     const parsed = createPatientSchema.safeParse(data)
     if (!parsed.success) {

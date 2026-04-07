@@ -148,12 +148,39 @@ function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
     (expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   )
 
+  const isExpired = daysLeft <= 0
+  const isExpiringSoon = daysLeft > 0 && daysLeft <= 7
+
+  const statusLabel =
+    clinicPlan.status === "trial"
+      ? "Trial"
+      : clinicPlan.status === "active"
+        ? "Ativo"
+        : clinicPlan.status === "expired"
+          ? "Expirado"
+          : clinicPlan.status === "cancelled"
+            ? "Cancelado"
+            : clinicPlan.status
+
   return (
-    <Card>
+    <Card className={isExpired ? "border-destructive" : ""}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
-          Plano Atual
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Plano Atual
+          </div>
+          <Badge
+            variant={
+              isExpired
+                ? "destructive"
+                : clinicPlan.status === "trial"
+                  ? "secondary"
+                  : "default"
+            }
+          >
+            {statusLabel}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -180,16 +207,30 @@ function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
         <div
           className={cn(
             "flex items-center gap-2 rounded-lg p-3",
-            daysLeft <= 7
+            isExpired
               ? "bg-destructive/10 text-destructive"
-              : "bg-primary/10 text-primary"
+              : isExpiringSoon
+                ? "bg-amber-100 text-amber-800"
+                : "bg-primary/10 text-primary"
           )}
         >
           <AlertCircle className="h-4 w-4" />
           <span className="text-sm font-medium">
-            {daysLeft > 0 ? `${daysLeft} dia(s) restante(s)` : "Plano expirado"}
+            {isExpired
+              ? "Assinatura expirada. Renove para continuar usando recursos premium."
+              : isExpiringSoon
+                ? `Falta ${daysLeft} dia(s). Renove agora para não perder acesso.`
+                : `${daysLeft} dia(s) restante(s)`}
           </span>
         </div>
+
+        {isExpired && (
+          <div className="rounded-lg bg-destructive/5 p-4 text-center">
+            <p className="mb-3 text-sm text-muted-foreground">
+              Sua assinatura expirou. Alguns recursos estão bloqueados.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

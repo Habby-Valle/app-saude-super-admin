@@ -2,7 +2,9 @@ import { Providers } from "@/components/layout/providers"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Topbar } from "@/components/layout/topbar"
 import { getClinicActiveSosCount } from "@/lib/sos-count"
+import { getClinicSubscriptionStatus } from "@/lib/auth"
 import { SuperAdminBanner } from "@/components/clinic-admin/super-admin-banner"
+import { SubscriptionBanner } from "@/components/clinic-admin/subscription-banner"
 import { getMyClinic } from "./settings/actions"
 import { getTheme } from "@/lib/clinic-themes"
 
@@ -15,6 +17,8 @@ export default async function ClinicAdminLayout({
     getClinicActiveSosCount(),
     getMyClinic(),
   ])
+
+  const subscription = await getClinicSubscriptionStatus(clinic?.id ?? "")
 
   const theme = getTheme(clinic?.theme_color)
 
@@ -34,6 +38,7 @@ export default async function ClinicAdminLayout({
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden">
+          <SubscriptionBanner subscription={subscription} />
           <SuperAdminBanner />
           <Topbar variant="clinic-admin" activeSosCount={activeSosCount} />
 
