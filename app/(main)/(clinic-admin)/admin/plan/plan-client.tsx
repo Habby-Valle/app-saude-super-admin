@@ -261,11 +261,15 @@ export function PlanManagementClient({
     setIsLoading(true)
     setError(null)
 
-    const result = await requestPlanChange(selectedPlanId)
+    const result = await requestPlanChange(selectedPlanId, "monthly")
 
     if (result.success) {
-      router.refresh()
-      setSelectedPlanId(null)
+      if (result.checkoutUrl) {
+        window.location.href = result.checkoutUrl
+      } else {
+        router.refresh()
+        setSelectedPlanId(null)
+      }
     } else {
       setError(result.error ?? "Erro ao alterar plano")
     }

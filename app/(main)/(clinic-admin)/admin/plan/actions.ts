@@ -84,8 +84,9 @@ export async function getAllPlans(): Promise<Plan[]> {
 }
 
 export async function requestPlanChange(
-  planId: string
-): Promise<{ success: boolean; error?: string }> {
+  planId: string,
+  billingCycle: "monthly" | "quarterly" | "annual" = "monthly"
+): Promise<{ success: boolean; error?: string; checkoutUrl?: string }> {
   const { supabase, clinicId, isSuperAdmin } = await requireClinicAdmin()
 
   if (!clinicId) {
@@ -101,7 +102,7 @@ export async function requestPlanChange(
 
   const { data: targetPlan } = await supabase
     .from("plans")
-    .select("id, name")
+    .select("id, name, price")
     .eq("id", planId)
     .single()
 
@@ -109,64 +110,85 @@ export async function requestPlanChange(
     return { success: false, error: "Plano não encontrado" }
   }
 
-  const now = new Date()
-  const expiresAt = new Date(now)
+  if (targetPlan.price === 0) {
+    const now = new Date()
+    const expiresAt = new Date(now)
 
-  const { data: existingPlan } = await supabase
-    .from("plans")
-    .select("billing_cycle")
-    .eq("id", planId)
-    .single()
+    switch (billingCycle) {
+      case "monthly":
+        expiresAt.setMonth(expiresAt.getMonth() + 1)
+        break
+      case "quarterly":
+        expiresAt.setMonth(expiresAt.getMonth() + 3)
+        break
+      case "annual":
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1)
+        break
+    }
 
-  const billingCycle = existingPlan?.billing_cycle ?? "monthly"
+    const { error: updateError } = await supabase
+      .from("clinic_plans")
+      .update({ status: "cancelled" })
+      .eq("clinic_id", clinicId)
+      .in("status", ["active", "trial"])
 
-  switch (billingCycle) {
-    case "monthly":
-      expiresAt.setMonth(expiresAt.getMonth() + 1)
-      break
-    case "quarterly":
-      expiresAt.setMonth(expiresAt.getMonth() + 3)
-      break
-    case "annual":
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1)
-      break
+    if (updateError) {
+      return { success: false, error: "Erro ao atualizar plano anterior" }
+    }
+
+    const { error: insertError } = await supabase.from("clinic_plans").insert({
+      clinic_id: clinicId,
+      plan_id: planId,
+      status: "active" as PlanStatus,
+      started_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+      trial_ends_at: null,
+    })
+
+    if (insertError) {
+      return { success: false, error: "Erro ao criar novo plano" }
+    }
+
+    await supabase
+      .from("clinics")
+      .update({ plan: targetPlan.name })
+      .eq("id", clinicId)
+
+    revalidatePath("/admin/plan")
+    revalidatePath("/admin/dashboard")
+    revalidatePath("/admin/settings")
+
+    return { success: true }
   }
 
-  const { error: updateError } = await supabase
-    .from("clinic_plans")
-    .update({ status: "cancelled" })
-    .eq("clinic_id", clinicId)
-    .in("status", ["active", "trial"])
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const successUrl = `${appUrl}/admin/plan?success=true`
+  const cancelUrl = `${appUrl}/admin/plan?canceled=true`
 
-  if (updateError) {
-    console.error("[requestPlanChange] Update error:", updateError)
-    return { success: false, error: "Erro ao atualizar plano anterior" }
-  }
+  const { data: user } = await supabase.auth.getUser()
+  const customerEmail = user.user?.email
 
-  const { error: insertError } = await supabase.from("clinic_plans").insert({
-    clinic_id: clinicId,
-    plan_id: planId,
-    status: "active" as PlanStatus,
-    started_at: now.toISOString(),
-    expires_at: expiresAt.toISOString(),
-    trial_ends_at: null,
+  const stripeResponse = await fetch(`${appUrl}/api/checkout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      planId,
+      clinicId,
+      billingCycle,
+    }),
   })
 
-  if (insertError) {
-    console.error("[requestPlanChange] Insert error:", insertError)
-    return { success: false, error: "Erro ao criar novo plano" }
+  const stripeData = await stripeResponse.json()
+
+  if (!stripeResponse.ok || !stripeData.url) {
+    console.error("[requestPlanChange] Stripe error:", stripeData.error)
+    return {
+      success: false,
+      error: stripeData.error ?? "Erro ao criar checkout",
+    }
   }
 
-  await supabase
-    .from("clinics")
-    .update({ plan: targetPlan.name })
-    .eq("id", clinicId)
-
-  revalidatePath("/admin/plan")
-  revalidatePath("/admin/dashboard")
-  revalidatePath("/admin/settings")
-
-  return { success: true }
+  return { success: true, checkoutUrl: stripeData.url }
 }
 
 export async function getClinicPlanHistory(): Promise<ClinicPlan[]> {
