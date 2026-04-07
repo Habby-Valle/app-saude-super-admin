@@ -89,8 +89,14 @@ export async function requestPlanChange(
 ): Promise<{ success: boolean; error?: string; checkoutUrl?: string }> {
   const { supabase, clinicId } = await requireClinicAdmin()
 
+  console.log("[requestPlanChange] clinicId:", clinicId)
+
   if (!clinicId) {
-    return { success: false, error: "Clínica não encontrada" }
+    return {
+      success: false,
+      error:
+        "Clínica não encontrada. Seu usuário pode não estar vinculado a uma clínica.",
+    }
   }
 
   const { data: targetPlan } = await supabase
@@ -154,14 +160,15 @@ export async function requestPlanChange(
     return { success: true }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-  const successUrl = `${appUrl}/admin/plan?success=true`
-  const cancelUrl = `${appUrl}/admin/plan?canceled=true`
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://app-saude-seven.vercel.app"
+  const successUrl = `${baseUrl}/admin/plan?success=true`
+  const cancelUrl = `${baseUrl}/admin/plan?canceled=true`
 
   const { data: user } = await supabase.auth.getUser()
   const customerEmail = user.user?.email
 
-  const stripeResponse = await fetch(`${appUrl}/api/checkout`, {
+  const stripeResponse = await fetch(`${baseUrl}/api/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

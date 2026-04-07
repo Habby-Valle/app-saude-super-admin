@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createServerSupabaseClient } from "@/lib/supabase-server"
 
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error("[checkout] STRIPE_SECRET_KEY não configurada!")
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2025-01-27.acacia",
 })
