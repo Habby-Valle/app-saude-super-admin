@@ -87,17 +87,10 @@ export async function requestPlanChange(
   planId: string,
   billingCycle: "monthly" | "quarterly" | "annual" = "monthly"
 ): Promise<{ success: boolean; error?: string; checkoutUrl?: string }> {
-  const { supabase, clinicId, isSuperAdmin } = await requireClinicAdmin()
+  const { supabase, clinicId } = await requireClinicAdmin()
 
   if (!clinicId) {
     return { success: false, error: "Clínica não encontrada" }
-  }
-
-  if (!isSuperAdmin) {
-    return {
-      success: false,
-      error: "Apenas administradores podem alterar o plano",
-    }
   }
 
   const { data: targetPlan } = await supabase
