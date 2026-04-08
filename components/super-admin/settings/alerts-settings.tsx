@@ -8,7 +8,7 @@ import {
   updateAlertThreshold,
   deleteAlertThreshold,
 } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
-import type { AlertThreshold } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
+import type { AlertThreshold } from "@/types/database"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
