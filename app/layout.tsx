@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google"
 import type { Metadata, Viewport } from "next"
+import { Analytics } from "@vercel/analytics/next"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -148,6 +149,7 @@ export default function RootLayout({
         <ThemeProvider>
           <SeoProvider>{children}</SeoProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
