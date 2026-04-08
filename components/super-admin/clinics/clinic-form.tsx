@@ -7,6 +7,7 @@ import { Loader2, Upload, X } from 'lucide-react'
 import Image from 'next/image'
 
 import { clinicSchema, type ClinicFormValues } from '@/lib/validations/clinic'
+import type { Plan } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,6 +22,7 @@ import {
 interface ClinicFormProps {
   defaultValues?: Partial<ClinicFormValues>
   defaultLogoUrl?: string | null
+  plans: Plan[]
   onSubmit: (values: ClinicFormValues, logoFile: File | null) => Promise<void>
   isLoading?: boolean
 }
@@ -35,7 +37,7 @@ function formatCnpj(value: string): string {
     .replace(/(\d{4})(\d)/, '$1-$2')
 }
 
-export function ClinicForm({ defaultValues, defaultLogoUrl, onSubmit, isLoading }: ClinicFormProps) {
+export function ClinicForm({ defaultValues, defaultLogoUrl, plans, onSubmit, isLoading }: ClinicFormProps) {
   const {
     register,
     handleSubmit,
@@ -185,12 +187,24 @@ export function ClinicForm({ defaultValues, defaultLogoUrl, onSubmit, isLoading 
 
       {/* Plano */}
       <div className="space-y-1.5">
-        <Label htmlFor="plan">Plano</Label>
-        <Input
-          id="plan"
-          placeholder="Ex: Básico, Pro, Enterprise"
-          {...register('plan')}
-        />
+        <Label>Plano *</Label>
+        <Select
+          value={watch('plan') ?? ''}
+          onValueChange={(v) =>
+            setValue('plan', v, { shouldValidate: true })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o plano" />
+          </SelectTrigger>
+          <SelectContent>
+            {plans.map((plan) => (
+              <SelectItem key={plan.id} value={plan.name}>
+                {plan.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {errors.plan && (
           <p className="text-xs text-destructive">{errors.plan.message}</p>
         )}

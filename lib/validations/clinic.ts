@@ -34,7 +34,7 @@ export const clinicSchema = z.object({
   status: z.enum(["active", "inactive", "suspended"], {
     message: "Status é obrigatório",
   }),
-  plan: z.string().max(50).optional(),
+  plan: z.string().min(1, "Plano é obrigatório"),
 })
 
 export type ClinicFormValues = z.infer<typeof clinicSchema>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -8,8 +8,9 @@ import {
   updateClinic,
   uploadClinicLogoSA,
 } from '@/app/(main)/(super-admin)/super-admin/clinics/actions'
+import { getPlans } from '@/app/(main)/(super-admin)/super-admin/settings/actions'
 import type { ClinicFormValues } from '@/lib/validations/clinic'
-import type { Clinic } from '@/types/database'
+import type { Clinic, Plan } from '@/types/database'
 import { ClinicForm } from './clinic-form'
 import {
   Dialog,
@@ -26,7 +27,14 @@ interface ClinicDialogProps {
 
 export function ClinicDialog({ open, onOpenChange, clinic }: ClinicDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [plans, setPlans] = useState<Plan[]>([])
   const isEditing = !!clinic
+
+  useEffect(() => {
+    if (open) {
+      getPlans().then(setPlans).catch(() => {})
+    }
+  }, [open])
 
   async function handleSubmit(values: ClinicFormValues, logoFile: File | null) {
     setIsLoading(true)
@@ -83,6 +91,7 @@ export function ClinicDialog({ open, onOpenChange, clinic }: ClinicDialogProps) 
               : undefined
           }
           defaultLogoUrl={clinic?.logo_url}
+          plans={plans}
           onSubmit={handleSubmit}
           isLoading={isLoading}
         />
