@@ -8,7 +8,7 @@ import {
   updateShiftCategory,
   deleteShiftCategory,
 } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
-import type { ShiftCategory } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
+import type { ShiftCategory } from "@/types/database"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

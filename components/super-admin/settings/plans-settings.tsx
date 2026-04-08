@@ -8,7 +8,7 @@ import {
   updatePlan,
   deletePlan,
 } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
-import type { Plan } from "@/app/(main)/(super-admin)/super-admin/settings/actions"
+import type { Plan } from "@/types/database"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -109,7 +109,13 @@ export function PlansSettings({ initialPlans }: PlansSettingsProps) {
                 price: priceNum,
                 features,
                 is_active: true,
+                billing_cycle: "monthly" as const,
+                max_users: 10,
+                max_patients: 50,
+                max_storage: 1000,
+                sort_order: plans.length + 1,
                 created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
               },
             ]
         setPlans(updatedPlans)

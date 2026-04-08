@@ -6,10 +6,7 @@ import { PlansSettings } from "./plans-settings"
 import { AlertsSettings } from "./alerts-settings"
 import { LgpdSettings } from "./lgpd-settings"
 import { AccountSettings } from "./account-settings"
-import type {
-  Plan,
-  AlertThreshold,
-} from "@/app/(main)/(super-admin)/super-admin/settings/actions"
+import type { Plan, AlertThreshold } from "@/types/database"
 import type { LgpdConfig } from "@/app/(main)/(super-admin)/super-admin/settings/lgpd-actions"
 
 interface SettingsTabsProps {
