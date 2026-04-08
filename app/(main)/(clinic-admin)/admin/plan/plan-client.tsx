@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import {
   Check,
   CreditCard,
@@ -10,8 +10,11 @@ import {
   Users,
   UserRound,
   HardDrive,
-  X,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from "lucide-react"
+import { toast } from "sonner"
 import {
   Card,
   CardContent,
@@ -23,13 +26,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { requestPlanChange } from "./actions"
-import type { Plan } from "@/types/database"
+import type { Plan, ClinicPlan } from "@/types/database"
 
 interface PlanCardProps {
   plan: Plan
   isCurrentPlan: boolean
-  onSelect: (planId: string) => void
-  isLoading: boolean
+  onSubscribe: (planId: string) => void
+  loadingPlanId: string | null
 }
 
 function formatPrice(price: number): string {
@@ -48,7 +51,9 @@ function formatBillingCycle(cycle: string): string {
   return map[cycle] ?? cycle
 }
 
-function PlanCard({ plan, isCurrentPlan, onSelect, isLoading }: PlanCardProps) {
+function PlanCard({ plan, isCurrentPlan, onSubscribe, loadingPlanId }: PlanCardProps) {
+  const isLoading = loadingPlanId === plan.id
+
   return (
     <Card
       className={cn(
@@ -120,10 +125,19 @@ function PlanCard({ plan, isCurrentPlan, onSelect, isLoading }: PlanCardProps) {
           <Button
             className="w-full"
             variant="outline"
-            onClick={() => onSelect(plan.id)}
+            onClick={() => onSubscribe(plan.id)}
             disabled={isLoading}
           >
-            Selecionar este plano
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Redirecionando...
+              </>
+            ) : plan.price === 0 ? (
+              "Selecionar plano gratuito"
+            ) : (
+              "Assinar agora"
+            )}
           </Button>
         )}
       </CardContent>
@@ -246,40 +260,51 @@ export function PlanManagementClient({
   availablePlans,
 }: PlanManagementClientProps) {
   const router = useRouter()
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams()
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function handlePlanSelect(planId: string) {
-    setSelectedPlanId(planId)
+  // Handle Stripe checkout return (success/cancel)
+  useEffect(() => {
+    const success = searchParams.get("success")
+    const canceled = searchParams.get("canceled")
+
+    if (success === "true") {
+      toast.success("Assinatura realizada com sucesso!", {
+        description: "Bem-vindo ao seu novo plano.",
+        icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+      })
+      router.replace("/admin/plan")
+    } else if (canceled === "true") {
+      toast.info("Checkout cancelado", {
+        description: "Sua assinatura não foi alterada.",
+        icon: <XCircle className="h-5 w-5 text-muted-foreground" />,
+      })
+      router.replace("/admin/plan")
+    }
+  }, [searchParams, router])
+
+  async function handleSubscribe(planId: string) {
+    setLoadingPlanId(planId)
     setError(null)
-  }
 
-  async function handleConfirmChange() {
-    if (!selectedPlanId) return
-
-    setIsLoading(true)
-    setError(null)
-
-    const result = await requestPlanChange(selectedPlanId, "monthly")
+    const result = await requestPlanChange(planId, "monthly")
 
     if (result.success) {
       if (result.checkoutUrl) {
+        // Redirect to Stripe Checkout
         window.location.href = result.checkoutUrl
       } else {
+        // Free plan - already activated
+        toast.success("Plano ativado com sucesso!")
         router.refresh()
-        setSelectedPlanId(null)
       }
     } else {
-      setError(result.error ?? "Erro ao alterar plano")
+      setError(result.error ?? "Erro ao processar assinatura")
+      toast.error(result.error ?? "Erro ao processar assinatura")
     }
 
-    setIsLoading(false)
-  }
-
-  function handleCancel() {
-    setSelectedPlanId(null)
-    setError(null)
+    setLoadingPlanId(null)
   }
 
   const currentPlanId = currentPlan.plan?.id
@@ -314,48 +339,12 @@ export function PlanManagementClient({
               key={plan.id}
               plan={plan}
               isCurrentPlan={plan.id === currentPlanId}
-              onSelect={handlePlanSelect}
-              isLoading={isLoading}
+              onSubscribe={handleSubscribe}
+              loadingPlanId={loadingPlanId}
             />
           ))}
         </div>
       </div>
-
-      {selectedPlanId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="mx-4 w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Confirmar mudança de plano</CardTitle>
-              <CardDescription>
-                Tem certeza que deseja trocar para o plano{" "}
-                <strong>
-                  {availablePlans.find((p) => p.id === selectedPlanId)?.name}
-                </strong>
-                ?
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex gap-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={handleCancel}
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancelar
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleConfirmChange}
-                disabled={isLoading}
-              >
-                {isLoading ? "Alterando..." : "Confirmar"}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   )
 }
-
-import type { ClinicPlan } from "@/types/database"

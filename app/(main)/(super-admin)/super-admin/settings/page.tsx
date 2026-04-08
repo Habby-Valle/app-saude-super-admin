@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { Settings } from "lucide-react"
-import { getPlans, getShiftCategories, getAlertThresholds } from "./actions"
+import { getPlans, getAlertThresholds } from "./actions"
 import { getLgpdConfig } from "./lgpd-actions"
 import { SettingsTabs } from "@/components/super-admin/settings/settings-tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -10,10 +10,9 @@ export const metadata = {
 }
 
 async function SettingsContent() {
-  const [plans, shiftCategories, alertThresholds, lgpdConfig] =
+  const [plans, alertThresholds, lgpdConfig] =
     await Promise.all([
       getPlans().catch(() => []),
-      getShiftCategories().catch(() => []),
       getAlertThresholds().catch(() => []),
       getLgpdConfig().catch(() => ({
         retention_policies: [],
@@ -25,7 +24,6 @@ async function SettingsContent() {
   return (
     <SettingsTabs
       plans={plans}
-      shiftCategories={shiftCategories}
       alertThresholds={alertThresholds}
       lgpdConfig={lgpdConfig}
     />
@@ -50,7 +48,7 @@ export default function SettingsPage() {
           Configurações
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Gerencie planos, categorias e alertas da plataforma.
+          Gerencie planos e alertas da plataforma.
         </p>
       </div>
 

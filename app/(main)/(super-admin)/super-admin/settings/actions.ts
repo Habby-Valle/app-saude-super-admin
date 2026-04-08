@@ -1,67 +1,17 @@
 "use server"
 
-// TODO: Criar tabelas no Supabase:
-// - plans (id, name, description, price, features, is_active, created_at)
-// - shift_categories (id, name, color, is_active)
-// - alert_thresholds (id, name, metric, operator, value, message, is_active)
+import { revalidatePath } from "next/cache"
+import { requireSuperAdmin } from "@/lib/auth"
+import type { Plan, ShiftCategory, AlertThreshold } from "@/types/database"
 
-// DADOS MOCKADOS - Substituir por chamadas ao banco quando as tabelas existirem
-const MOCK_PLANS: Plan[] = [
-  {
-    id: "1",
-    name: "Básico",
-    description: "Para clínicas pequenas",
-    price: 99.9,
-    features: [
-      "Até 5 cuidadores",
-      "10 pacientes",
-      "Checklists básicos",
-      "Relatórios simples",
-    ],
-    is_active: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    name: "Profissional",
-    description: "Para clínicas médias",
-    price: 199.9,
-    features: [
-      "Até 20 cuidadores",
-      "50 pacientes",
-      "Checklists avançados",
-      "Relatórios completos",
-      "Suporte prioritário",
-    ],
-    is_active: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    name: "Enterprise",
-    description: "Para grandes redes",
-    price: 499.9,
-    features: [
-      "Cuidadores ilimitados",
-      "Pacientes ilimitados",
-      "Checklists personalizados",
-      "Relatórios avançados",
-      "API integrações",
-      "Suporte 24/7",
-    ],
-    is_active: true,
-    created_at: new Date().toISOString(),
-  },
-]
-
-const MOCK_SHIFT_CATEGORIES: ShiftCategory[] = [
+// Estado em memória para demonstração (será perdido ao recarregar) — para shift_categories e alert_thresholds
+let mockCategories: ShiftCategory[] = [
   { id: "1", name: "Manhã", color: "#f59e0b", is_active: true },
   { id: "2", name: "Tarde", color: "#3b82f6", is_active: true },
   { id: "3", name: "Noite", color: "#8b5cf6", is_active: true },
   { id: "4", name: "Plantão", color: "#ef4444", is_active: true },
 ]
-
-const MOCK_ALERT_THRESHOLDS: AlertThreshold[] = [
+let mockAlerts: AlertThreshold[] = [
   {
     id: "1",
     name: "Checklists Pendentes",
@@ -82,43 +32,22 @@ const MOCK_ALERT_THRESHOLDS: AlertThreshold[] = [
   },
 ]
 
-// Estado em memória para演示 (será perdido ao recarregar)
-let mockPlans = [...MOCK_PLANS]
-let mockCategories = [...MOCK_SHIFT_CATEGORIES]
-let mockAlerts = [...MOCK_ALERT_THRESHOLDS]
-
-export interface Plan {
-  id: string
-  name: string
-  description: string | null
-  price: number
-  features: string[]
-  is_active: boolean
-  created_at: string
-}
-
-export interface ShiftCategory {
-  id: string
-  name: string
-  color: string
-  is_active: boolean
-}
-
-export interface AlertThreshold {
-  id: string
-  name: string
-  metric: string
-  operator: "gt" | "lt" | "eq"
-  value: number
-  message: string
-  is_active: boolean
-}
+// ─── Plans ─────────────────────────────────────────────────────────────────────
 
 export async function getPlans(): Promise<Plan[]> {
-  // TODO: Substituir por chamada real ao banco
-  // const { supabase } = await requireSuperAdmin()
-  // const { data, error } = await supabase.from("plans").select("*").order("price")
-  return mockPlans
+  const { supabase } = await requireSuperAdmin()
+  const { data, error } = await supabase
+    .from("plans")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("[getPlans] Supabase error:", error)
+    return []
+  }
+
+  return data ?? []
 }
 
 export async function createPlan(
@@ -131,20 +60,21 @@ export async function createPlan(
     return { success: false, error: "Nome é obrigatório" }
   }
 
-  // TODO: Substituir por chamada real ao banco
-  // const { supabase } = await requireSuperAdmin()
-  // const { error } = await supabase.from("plans").insert({...})
-
-  const newPlan: Plan = {
-    id: Date.now().toString(),
+  const { supabase } = await requireSuperAdmin()
+  const { error } = await supabase.from("plans").insert({
     name: name.trim(),
     description,
     price,
     features,
     is_active: true,
-    created_at: new Date().toISOString(),
+  })
+
+  if (error) {
+    console.error("[createPlan] Supabase error:", error)
+    return { success: false, error: error.message }
   }
-  mockPlans = [...mockPlans, newPlan]
+
+  revalidatePath("/super-admin/settings")
   return { success: true }
 }
 
@@ -160,25 +90,37 @@ export async function updatePlan(
     return { success: false, error: "Nome é obrigatório" }
   }
 
-  // TODO: Substituir por chamada real ao banco
-  // const { supabase } = await requireSuperAdmin()
-  // const { error } = await supabase.from("plans").update({...}).eq("id", id)
+  const { supabase } = await requireSuperAdmin()
+  const { error } = await supabase
+    .from("plans")
+    .update({ name: name.trim(), description, price, features, is_active })
+    .eq("id", id)
 
-  mockPlans = mockPlans.map((p) =>
-    p.id === id
-      ? { ...p, name: name.trim(), description, price, features, is_active }
-      : p
-  )
+  if (error) {
+    console.error("[updatePlan] Supabase error:", error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath("/super-admin/settings")
   return { success: true }
 }
 
 export async function deletePlan(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
-  // TODO: Substituir por chamada real ao banco
-  mockPlans = mockPlans.filter((p) => p.id !== id)
+  const { supabase } = await requireSuperAdmin()
+  const { error } = await supabase.from("plans").delete().eq("id", id)
+
+  if (error) {
+    console.error("[deletePlan] Supabase error:", error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath("/super-admin/settings")
   return { success: true }
 }
+
+// ─── Shift Categories ──────────────────────────────────────────────────────────
 
 export async function getShiftCategories(): Promise<ShiftCategory[]> {
   // TODO: Substituir por chamada real ao banco
@@ -228,6 +170,8 @@ export async function deleteShiftCategory(
   mockCategories = mockCategories.filter((c) => c.id !== id)
   return { success: true }
 }
+
+// ─── Alert Thresholds ──────────────────────────────────────────────────────────
 
 export async function getAlertThresholds(): Promise<AlertThreshold[]> {
   // TODO: Substituir por chamada real ao banco

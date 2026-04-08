@@ -6,6 +6,25 @@ export type ShiftStatus = 'in_progress' | 'completed' | 'cancelled'
 
 export type ChecklistItemType = 'text' | 'boolean' | 'select' | 'number'
 
+// ─── Settings ──────────────────────────────────────────────────────────────────
+
+export interface ShiftCategory {
+  id: string
+  name: string
+  color: string
+  is_active: boolean
+}
+
+export interface AlertThreshold {
+  id: string
+  name: string
+  metric: string
+  operator: "gt" | "lt" | "eq"
+  value: number
+  message: string
+  is_active: boolean
+}
+
 // ─── Clinics ─────────────────────────────────────────────────────────────────
 
 export interface Clinic {
