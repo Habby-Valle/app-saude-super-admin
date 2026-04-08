@@ -11,7 +11,6 @@ interface SubscriptionBannerProps {
 
 export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
   const router = useRouter()
-
   const isExpired =
     subscription.status === "expired" ||
     subscription.status === "cancelled" ||

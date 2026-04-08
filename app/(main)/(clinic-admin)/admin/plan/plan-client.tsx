@@ -51,7 +51,12 @@ function formatBillingCycle(cycle: string): string {
   return map[cycle] ?? cycle
 }
 
-function PlanCard({ plan, isCurrentPlan, onSubscribe, loadingPlanId }: PlanCardProps) {
+function PlanCard({
+  plan,
+  isCurrentPlan,
+  onSubscribe,
+  loadingPlanId,
+}: PlanCardProps) {
   const isLoading = loadingPlanId === plan.id
 
   return (
@@ -62,7 +67,7 @@ function PlanCard({ plan, isCurrentPlan, onSubscribe, loadingPlanId }: PlanCardP
       )}
     >
       {isCurrentPlan && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <Badge className="bg-primary">Plano Atual</Badge>
         </div>
       )}
