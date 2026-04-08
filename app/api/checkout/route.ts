@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
-import { createServerSupabaseClient } from "@/lib/supabase-server"
+import { createServerSupabaseClientForRoute } from "@/lib/supabase-server"
+import { createAdminClient } from "@/lib/supabase-admin"
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error("[checkout] STRIPE_SECRET_KEY não configurada!")
@@ -28,7 +29,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createServerSupabaseClient()
+    const supabase = createServerSupabaseClientForRoute(request)
+    const admin = createAdminClient()
 
     const { data: plan, error: planError } = await supabase
       .from("plans")
@@ -43,13 +45,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: clinic, error: clinicError } = await supabase
+    const { data: clinic, error: clinicError } = await admin
       .from("clinics")
       .select("id, name")
       .eq("id", clinicId)
       .single()
 
     if (clinicError || !clinic) {
+      console.error("[checkout] Clinic not found:", clinicError)
       return NextResponse.json(
         { error: "Clínica não encontrada" },
         { status: 404 }
