@@ -72,7 +72,12 @@ function EnvironmentBadge() {
 const superAdminNavItems = [
   { label: "Dashboard", href: "/super-admin/dashboard", icon: LayoutDashboard },
   { label: "Clínicas", href: "/super-admin/clinics", icon: Building2 },
-  { label: "Planos", href: "/super-admin/plans", icon: CreditCard },
+  {
+    label: "Assinaturas",
+    href: "/super-admin/subscriptions",
+    icon: CreditCard,
+  },
+  { label: "Planos", href: "/super-admin/plans", icon: CheckCircle },
   { label: "Usuários", href: "/super-admin/users", icon: Users },
   { label: "Pacientes", href: "/super-admin/patients", icon: UserRound },
   { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
