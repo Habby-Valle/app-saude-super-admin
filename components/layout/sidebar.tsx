@@ -20,6 +20,7 @@ import {
   Bug,
   TestTube,
   CheckCircle,
+  DollarSign,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -77,6 +78,7 @@ const superAdminNavItems = [
     href: "/super-admin/subscriptions",
     icon: CreditCard,
   },
+  { label: "Pagamentos", href: "/super-admin/payments", icon: DollarSign },
   { label: "Planos", href: "/super-admin/plans", icon: CheckCircle },
   { label: "Usuários", href: "/super-admin/users", icon: Users },
   { label: "Pacientes", href: "/super-admin/patients", icon: UserRound },

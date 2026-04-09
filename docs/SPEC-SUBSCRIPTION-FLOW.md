@@ -287,3 +287,64 @@ export async function requireActiveSubscription(
 - [x] 4. Verificação de assinatura antes de ações premium
 - [x] 5. Banner de expiração na UI
 - [x] 6. Página de renewal/alteração de plano
+- [x] 7. Integração com Stripe (API checkout + Webhook)
+- [x] 8. Dashboard de Assinaturas (Super Admin)
+- [x] 9. Página de detalhes da assinatura
+- [x] 10. Ativação Manual (Super Admin)
+- [ ] 11. Histórico de Cobranças
+- [ ] 12. Billing Pró-rata
+
+## 12. Componentes Criados
+
+### 12.1 Pages
+
+| Path                              | Descrição                                |
+| --------------------------------- | ---------------------------------------- |
+| `/admin/plan`                     | Página de gestão de plano (Clinic Admin) |
+| `/super-admin/subscriptions`      | Dashboard de assinaturas (Super Admin)   |
+| `/super-admin/subscriptions/[id]` | Detalhes da assinatura                   |
+
+### 12.2 APIs
+
+| Path                          | Descrição                       |
+| ----------------------------- | ------------------------------- |
+| `/api/checkout`               | Cria sessão de pagamento Stripe |
+| `/api/webhooks/stripe`        | Recebe eventos do Stripe        |
+| `/api/subscriptions/[id]`     | Detalhes de uma assinatura      |
+| `/api/subscriptions/activate` | Ativar assinatura manualmente   |
+| `/api/plans`                  | Lista de planos disponíveis     |
+
+### 12.3 Componentes UI
+
+| Component          | Localização                                       |
+| ------------------ | ------------------------------------------------- |
+| SubscriptionBanner | components/clinic-admin/subscription-banner.tsx   |
+| SubscriptionBadge  | components/clinic-admin/subscription-banner.tsx   |
+| StatsCards         | super-admin/subscriptions/stats-cards.tsx         |
+| SubscriptionsTable | super-admin/subscriptions/subscriptions-table.tsx |
+
+## 13. Migrations
+
+| Arquivo                                             | Descrição                   |
+| --------------------------------------------------- | --------------------------- |
+| `20260407000021_enable_pg_cron.sql`                 | Habilita extensão pg_cron   |
+| `20260407000022_create_subscription_expire_job.sql` | Job de expiração automática |
+| `20260407000023_trial_system.sql`                   | Sistema de trial automático |
+| `20260407000024_subscription_notifications.sql`     | Notificações de expiração   |
+| `20260408000026_add_clinic_email.sql`               | Adiciona email na clínica   |
+
+## 14. Fluxo Completo
+
+```
+1. Clínica é criada → Trial ativado automaticamente (14 dias)
+2. Usuário usa sistema normalmente (acesso total)
+3. Job diário verifica expirações:
+   - marca como 'expired' se passou do prazo
+   - cria notificações pendentes (7, 3, 1 dias antes)
+4. Usuário vê banner se expirado ou expira em breve
+5. Usuário vai para /admin/plan para renovar
+6. Se plano pago → Redirect para Stripe Checkout
+7. Pagamento confirmado → Webhook ativa assinatura
+8. Super Admin pode visualizar em /super-admin/subscriptions
+9. Super Admin pode ativar manualmente sem pagamento
+```

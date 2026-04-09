@@ -1,7 +1,7 @@
 "use server"
 
 import { requireSuperAdmin } from "@/lib/auth"
-import type { Plan, ClinicPlan } from "@/types/database"
+import type { Plan } from "@/types/database"
 
 export interface SubscriptionWithClinic {
   id: string
@@ -55,33 +55,39 @@ export async function getAllSubscriptions(): Promise<SubscriptionWithClinic[]> {
 
   const now = new Date()
 
-  const subscriptions: SubscriptionWithClinic[] = (data ?? []).map(
-    (row: any) => {
-      const expiresAt = new Date(row.expires_at)
-      const daysRemaining = Math.ceil(
-        (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-      )
+  const subscriptions: SubscriptionWithClinic[] = (data ?? []).map((row) => {
+    const r = row as Record<string, unknown>
+    const expiresAt = new Date(r.expires_at as string)
+    const daysRemaining = Math.ceil(
+      (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    )
 
-      return {
-        id: row.id,
-        clinicId: row.clinic_id,
-        clinicName: row.clinics?.name ?? "Clínica sem nome",
-        clinicEmail: row.clinics?.email ?? "",
-        planId: row.plan_id,
-        planName: row.plans?.name ?? "Plano não encontrado",
-        planPrice: row.plans?.price ?? 0,
-        planBillingCycle: row.plans?.billing_cycle ?? "monthly",
-        status: row.status,
-        startedAt: row.started_at,
-        expiresAt: row.expires_at,
-        trialEndsAt: row.trial_ends_at,
-        daysRemaining:
-          row.status === "active" || row.status === "trial"
-            ? daysRemaining
-            : null,
-      }
+    return {
+      id: r.id as string,
+      clinicId: r.clinic_id as string,
+      clinicName:
+        (r.clinics as Record<string, string> | undefined)?.name ??
+        "Clínica sem nome",
+      clinicEmail:
+        (r.clinics as Record<string, string> | undefined)?.email ?? "",
+      planId: r.plan_id as string,
+      planName:
+        ((r.plans as Record<string, string | number> | undefined)
+          ?.name as string) ?? "Plano não encontrado",
+      planPrice:
+        ((r.plans as Record<string, string | number> | undefined)
+          ?.price as number) ?? 0,
+      planBillingCycle:
+        (r.plans as Record<string, string> | undefined)?.billing_cycle ??
+        "monthly",
+      status: r.status as string,
+      startedAt: r.started_at as string,
+      expiresAt: r.expires_at as string,
+      trialEndsAt: r.trial_ends_at as string | null,
+      daysRemaining:
+        r.status === "active" || r.status === "trial" ? daysRemaining : null,
     }
-  )
+  })
 
   return subscriptions
 }
@@ -105,4 +111,74 @@ export async function getSubscriptionStats() {
   }
 
   return stats
+}
+
+export async function getAvailablePlansForActivation(): Promise<Plan[]> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data, error } = await supabase
+    .from("plans")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+
+  if (error) {
+    console.error("[getAvailablePlansForActivation] Error:", error)
+    return []
+  }
+
+  return data ?? []
+}
+
+interface ActivateSubscriptionParams {
+  subscriptionId: string
+  planId: string
+  billingCycle: "monthly" | "quarterly" | "annual"
+  startedAt?: string
+  notes?: string
+}
+
+export async function activateSubscriptionManual(
+  params: ActivateSubscriptionParams
+): Promise<{ success: boolean; error?: string }> {
+  const { supabase } = await requireSuperAdmin()
+  const { subscriptionId, planId, billingCycle, startedAt, notes } = params
+
+  const startDate = startedAt ? new Date(startedAt) : new Date()
+  const expiresDate = new Date(startDate)
+
+  switch (billingCycle) {
+    case "monthly":
+      expiresDate.setMonth(expiresDate.getMonth() + 1)
+      break
+    case "quarterly":
+      expiresDate.setMonth(expiresDate.getMonth() + 3)
+      break
+    case "annual":
+      expiresDate.setFullYear(expiresDate.getFullYear() + 1)
+      break
+  }
+
+  const { error: updateError } = await supabase
+    .from("clinic_plans")
+    .update({
+      status: "active",
+      plan_id: planId,
+      started_at: startDate.toISOString(),
+      expires_at: expiresDate.toISOString(),
+      trial_ends_at: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", subscriptionId)
+
+  if (updateError) {
+    console.error("[activateSubscriptionManual] Error:", updateError)
+    return { success: false, error: "Erro ao ativar assinatura" }
+  }
+
+  if (notes) {
+    console.log("[activateSubscriptionManual] Notes:", notes)
+  }
+
+  return { success: true }
 }

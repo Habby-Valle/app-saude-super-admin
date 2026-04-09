@@ -1,7 +1,7 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useState, useMemo } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,12 +9,30 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
   ArrowLeft,
   Calendar,
   CreditCard,
   Building2,
   Mail,
   Clock,
+  Zap,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -88,12 +106,25 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
+interface PlanOption {
+  id: string
+  name: string
+  price: number
+  billing_cycle: string
+}
+
 export default function SubscriptionDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(
     null
   )
   const [loading, setLoading] = useState(true)
+  const [showActivateDialog, setShowActivateDialog] = useState(false)
+  const [activating, setActivating] = useState(false)
+  const [availablePlans, setAvailablePlans] = useState<PlanOption[]>([])
+  const [selectedPlanId, setSelectedPlanId] = useState("")
+  const [selectedBillingCycle, setSelectedBillingCycle] = useState("monthly")
 
   useEffect(() => {
     async function fetchSubscription() {
@@ -107,6 +138,54 @@ export default function SubscriptionDetailPage() {
       fetchSubscription()
     }
   }, [params.id])
+
+  useEffect(() => {
+    if (showActivateDialog) {
+      fetch("/api/plans")
+        .then((res) => res.json())
+        .then((data) => {
+          setAvailablePlans(data.plans || [])
+        })
+    }
+  }, [showActivateDialog])
+
+  async function handleActivate() {
+    if (!selectedPlanId) return
+
+    setActivating(true)
+    const response = await fetch("/api/subscriptions/activate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subscriptionId: subscription?.id,
+        planId: selectedPlanId,
+        billingCycle: selectedBillingCycle,
+      }),
+    })
+
+    const result = await response.json()
+    setActivating(false)
+
+    if (result.success) {
+      setShowActivateDialog(false)
+      router.refresh()
+    } else {
+      alert(result.error || "Erro ao ativar assinatura")
+    }
+  }
+
+  const canActivate =
+    subscription?.status === "expired" || subscription?.status === "cancelled"
+
+  // eslint-disable-next-line react-hooks/purity
+  const daysRemaining =
+    subscription &&
+    (subscription.status === "active" || subscription.status === "trial")
+      ? Math.ceil(
+          (new Date(subscription.expiresAt).getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : null
 
   if (loading) {
     return (
@@ -131,31 +210,31 @@ export default function SubscriptionDetailPage() {
     )
   }
 
-  const daysRemaining =
-    subscription.status === "active" || subscription.status === "trial"
-      ? Math.ceil(
-          (new Date(subscription.expiresAt).getTime() - Date.now()) /
-            (1000 * 60 * 60 * 24)
-        )
-      : null
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/super-admin/subscriptions">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Detalhes da Assinatura
-          </h1>
-          <p className="text-muted-foreground">
-            Assinatura da clínica {subscription.clinicName}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/super-admin/subscriptions">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Detalhes da Assinatura
+            </h1>
+            <p className="text-muted-foreground">
+              Assinatura da clínica {subscription?.clinicName}
+            </p>
+          </div>
         </div>
+        {canActivate && (
+          <Button onClick={() => setShowActivateDialog(true)}>
+            <Zap className="mr-2 h-4 w-4" />
+            Ativar Assinatura
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -306,6 +385,67 @@ export default function SubscriptionDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog para ativar assinatura */}
+      <Dialog open={showActivateDialog} onOpenChange={setShowActivateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ativar Assinatura</DialogTitle>
+            <DialogDescription>
+              Ativar assinatura manualmente para {subscription?.clinicName}.
+              Isso não requer pagamento.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Plano</Label>
+              <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um plano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePlans.map((plan) => (
+                    <SelectItem key={plan.id} value={plan.id}>
+                      {plan.name} - {formatPrice(plan.price)}/
+                      {plan.billing_cycle}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Ciclo de Cobrança</Label>
+              <Select
+                value={selectedBillingCycle}
+                onValueChange={setSelectedBillingCycle}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Mensal</SelectItem>
+                  <SelectItem value="quarterly">Trimestral</SelectItem>
+                  <SelectItem value="annual">Anual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowActivateDialog(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleActivate}
+              disabled={!selectedPlanId || activating}
+            >
+              {activating ? "Ativando..." : "Ativar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

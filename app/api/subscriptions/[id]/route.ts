@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase-server"
 
+interface SubscriptionData {
+  id: string
+  clinic_id: string
+  plan_id: string
+  status: string
+  started_at: string
+  expires_at: string
+  trial_ends_at: string | null
+  created_at: string
+  clinics: { id: string; name: string; email: string } | null
+  plans: {
+    id: string
+    name: string
+    description: string
+    price: number
+    billing_cycle: string
+    max_users: number
+    max_patients: number
+    features: string[]
+  } | null
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -48,24 +70,26 @@ export async function GET(
       )
     }
 
+    const subs = data as unknown as SubscriptionData
+
     return NextResponse.json({
-      id: data.id,
-      clinicId: data.clinic_id,
-      clinicName: data.clinics?.name ?? "Clínica sem nome",
-      clinicEmail: data.clinics?.email ?? "",
-      planId: data.plan_id,
-      planName: data.plans?.name ?? "Plano não encontrado",
-      planDescription: data.plans?.description ?? "",
-      planPrice: data.plans?.price ?? 0,
-      planBillingCycle: data.plans?.billing_cycle ?? "monthly",
-      status: data.status,
-      startedAt: data.started_at,
-      expiresAt: data.expires_at,
-      trialEndsAt: data.trial_ends_at,
-      createdAt: data.created_at,
-      maxUsers: data.plans?.max_users ?? 0,
-      maxPatients: data.plans?.max_patients ?? 0,
-      features: data.plans?.features ?? [],
+      id: subs.id,
+      clinicId: subs.clinic_id,
+      clinicName: subs.clinics?.name ?? "Clínica sem nome",
+      clinicEmail: subs.clinics?.email ?? "",
+      planId: subs.plan_id,
+      planName: subs.plans?.name ?? "Plano não encontrado",
+      planDescription: subs.plans?.description ?? "",
+      planPrice: subs.plans?.price ?? 0,
+      planBillingCycle: subs.plans?.billing_cycle ?? "monthly",
+      status: subs.status,
+      startedAt: subs.started_at,
+      expiresAt: subs.expires_at,
+      trialEndsAt: subs.trial_ends_at,
+      createdAt: subs.created_at,
+      maxUsers: subs.plans?.max_users ?? 0,
+      maxPatients: subs.plans?.max_patients ?? 0,
+      features: subs.plans?.features ?? [],
     })
   } catch (error) {
     console.error("[subscription-detail] Error:", error)

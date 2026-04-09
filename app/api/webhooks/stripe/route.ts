@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         break
     }
 
+    // Cancel previous plans
     const { error: updateError } = await admin
       .from("clinic_plans")
       .update({ status: "cancelled" })
@@ -60,19 +61,42 @@ export async function POST(request: NextRequest) {
       console.error("[webhook] Error canceling previous plan:", updateError)
     }
 
-    const { error: insertError } = await admin.from("clinic_plans").insert({
-      clinic_id: clinicId,
-      plan_id: planId,
-      status: "active",
-      started_at: new Date().toISOString(),
-      expires_at: expiresAt.toISOString(),
-      trial_ends_at: null,
-    })
+    // Create new subscription
+    const { data: newPlan, error: insertError } = await admin
+      .from("clinic_plans")
+      .insert({
+        clinic_id: clinicId,
+        plan_id: planId,
+        status: "active",
+        started_at: new Date().toISOString(),
+        expires_at: expiresAt.toISOString(),
+        trial_ends_at: null,
+      })
+      .select()
+      .single()
 
     if (insertError) {
       console.error("[webhook] Error creating subscription:", insertError)
       return NextResponse.json({ error: "Database error" }, { status: 500 })
     }
+
+    // Save payment record
+    const paymentAmount = session.amount_total ? session.amount_total / 100 : 0
+    const paymentMethod = session.payment_method_types?.[0] ?? "card"
+
+    await admin.from("subscription_payments").insert({
+      clinic_id: clinicId,
+      clinic_plan_id: newPlan?.id,
+      stripe_payment_id: session.payment_intent as string,
+      stripe_subscription_id: session.subscription as string,
+      stripe_session_id: session.id,
+      amount: paymentAmount,
+      currency: session.currency ?? "brl",
+      status: "succeeded",
+      payment_method: paymentMethod,
+      billing_cycle: billingCycle,
+      paid_at: new Date().toISOString(),
+    })
 
     console.log(
       `[webhook] Subscription activated for clinic ${clinicId}, plan ${planId}`
