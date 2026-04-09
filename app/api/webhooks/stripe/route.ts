@@ -98,6 +98,15 @@ export async function POST(request: NextRequest) {
       paid_at: new Date().toISOString(),
     })
 
+    // Save Stripe customer ID on clinic
+    const customerId = session.customer as string
+    if (customerId) {
+      await admin
+        .from("clinics")
+        .update({ stripe_customer_id: customerId })
+        .eq("id", clinicId)
+    }
+
     console.log(
       `[webhook] Subscription activated for clinic ${clinicId}, plan ${planId}`
     )

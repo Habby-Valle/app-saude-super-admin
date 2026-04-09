@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   Check,
   CreditCard,
@@ -250,6 +251,12 @@ function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
             </p>
           </div>
         )}
+
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/plan/manage">Gerenciar Assinatura</Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )

@@ -293,6 +293,7 @@ export async function requireActiveSubscription(
 - [x] 10. Ativação Manual (Super Admin)
 - [x] 11. Histórico de Cobranças
 - [x] 12. Billing Pró-rata
+- [x] 13. Cancelamento via Stripe Portal
 
 ## 12. Componentes Criados
 
@@ -301,8 +302,10 @@ export async function requireActiveSubscription(
 | Path                              | Descrição                                |
 | --------------------------------- | ---------------------------------------- |
 | `/admin/plan`                     | Página de gestão de plano (Clinic Admin) |
+| `/admin/plan/manage`              | Página de gestão via Stripe Portal       |
 | `/super-admin/subscriptions`      | Dashboard de assinaturas (Super Admin)   |
 | `/super-admin/subscriptions/[id]` | Detalhes da assinatura                   |
+| `/super-admin/payments`           | Histórico de cobranças                   |
 
 ### 12.2 APIs
 
@@ -313,6 +316,7 @@ export async function requireActiveSubscription(
 | `/api/subscriptions/[id]`     | Detalhes de uma assinatura      |
 | `/api/subscriptions/activate` | Ativar assinatura manualmente   |
 | `/api/plans`                  | Lista de planos disponíveis     |
+| `/api/portal`                 | Cria sessão do Stripe Portal    |
 
 ### 12.3 Componentes UI
 
@@ -332,6 +336,8 @@ export async function requireActiveSubscription(
 | `20260407000023_trial_system.sql`                   | Sistema de trial automático |
 | `20260407000024_subscription_notifications.sql`     | Notificações de expiração   |
 | `20260408000026_add_clinic_email.sql`               | Adiciona email na clínica   |
+| `20260410000027_create_subscription_payments.sql`   | Histórico de cobranças      |
+| `20260411000028_add_stripe_customer_id.sql`         | Stripe customer ID          |
 
 ## 14. Fluxo Completo
 

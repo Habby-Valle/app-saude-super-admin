@@ -177,7 +177,84 @@ stripe trigger customer.subscription.deleted \
 
 ---
 
-## 5. Checklist de Testes
+## 5. Cenário: Cancelamento via Stripe Portal (Clinic Admin)
+
+### Fluxo Novo (Implementado)
+
+```
+/admin/plan
+       │
+       ▼
+Botão "Gerenciar Assinatura"
+       │
+       ▼
+POST /api/portal
+       │
+       ▼
+Stripe Portal Session
+       │
+       ▼
+Redirect → Stripe Portal
+       │
+       ├── Visualizar invoices
+       ├── Atualizar cartão
+       └── Cancelar assinatura
+            │
+            ▼ (cancel at period end)
+       Acesso mantido até expires_at
+            │
+            ▼ (dia do vencimento)
+       Job marca como "expired"
+```
+
+### Fluxo Detalhado
+
+| Step | Ação                                          | Comportamento Esperado             |
+| ---- | --------------------------------------------- | ---------------------------------- |
+| 1    | Usuário acessa `/admin/plan`                  | Vê botão "Gerenciar Assinatura"    |
+| 2    | Clica em "Gerenciar Assinatura"               | Redirect para `/admin/plan/manage` |
+| 3    | Na página, clica "Abrir Portal"               | POST `/api/portal`                 |
+| 4    | API cria billing portal session               | Retorna URL do Stripe Portal       |
+| 5    | Redirect para Stripe                          | Abre portal externo                |
+| 6    | Usuário clica "Cancelar assinatura"           | Stripe pergunta confirmação        |
+| 7    | Usuário confirma "Cancelar no fim do período" | Stripe seta `cancel_at_period_end` |
+| 8    | Retorna para app                              | Verifica status continua "active"  |
+| 9    | Dia do vencimento                             | Job marca como "expired"           |
+
+### Pré-requisitos
+
+```sql
+-- Clinic precisa ter stripe_customer_id
+SELECT stripe_customer_id FROM clinics WHERE id = 'clinic-uuid';
+-- Se null, primeiro pagamento ainda não foi feito
+```
+
+### Teste Manual
+
+```bash
+# 1. Criar clínica e fazer pagamento (gera stripe_customer_id)
+# 2. Acessar /admin/plan
+# 3. Clicar "Gerenciar Assinatura"
+# 4. Clicar "Abrir Portal de Pagamentos"
+# 5. No Stripe Portal: Settings → Cancelar assinatura
+# 6. Confirmar cancelamento
+# 7. Verificar no banco: status continua "active", expires_at permanece
+# 8. Após expires_at: job marca como "expired"
+```
+
+### Comportamentos Não Esperados (Bugs)
+
+| Bug                             | Sintoma                    | Causa Provável                    |
+| ------------------------------- | -------------------------- | --------------------------------- |
+| Botão não aparece               | Link não visível na página | clínica sem stripe_customer_id    |
+| Erro ao criar sessão            | API retorna erro 400/500   | stripe_customer_id inválido       |
+| Redirect não funciona           | URL não redireciona        | Response não tem `data.url`       |
+| Cancelamento não reflete no app | Status continua "active"   | Esperar job ou到期 para expirar   |
+| Acesso corta imediatamente      | Cancelou e perdeu acesso   | Deveria manter até fim do período |
+
+---
+
+## 6. Checklist de Testes
 
 ### ✅ Pré-Condições
 
@@ -200,17 +277,23 @@ stripe trigger customer.subscription.deleted \
 | T08 | Downgrade                   | Select basic         | Valor cheio (sem pró-rata)   |
 | T09 | Plano grátis                | Select free          | Ativação direta              |
 | T10 | Renewal após expirado       | Select any           | Checkout funciona            |
+| T11 | Cancelamento via Portal     | /admin/plan/manage   | Redirect para Stripe Portal  |
+| T12 | Cancelamento no portal      | Stripe Portal        | Mantém acesso até expires_at |
+| T13 | Update cartão no portal     | Stripe Portal        | Dados atualizados            |
+| T14 | Visualizar invoices         | Stripe Portal        | Lista de cobranças           |
 
 ### ✅ Testes de Edge Cases
 
-| ID  | Teste                | Método                      | Resultado Esperado        |
-| --- | -------------------- | --------------------------- | ------------------------- |
-| E01 | Metadata ausente     | Mock webhook sem metadata   | Erro 400                  |
-| E02 | Clinic não existe    | POST com clinic_id inválido | Erro 404                  |
-| E03 | Plano não existe     | POST com plan_id inválido   | Erro 404                  |
-| E04 | Plano inativo        | POST com is_active = false  | Erro ou plano não shown   |
-| E05 | Assinatura duplicada | Pagamento дубликат          | Idempotência (ignora)     |
-| E06 | Webhook repetido     | Reenviar webhook            | Ignora ou atualiza status |
+| ID  | Teste                | Método                             | Resultado Esperado        |
+| --- | -------------------- | ---------------------------------- | ------------------------- |
+| E01 | Metadata ausente     | Mock webhook sem metadata          | Erro 400                  |
+| E02 | Clinic não existe    | POST com clinic_id inválido        | Erro 404                  |
+| E03 | Plano não existe     | POST com plan_id inválido          | Erro 404                  |
+| E04 | Plano inativo        | POST com is_active = false         | Erro ou plano não shown   |
+| E05 | Assinatura duplicada | Pagamento дубликат                 | Idempotência (ignora)     |
+| E06 | Webhook repetido     | Reenviar webhook                   | Ignora ou atualiza status |
+| E07 | Portal sem customer  | /api/portal sem stripe_customer_id | Erro 400                  |
+| E08 | Portal timeout       | Stripe API não responde            | Erro 500                  |
 
 ---
 
@@ -260,6 +343,20 @@ FROM clinic_plans cp
 JOIN clinics c ON c.id = cp.clinic_id
 WHERE cp.status IN ('active', 'trial')
   AND cp.expires_at < NOW() + INTERVAL '7 days';
+```
+
+### Verificar stripe_customer_id
+
+```sql
+SELECT
+  c.id,
+  c.name,
+  c.stripe_customer_id,
+  cp.status as subscription_status
+FROM clinics c
+LEFT JOIN clinic_plans cp ON cp.clinic_id = c.id AND cp.status IN ('active', 'trial')
+WHERE c.stripe_customer_id IS NOT NULL
+ORDER BY c.created_at DESC;
 ```
 
 ---
@@ -347,6 +444,7 @@ Stripe faz retry do webhook
 [checkout] - Requisições de checkout
 [webhook] - Eventos recebidos do Stripe
 [requestPlanChange] - Ações de mudança de plano
+[portal] - Criação de sessões do Stripe Portal
 ```
 
 ### Métricas a acompanhar
