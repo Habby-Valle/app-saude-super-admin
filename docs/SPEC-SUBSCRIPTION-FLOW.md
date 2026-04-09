@@ -291,8 +291,8 @@ export async function requireActiveSubscription(
 - [x] 8. Dashboard de Assinaturas (Super Admin)
 - [x] 9. Página de detalhes da assinatura
 - [x] 10. Ativação Manual (Super Admin)
-- [ ] 11. Histórico de Cobranças
-- [ ] 12. Billing Pró-rata
+- [x] 11. Histórico de Cobranças
+- [x] 12. Billing Pró-rata
 
 ## 12. Componentes Criados
 
@@ -348,3 +348,50 @@ export async function requireActiveSubscription(
 8. Super Admin pode visualizar em /super-admin/subscriptions
 9. Super Admin pode ativar manualmente sem pagamento
 ```
+
+## 15. Billing Pró-rata
+
+### 15.1 Cálculo
+
+Quando usuário faz upgrade de plano:
+
+```typescript
+function calculateProrate(
+  currentPlanPrice: number,
+  newPlanPrice: number,
+  startedAt: string,
+  billingCycle: string
+): number {
+  // Calcula dias restantes do ciclo atual
+  // Aplica desconto proporcional no novo plano
+  // Se downgrade, cobra valor integral do novo plano
+}
+```
+
+### 15.2 Endpoint
+
+- **Rota**: `POST /api/checkout`
+- **Parâmetro**: `isProrate?: boolean`
+- **Comportamento**: Se `true`, calcula pró-rata baseado no plano atual
+
+## 16. Histórico de Cobranças
+
+### 16.1 Tabela subscription_payments
+
+| Campo             | Tipo        | Descrição                  |
+| ----------------- | ----------- | -------------------------- |
+| id                | uuid        | PK                         |
+| clinic_id         | uuid        | FK -> clinics              |
+| clinic_plan_id    | uuid        | FK -> clinic_plans         |
+| stripe_payment_id | text        | ID do pagamento no Stripe  |
+| amount            | decimal     | Valor em centavos          |
+| currency          | text        | brl                        |
+| status            | text        | pending, succeeded, failed |
+| billing_cycle     | text        | monthly, quarterly, annual |
+| is_prorate        | boolean     | Se foi cobrança pró-rata   |
+| created_at        | timestamptz |                            |
+
+### 16.2 Página Super Admin
+
+- **Rota**: `/super-admin/payments`
+- **Funcionalidades**: Lista de todas as cobranças, filtros por status/clínica
