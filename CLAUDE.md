@@ -1,5 +1,9 @@
 # CLAUDE.md - App Saúde (Painel Administrativo Unificado)
 
+> Este é o documento principal de referência para a IA. Voir aussi: `docs/INDEX.md` para índice completo da documentação.
+
+---
+
 ## Visão Geral do Projeto
 
 O **App Saúde** é uma plataforma completa para gestão de cuidados com pacientes (principalmente idosos), conectando cuidadores, familiares e contatos de emergência.
@@ -27,7 +31,9 @@ app/
 │   │   ├── reports/
 │   │   ├── audit-logs/
 │   │   ├── settings/
-│   │   └── sos/          # Sistema SOS (visor global)
+│   │   ├── sos/          # Sistema SOS (visor global)
+│   │   ├── subscriptions/ # Assinaturas
+│   │   └── payments/     # Cobranças
 │   │
 │   ├── (clinic-admin)/  # Clinic Admin routes
 │   │   ├── dashboard/
@@ -36,7 +42,8 @@ app/
 │   │   ├── shifts/
 │   │   ├── checklists/
 │   │   ├── reports/
-│   │   └── sos/          # Sistema SOS da clínica
+│   │   ├── sos/          # Sistema SOS da clínica
+│   │   └── admin/plan/   # Gestão de plano
 │   │
 │   └── layout.tsx       # Layout compartilhado (sidebar dinâmica)
 │
@@ -44,6 +51,8 @@ app/
 ├── page.tsx             # Redirect baseado no role
 └── globals.css
 ```
+
+---
 
 ## Tech Stack (obrigatório seguir)
 
@@ -54,6 +63,8 @@ app/
 - **Formulários**: React Hook Form + Zod
 - **Deploy**: Vercel + Supabase
 - **Lint/Formatação**: ESLint + Prettier
+
+---
 
 ## Design System - Temas por Módulo
 
@@ -82,9 +93,11 @@ Cada módulo admin possui seu próprio tema visual:
 }
 ```
 
+---
+
 ## Estrutura de Pastas Obrigatória
 
-```bash
+```
 app/
 ├── (auth)/               # Rotas de autenticação
 │   ├── login/
@@ -99,7 +112,9 @@ app/
 │   │   ├── checklists/
 │   │   ├── reports/
 │   │   ├── audit-logs/
-│   │   └── settings/
+│   │   ├── settings/
+│   │   ├── subscriptions/
+│   │   └── payments/
 │   │
 │   ├── (clinic-admin)/    # Clinic Admin
 │   │   ├── dashboard/
@@ -107,9 +122,16 @@ app/
 │   │   ├── caregivers/
 │   │   ├── shifts/
 │   │   ├── checklists/
-│   │   └── reports/
+│   │   └── admin/plan/
 │   │
 │   └── layout.tsx        # Layout com sidebar dinâmica
+│
+├── api/                  # API Routes
+│   ├── checkout/         # Stripe checkout
+│   ├── webhooks/stripe/  # Stripe webhooks
+│   ├── portal/           # Stripe Portal
+│   ├── subscriptions/    # Assinaturas
+│   └── plans/            # Planos
 │
 ├── layout.tsx
 ├── page.tsx
@@ -120,8 +142,7 @@ components/
 ├── layout/               # sidebar, topbar, providers
 ├── super-admin/          # Componentes específicos Super Admin
 ├── clinic-admin/         # Componentes específicos Clinic Admin
-├── shared/               # Componentes compartilhados
-└── [entidade]/           # Componentes por entidade (shared)
+└── shared/               # Componentes compartilhados
 
 lib/
 ├── supabase.ts           # Browser client
@@ -139,9 +160,19 @@ types/
 store/
 └── auth-store.ts         # Zustand store
 
+supabase/
+└── migrations/           # SQL migrations
+
 docs/
-└── SYSTEM-CONTEXT.md     # Documento de contexto do sistema
+├── INDEX.md              # Índice master (leia primeiro!)
+├── SYSTEM-CONTEXT.md     # Contexto técnico completo
+├── IMPLEMENTATION-PLAN.md # Plano de implementação
+├── SUBSCRIPTION-SYSTEM.md # Sistema de billing
+├── database-schema.md    # Schema do banco
+└── ...                   # Outros docs em docs/INDEX.md
 ```
+
+---
 
 ## Roles e Escopo
 
@@ -152,6 +183,8 @@ docs/
 | `caregiver`    | Clínica específica | App Cuidadores (futuro) |
 | `family`       | Clínica específica | App Familiares (futuro) |
 
+---
+
 ## Sistema SOS
 
 Sistema de alertas de emergência:
@@ -159,7 +192,53 @@ Sistema de alertas de emergência:
 - **Tabelas**: `sos_alerts`, `sos_notifications`
 - **Fluxo**: Cuidador/Família clica SOS → Notificação push → Admin confirma/resolve
 - **Super Admin**: `/super-admin/sos` - visor global de todas as clínicas
-- **Clinic Admin**: `/clinic-admin/sos` - SOS da clínica específica
+- **Clinic Admin**: `/admin/sos` - SOS da clínica específica
+
+---
+
+## Sistema de Assinaturas e Billing
+
+### Fluxo
+
+1. **Criação de clínica** → Trial automático de 14 dias (via trigger)
+2. **Job diário** → Marca assinaturas expiradas
+3. **Notificações** → 7/3/1 dias antes do vencimento
+4. **Renovação** → Clinic Admin vai para `/admin/plan`
+5. **Checkout** → Redirect para Stripe Checkout
+6. **Webhook** → Ativa assinatura + salva payment + salva customer_id
+7. **Portal** → Cancelamento via Stripe Portal
+
+### APIs
+
+| Rota                               | Descrição                 |
+| ---------------------------------- | ------------------------- |
+| `POST /api/checkout`               | Cria sessão Stripe        |
+| `POST /api/webhooks/stripe`        | Recebe eventos Stripe     |
+| `POST /api/portal`                 | Cria sessão Stripe Portal |
+| `GET /api/subscriptions/[id]`      | Detalhes assinatura       |
+| `POST /api/subscriptions/activate` | Ativação manual           |
+| `GET /api/plans`                   | Lista planos              |
+
+### Páginas
+
+| Rota                              | Escopo | Descrição       |
+| --------------------------------- | ------ | --------------- |
+| `/admin/plan`                     | CA     | Gestão de plano |
+| `/admin/plan/manage`              | CA     | Portal Stripe   |
+| `/super-admin/subscriptions`      | SA     | Dashboard       |
+| `/super-admin/subscriptions/[id]` | SA     | Detalhes        |
+| `/super-admin/payments`           | SA     | Histórico       |
+
+### Variáveis de Ambiente
+
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+---
 
 ## Regras de Código (sempre seguir)
 
@@ -175,11 +254,15 @@ Sistema de alertas de emergência:
 - Commits seguem Conventional Commits
 - Priorize segurança, multi-tenancy e clareza de interface
 
+---
+
 ## Workflow Obrigatório
 
 Sempre siga Spec-Driven Development:
 
 PRD → Tech Spec → Implementation Plan → Código (feature por feature)
+
+---
 
 ## Autenticação e Proteção
 
@@ -204,12 +287,75 @@ export async function requireClinicAdmin() {
 }
 ```
 
+### Verificação de Assinatura
+
+```typescript
+// lib/auth.ts
+export async function requireActiveSubscription(clinicId: string) {
+  const subscription = await getClinicSubscriptionStatus(clinicId)
+  if (!subscription.isActive) {
+    throw new Error("SUBSCRIPTION_EXPIRED")
+  }
+  return subscription
+}
+```
+
+---
+
+## Comandos Úteis
+
+```bash
+npm run dev          # Development
+npm run build        # Production build
+npm run lint         # ESLint
+npm run typecheck    # TypeScript
+```
+
+---
+
 ## Documentação de Referência
 
-- `docs/SYSTEM-CONTEXT.md` - Contexto técnico completo do sistema
-- `docs/IMPLEMENTATION-PLAN.md` - Plano de implementação
-- `docs/database-schema.md` - Schema do banco de dados
+| Documento                       | Descrição                            |
+| ------------------------------- | ------------------------------------ |
+| `docs/INDEX.md`                 | **Índice master** - ponto de entrada |
+| `docs/SYSTEM-CONTEXT.md`        | Contexto técnico completo            |
+| `docs/IMPLEMENTATION-PLAN.md`   | Plano de implementação               |
+| `docs/SUBSCRIPTION-SYSTEM.md`   | Sistema de billing completo          |
+| `docs/database-schema.md`       | Schema do banco de dados             |
+| `docs/SUPABASE-RLS-POLICIES.md` | Políticas de segurança               |
+
+---
+
+## Fluxo de Leitura Recomendado
+
+### Para entender o projeto
+
+1. **CLAUDE.md** (este arquivo) - Visão geral
+2. **docs/INDEX.md** - Índice completo
+3. **docs/SYSTEM-CONTEXT.md** - Detalhes técnicos
+4. **docs/IMPLEMENTATION-PLAN.md** - Features implementadas
+
+### Para implementar uma feature
+
+1. **Verificar docs/SUBSCRIPTION-SYSTEM.md** - Se existe spec
+2. **Verificar docs/IMPLEMENTATION-PLAN.md** - Status atual
+3. **Verificar supabase/migrations/** - SQL relacionado
+
+---
+
+## Links Úteis
+
+- **Dashboard Super Admin**: `/super-admin/dashboard`
+- **Dashboard Clinic Admin**: `/admin/dashboard`
+- **Assinaturas (SA)**: `/super-admin/subscriptions`
+- **Pagamentos (SA)**: `/super-admin/payments`
+- **Plano (CA)**: `/admin/plan`
+- **Gerenciar Assinatura (CA)**: `/admin/plan/manage`
 
 ---
 
 Você é um engenheiro sênior. Priorize código limpo, seguro, escalável e preparado para multi-tenant.
+
+---
+
+_Última atualização: 2026-04-11_

@@ -392,9 +392,79 @@ CREATE TABLE sos_notifications (
 
 ---
 
-## Última atualização: 2026-03-27
+## Sistema de Assinaturas e Billing
+
+| #   | Feature                                        | Fase         | Prioridade | Status       |
+| --- | ---------------------------------------------- | ------------ | ---------- | ------------ |
+| S01 | Job de expiração automática (pg_cron)          | 13 - Billing | 🔴 Crítico | ✅ Concluído |
+| S02 | Sistema de Trial (14 dias automático)          | 13 - Billing | 🔴 Crítico | ✅ Concluído |
+| S03 | Notificações de expiração (7/3/1 dias)         | 13 - Billing | 🟠 Alto    | ✅ Concluído |
+| S04 | Verificação de assinatura em actions           | 13 - Billing | 🔴 Crítico | ✅ Concluído |
+| S05 | Banner de expiração na UI                      | 13 - Billing | 🟠 Alto    | ✅ Concluído |
+| S06 | Página de renewal (/admin/plan)                | 13 - Billing | 🔴 Crítico | ✅ Concluído |
+| S07 | Integração Stripe Checkout                     | 13 - Billing | 🔴 Crítico | ✅ Concluído |
+| S08 | Webhook Stripe (payment events)                | 13 - Billing | 🔴 Crítico | ✅ Concluído |
+| S09 | Dashboard de assinaturas (SA)                  | 13 - Billing | 🟠 Alto    | ✅ Concluído |
+| S10 | Página de detalhes da assinatura               | 13 - Billing | 🟠 Alto    | ✅ Concluído |
+| S11 | Ativação manual pelo Super Admin               | 13 - Billing | 🟠 Alto    | ✅ Concluído |
+| S12 | Histórico de cobranças (/super-admin/payments) | 13 - Billing | 🟠 Alto    | ✅ Concluído |
+| S13 | Billing Pró-rata (upgrade/downgrade)           | 13 - Billing | 🟡 Médio   | ✅ Concluído |
+| S14 | Cancelamento via Stripe Portal                 | 13 - Billing | 🟡 Médio   | ✅ Concluído |
+
+### Tabelas Criadas
+
+```sql
+-- Planos
+CREATE TABLE plans (...);
+
+-- Assinaturas
+CREATE TABLE clinic_plans (...);
+
+-- Benefícios
+CREATE TABLE plan_benefits (...);
+CREATE TABLE plan_benefit_relations (...);
+
+-- Histórico de pagamentos
+CREATE TABLE subscription_payments (...);
+
+-- Notificações
+CREATE TABLE subscription_notifications (...);
+```
+
+### APIs Criadas
+
+| Rota                               | Descrição                 |
+| ---------------------------------- | ------------------------- |
+| `POST /api/checkout`               | Cria sessão Stripe        |
+| `POST /api/webhooks/stripe`        | Recebe eventos Stripe     |
+| `POST /api/portal`                 | Cria sessão Stripe Portal |
+| `GET /api/subscriptions/[id]`      | Detalhes assinatura       |
+| `POST /api/subscriptions/activate` | Ativação manual           |
+| `GET /api/plans`                   | Lista planos              |
+
+### Páginas Criadas
+
+| Rota                              | Descrição            |
+| --------------------------------- | -------------------- |
+| `/admin/plan`                     | Gestão de plano (CA) |
+| `/admin/plan/manage`              | Portal Stripe (CA)   |
+| `/super-admin/subscriptions`      | Dashboard (SA)       |
+| `/super-admin/subscriptions/[id]` | Detalhes (SA)        |
+| `/super-admin/payments`           | Histórico (SA)       |
+
+---
+
+## Última atualização: 2026-04-11
 
 ### Resumo das Mudanças Recentes
+
+- ✅ **Feature S01-S14** — Sistema de Assinaturas e Billing completo
+  - Trial automático de 14 dias
+  - Jobs pg_cron para expiração e notificações
+  - Integração Stripe Checkout + Webhook
+  - Dashboard de assinaturas e pagamentos
+  - Cancelamento via Stripe Portal
+  - Billing pró-rata implementado
 
 - ✅ **Simplificação Feature 33** — Rate Limiting: Removida complexidade desnecessária. Solução agora usa Map in-memory em vez de tabelas no banco. Mantém eficácia para contexto de painel administrativo interno.
 - ✅ Feature 34 — Security Headers: Implementados todos os headers de segurança (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, X-DNS-Prefetch-Control, X-XSS-Protection, Permissions-Policy) no `next.config.mjs`
