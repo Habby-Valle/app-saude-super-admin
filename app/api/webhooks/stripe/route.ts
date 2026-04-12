@@ -114,18 +114,41 @@ export async function POST(request: NextRequest) {
 
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object as Stripe.Subscription
+    const admin = createAdminClient()
 
-    const clinicId = subscription.metadata?.clinic_id
+    let clinicId = subscription.metadata?.clinic_id
+
+    if (!clinicId) {
+      const customerId = subscription.customer as string
+      if (customerId) {
+        const { data: clinic } = await admin
+          .from("clinics")
+          .select("id")
+          .eq("stripe_customer_id", customerId)
+          .single()
+        clinicId = clinic?.id
+      }
+    }
 
     if (clinicId) {
-      const admin = createAdminClient()
-      await admin
-        .from("clinic_plans")
-        .update({ status: "cancelled" })
-        .eq("clinic_id", clinicId)
-        .eq("status", "active")
+      const { error: freePlanError } = await admin.rpc(
+        "attach_free_plan_to_clinic",
+        {
+          p_clinic_id: clinicId,
+        }
+      )
 
-      console.log(`[webhook] Subscription cancelled for clinic ${clinicId}`)
+      if (freePlanError) {
+        console.error("[webhook] Error attaching free plan:", freePlanError)
+      }
+
+      console.log(
+        `[webhook] Subscription cancelled for clinic ${clinicId}, migrated to Free`
+      )
+    } else {
+      console.error(
+        "[webhook] Could not find clinic for cancelled subscription"
+      )
     }
   }
 

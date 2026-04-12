@@ -1,12 +1,14 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { createAdminClient } from "@/lib/supabase-admin"
 import { requireClinicAdmin } from "@/lib/auth"
 import type { Plan, ClinicPlan, PlanStatus } from "@/types/database"
 
 export interface ClinicPlanInfo {
   clinicPlan: ClinicPlan | null
   plan: Plan | null
+  hasUsedTrial?: boolean
 }
 
 export interface PlanWithDetails extends Plan {
@@ -22,7 +24,7 @@ export async function getMyClinicPlan(): Promise<ClinicPlanInfo | null> {
     .from("clinic_plans")
     .select("*")
     .eq("clinic_id", clinicId)
-    .in("status", ["active", "trial"])
+    .in("status", ["active", "trial", "free"])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -47,7 +49,13 @@ export async function getMyClinicPlan(): Promise<ClinicPlanInfo | null> {
     return null
   }
 
-  return { clinicPlan, plan }
+  const { data: clinic } = await supabase
+    .from("clinics")
+    .select("has_used_trial")
+    .eq("id", clinicId)
+    .single()
+
+  return { clinicPlan, plan, hasUsedTrial: clinic?.has_used_trial ?? false }
 }
 
 export async function getAvailablePlans(): Promise<Plan[]> {
@@ -110,6 +118,21 @@ export async function requestPlanChange(
   }
 
   if (targetPlan.price === 0) {
+    if (targetPlan.name === "Trial") {
+      const { data: clinic } = await supabase
+        .from("clinics")
+        .select("has_used_trial")
+        .eq("id", clinicId)
+        .single()
+
+      if (clinic?.has_used_trial) {
+        return {
+          success: false,
+          error: "Você já utilizou o Trial anteriormente",
+        }
+      }
+    }
+
     const now = new Date()
     const expiresAt = new Date(now)
 
@@ -129,19 +152,32 @@ export async function requestPlanChange(
       .from("clinic_plans")
       .update({ status: "cancelled" })
       .eq("clinic_id", clinicId)
-      .in("status", ["active", "trial"])
+      .in("status", ["active", "trial", "free"])
 
     if (updateError) {
       return { success: false, error: "Erro ao atualizar plano anterior" }
     }
 
+    if (targetPlan.name === "Trial") {
+      await supabase
+        .from("clinics")
+        .update({ has_used_trial: true })
+        .eq("id", clinicId)
+    }
+
     const { error: insertError } = await supabase.from("clinic_plans").insert({
       clinic_id: clinicId,
       plan_id: planId,
-      status: "active" as PlanStatus,
+      status:
+        targetPlan.name === "Trial"
+          ? "trial"
+          : targetPlan.name === "Free"
+            ? "free"
+            : "active",
       started_at: now.toISOString(),
-      expires_at: expiresAt.toISOString(),
-      trial_ends_at: null,
+      expires_at: targetPlan.name === "Trial" ? null : expiresAt.toISOString(),
+      trial_ends_at:
+        targetPlan.name === "Trial" ? expiresAt.toISOString() : null,
     })
 
     if (insertError) {
@@ -208,4 +244,36 @@ export async function getClinicPlanHistory(): Promise<ClinicPlan[]> {
   }
 
   return data ?? []
+}
+
+export async function manageGetClinic(): Promise<{
+  id: string
+  name: string
+  stripe_customer_id: string | null
+} | null> {
+  const { supabase, clinicId, isSuperAdmin } = await requireClinicAdmin()
+
+  console.log("[manageGetClinic] clinicId:", clinicId)
+  console.log("[manageGetClinic] isSuperAdmin:", isSuperAdmin)
+
+  if (!clinicId) return null
+
+  // Super admin impersonating needs admin client to bypass RLS
+  const client = isSuperAdmin ? createAdminClient() : supabase
+
+  const { data: clinic, error } = await client
+    .from("clinics")
+    .select("id, name, stripe_customer_id")
+    .eq("id", clinicId)
+    .single()
+
+  console.log("[manageGetClinic] clinic query result:", { clinic, error })
+
+  if (error) {
+    console.error("[manageGetClinic] Error:", error)
+    console.error("[manageGetClinic] clinicId used:", clinicId)
+    return null
+  }
+
+  return clinic
 }

@@ -95,8 +95,22 @@ export async function getClinics(params: {
 
   let query = supabase
     .from("clinics")
-    .select("*", { count: "exact" })
-    .is("deleted_at", null) // exclui clínicas com soft delete
+    .select(
+      `
+      *,
+      clinic_plans!inner(
+        id,
+        status,
+        started_at,
+        expires_at,
+        plan_id,
+        plans!inner(name)
+      )
+    `,
+      { count: "exact" }
+    )
+    .is("deleted_at", null)
+    .in("clinic_plans.status", ["free", "trial", "active"])
     .order("created_at", { ascending: false })
     .range(from, to)
 
@@ -115,14 +129,21 @@ export async function getClinics(params: {
     throw new Error(error.message)
   }
 
-  return { clinics: data ?? [], total: count ?? 0 }
+  const clinicsWithPlan = (data ?? []).map((row: any) => ({
+    ...row,
+    plan: row.clinic_plans?.[0]?.plans?.name ?? null,
+    clinic_plan_id: row.clinic_plans?.[0]?.id ?? null,
+  }))
+
+  return { clinics: clinicsWithPlan, total: count ?? 0 }
 }
 
 // ─── Criar clínica ────────────────────────────────────────────────────────────
 
 export async function createClinic(
   raw: ClinicFormValues,
-  logoUrl?: string | null
+  logoUrl?: string | null,
+  planId?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   const result = clinicSchema.safeParse(raw)
   if (!result.success) {
@@ -130,7 +151,7 @@ export async function createClinic(
   }
 
   const { supabase } = await requireSuperAdmin()
-  const { name, status, plan } = result.data
+  const { name, status } = result.data
   const cnpj = result.data.cnpj.replace(/\D/g, "")
 
   // Verifica CNPJ duplicado
@@ -150,7 +171,6 @@ export async function createClinic(
       name,
       cnpj,
       status,
-      plan: plan ?? null,
       logo_url: logoUrl ?? null,
     })
     .select("id")
@@ -159,6 +179,47 @@ export async function createClinic(
   if (error) {
     console.error("[createClinic] Supabase error:", error)
     return { success: false, error: error.message }
+  }
+
+  // Buscar nome do plano para determinar status
+  const planIdToUse = planId
+  const { data: planData } = planIdToUse
+    ? await supabase.from("plans").select("name").eq("id", planIdToUse).single()
+    : { data: null }
+
+  const planName = planData?.name ?? "Free"
+  const isTrial = planName === "Trial"
+  const now = new Date()
+
+  // Vincular plano à clínica via INSERT direto (usar admin para bypass RLS)
+  const admin = createAdminClient()
+  const { error: planError } = await admin.from("clinic_plans").insert({
+    clinic_id: created.id,
+    plan_id: planIdToUse,
+    status: isTrial ? "trial" : "free",
+    started_at: now.toISOString(),
+    expires_at: isTrial
+      ? new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString()
+      : "2099-12-31",
+    trial_ends_at: isTrial
+      ? new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString()
+      : null,
+  })
+
+  if (planError) {
+    console.error("[createClinic] Error attaching plan:", planError)
+    return { success: false, error: "Erro ao vincular plano à clínica" }
+  }
+
+  if (isTrial) {
+    const { error: trialError } = await admin
+      .from("clinics")
+      .update({ has_used_trial: true })
+      .eq("id", created.id)
+
+    if (trialError) {
+      console.error("[createClinic] Error marking trial used:", trialError)
+    }
   }
 
   await logAuditEvent("create", "clinic", created.id).catch(() => {})
@@ -180,7 +241,7 @@ export async function updateClinic(
   }
 
   const { supabase } = await requireSuperAdmin()
-  const { name, status, plan } = result.data
+  const { name, status } = result.data
   const cnpj = result.data.cnpj.replace(/\D/g, "")
 
   // Verifica CNPJ duplicado em outra clínica
@@ -200,7 +261,6 @@ export async function updateClinic(
     name,
     cnpj,
     status,
-    plan: plan ?? null,
   }
   if (logoUrl !== undefined) {
     updatePayload.logo_url = logoUrl

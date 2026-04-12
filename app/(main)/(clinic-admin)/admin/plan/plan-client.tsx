@@ -34,6 +34,8 @@ interface PlanCardProps {
   isCurrentPlan: boolean
   onSubscribe: (planId: string) => void
   loadingPlanId: string | null
+  disabled?: boolean
+  disabledReason?: string
 }
 
 function formatPrice(price: number): string {
@@ -57,6 +59,8 @@ function PlanCard({
   isCurrentPlan,
   onSubscribe,
   loadingPlanId,
+  disabled,
+  disabledReason,
 }: PlanCardProps) {
   const isLoading = loadingPlanId === plan.id
 
@@ -64,7 +68,8 @@ function PlanCard({
     <Card
       className={cn(
         "relative transition-all",
-        isCurrentPlan && "border-primary ring-2 ring-primary/20"
+        isCurrentPlan && "border-primary ring-2 ring-primary/20",
+        disabled && "opacity-60"
       )}
     >
       {isCurrentPlan && (
@@ -132,13 +137,15 @@ function PlanCard({
             className="w-full"
             variant="outline"
             onClick={() => onSubscribe(plan.id)}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Redirecionando...
               </>
+            ) : disabled ? (
+              (disabledReason ?? "Indisponível")
             ) : plan.price === 0 ? (
               "Selecionar plano gratuito"
             ) : (
@@ -161,26 +168,31 @@ interface CurrentPlanInfoProps {
 }
 
 function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
+  const isFree = clinicPlan.status === "free"
   const startedDate = new Date(clinicPlan.started_at)
-  const expiresDate = new Date(clinicPlan.expires_at)
+  const expiresDate = clinicPlan.expires_at
+    ? new Date(clinicPlan.expires_at)
+    : null
   const now = new Date()
-  const daysLeft = Math.ceil(
-    (expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  )
+  const daysLeft = expiresDate
+    ? Math.ceil((expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    : null
 
-  const isExpired = daysLeft <= 0
-  const isExpiringSoon = daysLeft > 0 && daysLeft <= 7
+  const isExpired = daysLeft !== null && daysLeft <= 0
+  const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 7
 
   const statusLabel =
-    clinicPlan.status === "trial"
-      ? "Trial"
-      : clinicPlan.status === "active"
-        ? "Ativo"
-        : clinicPlan.status === "expired"
-          ? "Expirado"
-          : clinicPlan.status === "cancelled"
-            ? "Cancelado"
-            : clinicPlan.status
+    clinicPlan.status === "free"
+      ? "Gratuito"
+      : clinicPlan.status === "trial"
+        ? "Trial"
+        : clinicPlan.status === "active"
+          ? "Ativo"
+          : clinicPlan.status === "expired"
+            ? "Expirado"
+            : clinicPlan.status === "cancelled"
+              ? "Cancelado"
+              : clinicPlan.status
 
   return (
     <Card className={isExpired ? "border-destructive" : ""}>
@@ -196,7 +208,9 @@ function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
                 ? "destructive"
                 : clinicPlan.status === "trial"
                   ? "secondary"
-                  : "default"
+                  : clinicPlan.status === "free"
+                    ? "outline"
+                    : "default"
             }
           >
             {statusLabel}
@@ -209,42 +223,54 @@ function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
           <p className="text-muted-foreground">{plan.description}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 rounded-lg bg-muted p-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Início</p>
-            <p className="font-medium">
-              {startedDate.toLocaleDateString("pt-BR")}
+        {!isFree && (
+          <div className="grid grid-cols-2 gap-4 rounded-lg bg-muted p-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Início</p>
+              <p className="font-medium">
+                {startedDate.toLocaleDateString("pt-BR")}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Vencimento</p>
+              <p className="font-medium">
+                {expiresDate?.toLocaleDateString("pt-BR") ?? "—"}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isFree && (
+          <div className="rounded-lg bg-muted p-4">
+            <p className="text-sm text-muted-foreground">
+              Plano gratuito com funcionalidades básicas.
             </p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Vencimento</p>
-            <p className="font-medium">
-              {expiresDate.toLocaleDateString("pt-BR")}
-            </p>
+        )}
+
+        {!isFree && daysLeft !== null && (
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-lg p-3",
+              isExpired
+                ? "bg-destructive/10 text-destructive"
+                : isExpiringSoon
+                  ? "bg-amber-100 text-amber-800"
+                  : "bg-primary/10 text-primary"
+            )}
+          >
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm font-medium">
+              {isExpired
+                ? "Assinatura expirada. Renove para continuar usando recursos premium."
+                : isExpiringSoon
+                  ? `Falta ${daysLeft} dia(s). Renove agora para não perder acesso.`
+                  : `${daysLeft} dia(s) restante(s)`}
+            </span>
           </div>
-        </div>
+        )}
 
-        <div
-          className={cn(
-            "flex items-center gap-2 rounded-lg p-3",
-            isExpired
-              ? "bg-destructive/10 text-destructive"
-              : isExpiringSoon
-                ? "bg-amber-100 text-amber-800"
-                : "bg-primary/10 text-primary"
-          )}
-        >
-          <AlertCircle className="h-4 w-4" />
-          <span className="text-sm font-medium">
-            {isExpired
-              ? "Assinatura expirada. Renove para continuar usando recursos premium."
-              : isExpiringSoon
-                ? `Falta ${daysLeft} dia(s). Renove agora para não perder acesso.`
-                : `${daysLeft} dia(s) restante(s)`}
-          </span>
-        </div>
-
-        {isExpired && (
+        {isExpired && !isFree && (
           <div className="rounded-lg bg-destructive/5 p-4 text-center">
             <p className="mb-3 text-sm text-muted-foreground">
               Sua assinatura expirou. Alguns recursos estão bloqueados.
@@ -252,18 +278,24 @@ function CurrentPlanInfo({ plan, clinicPlan }: CurrentPlanInfoProps) {
           </div>
         )}
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/plan/manage">Gerenciar Assinatura</Link>
-          </Button>
-        </div>
+        {!isFree && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/plan/manage">Gerenciar Assinatura</Link>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
 }
 
 interface PlanManagementClientProps {
-  currentPlan: { plan: Plan | null; clinicPlan: ClinicPlan | null }
+  currentPlan: {
+    plan: Plan | null
+    clinicPlan: ClinicPlan | null
+    hasUsedTrial?: boolean
+  }
   availablePlans: Plan[]
 }
 
@@ -275,6 +307,7 @@ export function PlanManagementClient({
   const searchParams = useSearchParams()
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const hasUsedTrial = currentPlan.hasUsedTrial
 
   // Handle Stripe checkout return (success/cancel)
   useEffect(() => {
@@ -346,15 +379,25 @@ export function PlanManagementClient({
         )}
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {availablePlans.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              isCurrentPlan={plan.id === currentPlanId}
-              onSubscribe={handleSubscribe}
-              loadingPlanId={loadingPlanId}
-            />
-          ))}
+          {availablePlans.map((plan) => {
+            const isTrial = plan.name === "Trial"
+            const trialDisabled = isTrial && hasUsedTrial
+            return (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                isCurrentPlan={plan.id === currentPlanId}
+                onSubscribe={handleSubscribe}
+                loadingPlanId={loadingPlanId}
+                disabled={trialDisabled}
+                disabledReason={
+                  trialDisabled
+                    ? "Você já utilizou o Trial anteriormente"
+                    : undefined
+                }
+              />
+            )
+          })}
         </div>
       </div>
     </div>

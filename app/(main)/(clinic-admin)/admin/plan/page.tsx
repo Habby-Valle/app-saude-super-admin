@@ -48,6 +48,7 @@ async function PlanContent() {
       currentPlan={{
         plan: currentPlan?.plan ?? null,
         clinicPlan: currentPlan?.clinicPlan ?? null,
+        hasUsedTrial: currentPlan?.hasUsedTrial ?? false,
       }}
       availablePlans={allPlans}
     />

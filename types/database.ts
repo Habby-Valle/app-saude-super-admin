@@ -1,10 +1,15 @@
-export type UserRole = 'super_admin' | 'clinic_admin' | 'caregiver' | 'family' | 'emergency_contact'
+export type UserRole =
+  | "super_admin"
+  | "clinic_admin"
+  | "caregiver"
+  | "family"
+  | "emergency_contact"
 
-export type ClinicStatus = 'active' | 'inactive' | 'suspended'
+export type ClinicStatus = "active" | "inactive" | "suspended"
 
-export type ShiftStatus = 'in_progress' | 'completed' | 'cancelled'
+export type ShiftStatus = "in_progress" | "completed" | "cancelled"
 
-export type ChecklistItemType = 'text' | 'boolean' | 'select' | 'number'
+export type ChecklistItemType = "text" | "boolean" | "select" | "number"
 
 // ─── Settings ──────────────────────────────────────────────────────────────────
 
@@ -32,7 +37,8 @@ export interface Clinic {
   name: string
   cnpj: string
   status: ClinicStatus
-  plan?: string
+  plan?: string | null
+  clinic_plan_id?: string | null
   logo_url?: string | null
   theme_color?: string | null
   created_at: string
@@ -48,7 +54,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
-  status: 'active' | 'blocked' | 'pending'
+  status: "active" | "blocked" | "pending"
   created_at: string
   last_sign_in_at?: string
 }
@@ -61,7 +67,7 @@ export interface Patient {
   contractor_id: string | null
   name: string
   birth_date: string
-  status: 'active' | 'inactive'
+  status: "active" | "inactive"
   created_at: string
 }
 
@@ -127,7 +133,7 @@ export interface ShiftChecklist {
   id: string
   shift_id: string
   checklist_id: string
-  status: 'pending' | 'completed'
+  status: "pending" | "completed"
   observation: string | null
 }
 
@@ -142,9 +148,9 @@ export interface ShiftChecklistItem {
 
 // ─── Plans ────────────────────────────────────────────────────────────────────
 
-export type PlanStatus = 'trial' | 'active' | 'expired' | 'cancelled'
-export type BillingCycle = 'monthly' | 'quarterly' | 'annual'
-export type BenefitCategory = 'feature' | 'limit' | 'addon' | 'integration'
+export type PlanStatus = "trial" | "active" | "expired" | "cancelled"
+export type BillingCycle = "monthly" | "quarterly" | "annual"
+export type BenefitCategory = "feature" | "limit" | "addon" | "integration"
 
 export interface Plan {
   id: string
