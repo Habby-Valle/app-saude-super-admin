@@ -96,6 +96,7 @@ export async function requestPlanChange(
   billingCycle: "monthly" | "quarterly" | "annual" = "monthly"
 ): Promise<{ success: boolean; error?: string; checkoutUrl?: string }> {
   const { supabase, clinicId } = await requireClinicAdmin()
+  const admin = createAdminClient()
 
   console.log("[requestPlanChange] clinicId:", clinicId)
 
@@ -148,7 +149,7 @@ export async function requestPlanChange(
         break
     }
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await admin
       .from("clinic_plans")
       .update({ status: "cancelled" })
       .eq("clinic_id", clinicId)
@@ -159,13 +160,13 @@ export async function requestPlanChange(
     }
 
     if (targetPlan.name === "Trial") {
-      await supabase
+      await admin
         .from("clinics")
         .update({ has_used_trial: true })
         .eq("id", clinicId)
     }
 
-    const { error: insertError } = await supabase.from("clinic_plans").insert({
+    const { error: insertError } = await admin.from("clinic_plans").insert({
       clinic_id: clinicId,
       plan_id: planId,
       status:
@@ -175,16 +176,22 @@ export async function requestPlanChange(
             ? "free"
             : "active",
       started_at: now.toISOString(),
-      expires_at: targetPlan.name === "Trial" ? null : expiresAt.toISOString(),
+      expires_at:
+        targetPlan.name === "Trial"
+          ? new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          : expiresAt.toISOString(),
       trial_ends_at:
-        targetPlan.name === "Trial" ? expiresAt.toISOString() : null,
+        targetPlan.name === "Trial"
+          ? new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          : null,
     })
 
     if (insertError) {
+      console.error("[requestPlanChange] Insert error:", insertError)
       return { success: false, error: "Erro ao criar novo plano" }
     }
 
-    await supabase
+    await admin
       .from("clinics")
       .update({ plan: targetPlan.name })
       .eq("id", clinicId)

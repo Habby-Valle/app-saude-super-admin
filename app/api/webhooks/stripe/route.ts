@@ -131,11 +131,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (clinicId) {
+      // Marcar planos anteriores como cancelled ANTES de attach_free_plan
+      await admin
+        .from("clinic_plans")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() })
+        .eq("clinic_id", clinicId)
+        .in("status", ["active", "trial"])
+
       const { error: freePlanError } = await admin.rpc(
         "attach_free_plan_to_clinic",
-        {
-          p_clinic_id: clinicId,
-        }
+        { p_clinic_id: clinicId }
       )
 
       if (freePlanError) {
@@ -150,6 +155,79 @@ export async function POST(request: NextRequest) {
         "[webhook] Could not find clinic for cancelled subscription"
       )
     }
+  }
+
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object as Stripe.Subscription
+    const admin = createAdminClient()
+
+    const status = subscription.status
+    console.log("[webhook] subscription.updated received, status:", status)
+
+    if (status !== "canceled" && status !== "past_due") {
+      console.log("[webhook] Status not canceled/past_due, skipping")
+      return NextResponse.json({ received: true })
+    }
+
+    let clinicId = subscription.metadata?.clinic_id
+    console.log("[webhook] clinicId from metadata:", clinicId)
+
+    if (!clinicId) {
+      const customerId = subscription.customer as string
+      console.log(
+        "[webhook] Looking for clinic with stripe_customer_id:",
+        customerId
+      )
+      if (customerId) {
+        const { data: clinic, error: clinicError } = await admin
+          .from("clinics")
+          .select("id")
+          .eq("stripe_customer_id", customerId)
+          .single()
+        if (clinicError) {
+          console.error("[webhook] Error finding clinic:", clinicError)
+        }
+        clinicId = clinic?.id
+        console.log("[webhook] Found clinicId:", clinicId)
+      }
+    }
+
+    if (!clinicId) {
+      console.error("[webhook] Clinic not found for subscription, will try customer lookup")
+    }
+
+    if (clinicId) {
+      // Marcar planos anteriores como cancelled
+      console.log("[webhook] Cancelling previous plans for clinic:", clinicId)
+      const { error: cancelError } = await admin
+        .from("clinic_plans")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() })
+        .eq("clinic_id", clinicId)
+        .in("status", ["active", "trial"])
+
+      if (cancelError) {
+        console.error("[webhook] Error cancelling plans:", cancelError)
+      }
+
+      console.log("[webhook] Attaching free plan to clinic:", clinicId)
+      const { error: freePlanError } = await admin.rpc(
+        "attach_free_plan_to_clinic",
+        { p_clinic_id: clinicId }
+      )
+
+      if (freePlanError) {
+        console.error(
+          "[webhook] Error attaching free plan on updated:",
+          freePlanError
+        )
+      }
+
+      console.log(
+        `[webhook] Subscription ${status} for clinic ${clinicId}, migrated to Free`
+      )
+    }
+
+    return NextResponse.json({ received: true })
   }
 
   return NextResponse.json({ received: true })
