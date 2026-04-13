@@ -39,6 +39,7 @@ import {
   Clock,
   Zap,
   History,
+  ArrowRight,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -146,6 +147,10 @@ export default function SubscriptionDetailPage() {
   const [saving, setSaving] = useState(false)
   const [history, setHistory] = useState<HistoryEvent[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
+  const [changingPlan, setChangingPlan] = useState(false)
+  const [newPlanId, setNewPlanId] = useState("")
+  const [newBillingCycle, setNewBillingCycle] = useState("monthly")
 
   useEffect(() => {
     async function fetchSubscription() {
@@ -167,14 +172,14 @@ export default function SubscriptionDetailPage() {
   }, [showHistory, subscription?.id])
 
   useEffect(() => {
-    if (showActivateDialog) {
+    if (showActivateDialog || showChangePlanDialog) {
       fetch("/api/plans")
         .then((res) => res.json())
         .then((data) => {
           setAvailablePlans(data.plans || [])
         })
     }
-  }, [showActivateDialog])
+  }, [showActivateDialog, showChangePlanDialog])
 
   async function handleActivate() {
     if (!selectedPlanId) return
@@ -231,6 +236,32 @@ export default function SubscriptionDetailPage() {
       router.refresh()
     } else {
       alert(result.error || "Erro ao atualizar datas")
+    }
+  }
+
+  async function handleChangePlan() {
+    if (!subscription || !newPlanId) return
+
+    setChangingPlan(true)
+    const response = await fetch(`/api/subscriptions/change-plan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clinicId: subscription.clinicId,
+        newPlanId,
+        billingCycle: newBillingCycle,
+      }),
+    })
+
+    const result = await response.json()
+    setChangingPlan(false)
+
+    if (result.success) {
+      setShowChangePlanDialog(false)
+      setNewPlanId("")
+      router.refresh()
+    } else {
+      alert(result.error || "Erro ao mudar de plano")
     }
   }
 
@@ -318,6 +349,17 @@ export default function SubscriptionDetailPage() {
           <Button onClick={() => setShowActivateDialog(true)}>
             <Zap className="mr-2 h-4 w-4" />
             Ativar Assinatura
+          </Button>
+        )}
+        {/* Botão removido temporariamente - usar mudança de plano via Clinic Admin
+        {(subscription?.status === "active" ||
+          subscription?.status === "trial") && (
+          <Button
+            variant="outline"
+            onClick={() => setShowChangePlanDialog(true)}
+          >
+            <ArrowRight className="mr-2 h-4 w-4" />
+            Mudar Plano
           </Button>
         )}
         <Button variant="outline" onClick={() => setShowHistory(true)}>
@@ -609,6 +651,72 @@ export default function SubscriptionDetailPage() {
               disabled={saving || !newStartsAt || !newExpiresAt}
             >
               {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para mudar de plano */}
+      <Dialog
+        open={showChangePlanDialog}
+        onOpenChange={setShowChangePlanDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mudar de Plano</DialogTitle>
+            <DialogDescription>
+              Alterar o plano da clínica. O cálculo pró-rata será aplicado
+              automaticamente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Novo Plano</Label>
+              <Select value={newPlanId} onValueChange={setNewPlanId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um plano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePlans
+                    .filter((p) => p.id !== subscription?.planId)
+                    .map((plan) => (
+                      <SelectItem key={plan.id} value={plan.id}>
+                        {plan.name} - {formatPrice(plan.price)}/
+                        {formatBillingCycle(plan.billing_cycle)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Ciclo de Cobrança</Label>
+              <Select
+                value={newBillingCycle}
+                onValueChange={setNewBillingCycle}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Mensal</SelectItem>
+                  <SelectItem value="quarterly">Trimestral</SelectItem>
+                  <SelectItem value="annual">Anual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowChangePlanDialog(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleChangePlan}
+              disabled={!newPlanId || changingPlan}
+            >
+              {changingPlan ? "Alterando..." : "Confirmar"}
             </Button>
           </DialogFooter>
         </DialogContent>

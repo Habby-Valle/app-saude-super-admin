@@ -205,33 +205,67 @@ export async function requestPlanChange(
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL || "https://app-saude-seven.vercel.app"
-  const successUrl = `${baseUrl}/admin/plan?success=true`
-  const cancelUrl = `${baseUrl}/admin/plan?canceled=true`
 
-  const { data: user } = await supabase.auth.getUser()
-  const customerEmail = user.user?.email
-
-  const stripeResponse = await fetch(`${baseUrl}/api/checkout`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      planId,
-      clinicId,
-      billingCycle,
-    }),
-  })
-
-  const stripeData = await stripeResponse.json()
-
-  if (!stripeResponse.ok || !stripeData.url) {
-    console.error("[requestPlanChange] Stripe error:", stripeData.error)
-    return {
-      success: false,
-      error: stripeData.error ?? "Erro ao criar checkout",
+  const changePlanResponse = await fetch(
+    `${baseUrl}/api/subscriptions/change-plan`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clinicId,
+        newPlanId: planId,
+        billingCycle,
+      }),
     }
+  )
+
+  const changePlanData = await changePlanResponse.json()
+
+  if (changePlanResponse.ok && changePlanData.success) {
+    if (changePlanData.checkoutUrl) {
+      return { success: true, checkoutUrl: changePlanData.checkoutUrl }
+    }
+
+    await admin
+      .from("clinics")
+      .update({ plan: targetPlan.name })
+      .eq("id", clinicId)
+
+    revalidatePath("/admin/plan")
+    revalidatePath("/admin/dashboard")
+
+    return { success: true }
   }
 
-  return { success: true, checkoutUrl: stripeData.url }
+  if (changePlanData.needsCheckout) {
+    const stripeResponse = await fetch(`${baseUrl}/api/checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        planId,
+        clinicId,
+        billingCycle,
+      }),
+    })
+
+    const stripeData = await stripeResponse.json()
+
+    if (!stripeResponse.ok || !stripeData.url) {
+      return {
+        success: false,
+        error: stripeData.error ?? "Erro ao criar checkout",
+      }
+    }
+
+    return { success: true, checkoutUrl: stripeData.url }
+  }
+
+  console.error("[requestPlanChange] Error:", changePlanData.error)
+
+  return {
+    success: false,
+    error: changePlanData.error ?? "Erro ao mudar de plano",
+  }
 }
 
 export async function getClinicPlanHistory(): Promise<ClinicPlan[]> {

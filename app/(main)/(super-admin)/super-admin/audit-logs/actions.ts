@@ -16,6 +16,7 @@ export type AuditAction =
   | "resend_invite"
   | "extend_trial"
   | "update_dates"
+  | "change_plan"
 
 export type AuditEntity =
   | "clinic"
