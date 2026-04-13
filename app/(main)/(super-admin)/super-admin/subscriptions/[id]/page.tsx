@@ -1,6 +1,11 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
+import {
+  extendTrial,
+  updateSubscriptionDates,
+  getSubscriptionHistory,
+} from "../actions"
 import { useEffect, useState, useMemo } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -33,6 +38,7 @@ import {
   Mail,
   Clock,
   Zap,
+  History,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -54,6 +60,13 @@ interface SubscriptionDetails {
   maxUsers: number
   maxPatients: number
   features: string[]
+}
+
+interface HistoryEvent {
+  id: string
+  action: string
+  metadata: Record<string, unknown>
+  created_at: string
 }
 
 function formatDate(dateStr: string | null) {
@@ -125,6 +138,14 @@ export default function SubscriptionDetailPage() {
   const [availablePlans, setAvailablePlans] = useState<PlanOption[]>([])
   const [selectedPlanId, setSelectedPlanId] = useState("")
   const [selectedBillingCycle, setSelectedBillingCycle] = useState("monthly")
+  const [showExtendDialog, setShowExtendDialog] = useState(false)
+  const [showDatesDialog, setShowDatesDialog] = useState(false)
+  const [extendDays, setExtendDays] = useState("14")
+  const [newStartsAt, setNewStartsAt] = useState("")
+  const [newExpiresAt, setNewExpiresAt] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [history, setHistory] = useState<HistoryEvent[]>([])
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
     async function fetchSubscription() {
@@ -138,6 +159,12 @@ export default function SubscriptionDetailPage() {
       fetchSubscription()
     }
   }, [params.id])
+
+  useEffect(() => {
+    if (showHistory && subscription?.id) {
+      getSubscriptionHistory(subscription.id).then(setHistory)
+    }
+  }, [showHistory, subscription?.id])
 
   useEffect(() => {
     if (showActivateDialog) {
@@ -173,6 +200,45 @@ export default function SubscriptionDetailPage() {
       alert(result.error || "Erro ao ativar assinatura")
     }
   }
+
+  async function handleExtend() {
+    if (!subscription) return
+    setSaving(true)
+    const result = await extendTrial({
+      subscriptionId: subscription.id,
+      daysToAdd: parseInt(extendDays) || 14,
+    })
+    setSaving(false)
+    if (result.success) {
+      setShowExtendDialog(false)
+      router.refresh()
+    } else {
+      alert(result.error || "Erro ao estender Trial")
+    }
+  }
+
+  async function handleUpdateDates() {
+    if (!subscription || !newStartsAt || !newExpiresAt) return
+    setSaving(true)
+    const result = await updateSubscriptionDates({
+      subscriptionId: subscription.id,
+      startsAt: newStartsAt,
+      expiresAt: newExpiresAt,
+    })
+    setSaving(false)
+    if (result.success) {
+      setShowDatesDialog(false)
+      router.refresh()
+    } else {
+      alert(result.error || "Erro ao atualizar datas")
+    }
+  }
+
+  const canExtend = subscription?.status === "trial"
+  const canUpdateDates =
+    subscription?.status === "trial" ||
+    subscription?.status === "active" ||
+    subscription?.status === "free"
 
   const canActivate =
     subscription?.status === "expired" || subscription?.status === "cancelled"
@@ -229,12 +295,35 @@ export default function SubscriptionDetailPage() {
             </p>
           </div>
         </div>
+        {canExtend && (
+          <Button variant="outline" onClick={() => setShowExtendDialog(true)}>
+            <Clock className="mr-2 h-4 w-4" />
+            Estender Trial
+          </Button>
+        )}
+        {canUpdateDates && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              setNewStartsAt(subscription?.startedAt?.slice(0, 10) || "")
+              setNewExpiresAt(subscription?.expiresAt?.slice(0, 10) || "")
+              setShowDatesDialog(true)
+            }}
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Alterar Datas
+          </Button>
+        )}
         {canActivate && (
           <Button onClick={() => setShowActivateDialog(true)}>
             <Zap className="mr-2 h-4 w-4" />
             Ativar Assinatura
           </Button>
         )}
+        <Button variant="outline" onClick={() => setShowHistory(true)}>
+          <History className="mr-2 h-4 w-4" />
+          Histórico
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -442,6 +531,131 @@ export default function SubscriptionDetailPage() {
               disabled={!selectedPlanId || activating}
             >
               {activating ? "Ativando..." : "Ativar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para estender trial */}
+      <Dialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Estender Trial</DialogTitle>
+            <DialogDescription>
+              Adicionar dias ao período de Trial da clínica.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Dias para adicionar</Label>
+              <Input
+                type="number"
+                value={extendDays}
+                onChange={(e) => setExtendDays(e.target.value)}
+                placeholder="14"
+              />
+              <p className="text-xs text-muted-foreground">
+                Dias atuais: {daysRemaining ?? "N/A"}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowExtendDialog(false)}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleExtend} disabled={saving}>
+              {saving ? "Salvando..." : "Estender"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para alterar datas */}
+      <Dialog open={showDatesDialog} onOpenChange={setShowDatesDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Datas</DialogTitle>
+            <DialogDescription>
+              Alterar data de início e expiração da assinatura.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Data de Início</Label>
+              <Input
+                type="date"
+                value={newStartsAt}
+                onChange={(e) => setNewStartsAt(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Data de Expiração</Label>
+              <Input
+                type="date"
+                value={newExpiresAt}
+                onChange={(e) => setNewExpiresAt(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDatesDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleUpdateDates}
+              disabled={saving || !newStartsAt || !newExpiresAt}
+            >
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Histórico */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Histórico de Alterações</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto">
+            {history.length === 0 ? (
+              <p className="py-4 text-center text-muted-foreground">
+                Nenhuma alteração registrada.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {history.map((event) => (
+                  <div key={event.id} className="rounded-lg border p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium capitalize">
+                        {event.action.replace("_", " ")}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {format(
+                          new Date(event.created_at),
+                          "dd/MM/yyyy HH:mm",
+                          {
+                            locale: ptBR,
+                          }
+                        )}
+                      </span>
+                    </div>
+                    {event.metadata && (
+                      <pre className="mt-2 overflow-x-auto text-xs text-muted-foreground">
+                        {JSON.stringify(event.metadata, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowHistory(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>

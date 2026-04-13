@@ -14,6 +14,8 @@ export type AuditAction =
   | "deactivate"
   | "update_logo"
   | "resend_invite"
+  | "extend_trial"
+  | "update_dates"
 
 export type AuditEntity =
   | "clinic"
@@ -24,6 +26,7 @@ export type AuditEntity =
   | "system"
   | "plan"
   | "plan_benefit"
+  | "subscription"
 
 export interface AuditLogWithUser extends AuditLog {
   user_name: string

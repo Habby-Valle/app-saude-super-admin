@@ -1,6 +1,8 @@
 "use server"
 
 import { requireSuperAdmin } from "@/lib/auth"
+import { createAdminClient } from "@/lib/supabase-admin"
+import { logAuditEvent } from "../audit-logs/actions"
 import type { Plan } from "@/types/database"
 
 export interface SubscriptionWithClinic {
@@ -180,5 +182,125 @@ export async function activateSubscriptionManual(
     console.log("[activateSubscriptionManual] Notes:", notes)
   }
 
+  await logAuditEvent("activate", "subscription", subscriptionId, {
+    plan_id: planId,
+    billing_cycle: billingCycle,
+    notes,
+  }).catch(console.error)
+
   return { success: true }
+}
+
+interface ExtendTrialParams {
+  subscriptionId: string
+  daysToAdd: number
+}
+
+export async function extendTrial(
+  params: ExtendTrialParams
+): Promise<{ success: boolean; error?: string }> {
+  const { supabase } = await requireSuperAdmin()
+  const admin = createAdminClient()
+  const { subscriptionId, daysToAdd } = params
+
+  console.log(
+    "[extendTrial] subscriptionId:",
+    subscriptionId,
+    "daysToAdd:",
+    daysToAdd
+  )
+
+  const { data: current, error: fetchError } = await admin
+    .from("clinic_plans")
+    .select("expires_at, trial_ends_at, status")
+    .eq("id", subscriptionId)
+    .single()
+
+  if (fetchError || !current) {
+    return { success: false, error: "Assinatura não encontrada" }
+  }
+
+  console.log("[extendTrial] current:", current)
+
+  const currentExpiresAt = new Date(current.expires_at || current.trial_ends_at)
+  const newExpiresAt = new Date(
+    currentExpiresAt.getTime() + daysToAdd * 24 * 60 * 60 * 1000
+  )
+
+  console.log("[extendTrial] newExpiresAt:", newExpiresAt.toISOString())
+
+  const { error: updateError } = await admin
+    .from("clinic_plans")
+    .update({
+      expires_at: newExpiresAt.toISOString(),
+      trial_ends_at: newExpiresAt.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", subscriptionId)
+
+  if (updateError) {
+    console.error("[extendTrial] Error:", updateError)
+    return { success: false, error: "Erro ao estender Trial" }
+  }
+
+  await logAuditEvent("extend_trial", "subscription", subscriptionId, {
+    days_added: daysToAdd,
+  }).catch(console.error)
+
+  console.log("[extendTrial] Extended trial by", daysToAdd, "days")
+  return { success: true }
+}
+
+interface UpdateSubscriptionDatesParams {
+  subscriptionId: string
+  startsAt: string
+  expiresAt: string
+}
+
+export async function updateSubscriptionDates(
+  params: UpdateSubscriptionDatesParams
+): Promise<{ success: boolean; error?: string }> {
+  const { supabase } = await requireSuperAdmin()
+  const admin = createAdminClient()
+  const { subscriptionId, startsAt, expiresAt } = params
+
+  const { error: updateError } = await admin
+    .from("clinic_plans")
+    .update({
+      started_at: startsAt,
+      expires_at: expiresAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", subscriptionId)
+
+  if (updateError) {
+    console.error("[updateSubscriptionDates] Error:", updateError)
+    return { success: false, error: "Erro ao atualizar datas" }
+  }
+
+  await logAuditEvent("update_dates", "subscription", subscriptionId, {
+    started_at: startsAt,
+    expires_at: expiresAt,
+  }).catch(console.error)
+
+  return { success: true }
+}
+
+export async function getSubscriptionHistory(subscriptionId: string) {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .select("*")
+    .eq("entity", "subscription")
+    .eq("entity_id", subscriptionId)
+    .order("created_at", { ascending: false })
+    .limit(20)
+
+  if (error) {
+    console.error("[getSubscriptionHistory] Error:", error)
+    return []
+  }
+
+  return data ?? []
 }

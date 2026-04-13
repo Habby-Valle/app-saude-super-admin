@@ -1,6 +1,4 @@
--- Fix: Migrar cancelled sem expires_at para Free
--- Garante que qualquer cancelamento vai para Free
--- Salva last_plan_status para detectar expiração
+-- Salvar last_plan_status ao migrar para Free (para detectar mudanças e mostrar alerta)
 
 CREATE OR REPLACE FUNCTION expire_subscriptions()
 RETURNS void
@@ -33,19 +31,21 @@ BEGIN
 
   -- Cancelled: salvar status
   FOR v_clinic_id IN SELECT DISTINCT clinic_id FROM clinic_plans 
-    WHERE status = 'cancelled' AND (expires_at IS NULL OR expires_at >= now())
+    WHERE status = 'cancelled'
   LOOP
     UPDATE clinics SET last_plan_status = 'cancelled' WHERE id = v_clinic_id;
   END LOOP;
 
-  -- Com expires_at
+  -- Migrar expired para Free
   UPDATE clinic_plans
   SET status = 'free', plan_id = free_plan_id, updated_at = now()
   WHERE status IN ('trial', 'active', 'cancelled')
-    AND expires_at IS NOT NULL
-    AND expires_at < now();
+    AND (
+      (expires_at IS NOT NULL AND expires_at < now())
+      OR (trial_ends_at IS NOT NULL AND trial_ends_at < now())
+    );
 
-  -- Cancelled sem expires_at (Stripe cancelamento)
+  -- Cancelled sem expires_at
   UPDATE clinic_plans
   SET status = 'free', plan_id = free_plan_id, updated_at = now()
   WHERE status = 'cancelled'

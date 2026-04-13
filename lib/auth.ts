@@ -149,10 +149,11 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
 
 export interface SubscriptionStatus {
   isActive: boolean
-  status: "trial" | "active" | "expired" | "cancelled" | null
+  status: "trial" | "active" | "expired" | "cancelled" | "free" | null
   expiresAt: string | null
   daysRemaining: number | null
   isTrial: boolean
+  lastPlanStatus: "trial" | "active" | "cancelled" | null
 }
 
 export async function getClinicSubscriptionStatus(
@@ -165,6 +166,7 @@ export async function getClinicSubscriptionStatus(
       expiresAt: null,
       daysRemaining: null,
       isTrial: false,
+      lastPlanStatus: null,
     }
   }
 
@@ -185,8 +187,15 @@ export async function getClinicSubscriptionStatus(
       expiresAt: null,
       daysRemaining: null,
       isTrial: false,
+      lastPlanStatus: null,
     }
   }
+
+  const { data: clinic } = await supabase
+    .from("clinics")
+    .select("last_plan_status")
+    .eq("id", clinicId)
+    .maybeSingle()
 
   const isActive =
     clinicPlan.status === "trial" || clinicPlan.status === "active"
@@ -202,6 +211,11 @@ export async function getClinicSubscriptionStatus(
     expiresAt: clinicPlan.expires_at,
     daysRemaining: isActive ? daysRemaining : null,
     isTrial: clinicPlan.status === "trial",
+    lastPlanStatus: clinic?.last_plan_status as
+      | "trial"
+      | "active"
+      | "cancelled"
+      | null,
   }
 }
 

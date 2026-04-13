@@ -1,7 +1,8 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { AlertTriangle, ArrowRight, CheckCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { AlertTriangle, ArrowRight, CheckCircle, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { SubscriptionStatus } from "@/lib/auth"
 
@@ -11,6 +12,23 @@ interface SubscriptionBannerProps {
 
 export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
   const router = useRouter()
+  const [showTrialExpiredBanner, setShowTrialExpiredBanner] = useState(false)
+
+  useEffect(() => {
+    const wasTrial = subscription.lastPlanStatus === "trial"
+    const isFree = subscription.status === "free"
+    const alreadyShown = sessionStorage.getItem("trial_expired_banner_shown")
+
+    if (wasTrial && isFree && !alreadyShown) {
+      setShowTrialExpiredBanner(true)
+      sessionStorage.setItem("trial_expired_banner_shown", "true")
+    }
+  }, [subscription.lastPlanStatus, subscription.status])
+
+  const handleDismiss = () => {
+    setShowTrialExpiredBanner(false)
+  }
+
   const isExpired =
     subscription.status === "expired" ||
     subscription.status === "cancelled" ||
@@ -20,6 +38,39 @@ export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
     subscription.daysRemaining <= 7 &&
     subscription.daysRemaining > 0 &&
     subscription.isActive
+
+  if (showTrialExpiredBanner) {
+    return (
+      <div className="border-b border-amber-300 bg-amber-50 px-4 py-2">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-amber-800">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="font-medium">
+              Seu Trial expirou. Agora você está no plano Free.
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-amber-800 hover:bg-amber-100"
+              onClick={() => router.push("/admin/plan")}
+            >
+              Ver planos <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:bg-transparent"
+              onClick={handleDismiss}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (subscription.isActive && !isExpiringSoon) {
     return null
