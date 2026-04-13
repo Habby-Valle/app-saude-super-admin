@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import Link from "next/link"
 import {
   Table,
   TableBody,
@@ -23,10 +22,6 @@ import {
 } from "@/components/ui/select"
 import { Search, Filter, ExternalLink } from "lucide-react"
 import type { PaymentWithClinic } from "./actions"
-
-interface PaymentsTableProps {
-  payments: PaymentWithClinic[]
-}
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<
@@ -87,13 +82,12 @@ function formatPaymentMethod(method: string) {
   return map[method] ?? method
 }
 
-export function PaymentsTable({ payments }: PaymentsTableProps) {
+export function PaymentsTable({ payments }: { payments: PaymentWithClinic[] }) {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
   const filtered = payments.filter((payment) => {
     const matchesSearch =
-      payment.clinicName.toLowerCase().includes(search.toLowerCase()) ||
       payment.planName.toLowerCase().includes(search.toLowerCase()) ||
       payment.stripePaymentId?.toLowerCase().includes(search.toLowerCase())
 
@@ -107,7 +101,7 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
     <div className="space-y-4">
       <div className="flex gap-4">
         <Input
-          placeholder="Buscar clínica, plano ou ID..."
+          placeholder="Buscar plano ou ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
@@ -131,7 +125,6 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Clínica</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Valor</TableHead>
               <TableHead>Status</TableHead>
@@ -145,7 +138,7 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
                   Nenhum pagamento encontrado
@@ -155,14 +148,8 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
               filtered.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">
-                    <Link
-                      href={`/super-admin/payments/${payment.clinicId}`}
-                      className="hover:underline"
-                    >
-                      {payment.clinicName}
-                    </Link>
+                    {payment.planName}
                   </TableCell>
-                  <TableCell>{payment.planName}</TableCell>
                   <TableCell className="font-medium">
                     {formatPrice(payment.amount, payment.currency)}
                   </TableCell>
