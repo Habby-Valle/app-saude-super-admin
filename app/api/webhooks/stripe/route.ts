@@ -193,7 +193,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!clinicId) {
-      console.error("[webhook] Clinic not found for subscription, will try customer lookup")
+      console.error(
+        "[webhook] Clinic not found for subscription, will try customer lookup"
+      )
     }
 
     if (clinicId) {
@@ -226,8 +228,204 @@ export async function POST(request: NextRequest) {
         `[webhook] Subscription ${status} for clinic ${clinicId}, migrated to Free`
       )
     }
+  }
 
-    return NextResponse.json({ received: true })
+  // Handle renewal payments - Invoice paid successfully
+  if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object as unknown as {
+      subscription: string | null
+      customer: string | null
+      id: string
+      amount_paid: number
+      currency: string
+      payment_intent: string | null
+      payment_method_types: string[]
+    }
+    const admin = createAdminClient()
+
+    const subscriptionId = invoice.subscription
+    if (!subscriptionId) {
+      console.log(
+        "[webhook] invoice.payment_succeeded: no subscription, skipping"
+      )
+      return NextResponse.json({ received: true })
+    }
+
+    // Find clinic by stripe_subscription_id or customer
+    let clinicId: string | null = null
+    let billingCycle = "monthly"
+
+    // First try to find by subscription metadata
+    try {
+      const stripeSub = await stripe.subscriptions.retrieve(subscriptionId)
+      clinicId = stripeSub.metadata?.clinic_id ?? null
+      if (stripeSub.items.data[0]?.price.recurring?.interval) {
+        const interval = stripeSub.items.data[0].price.recurring.interval
+        const intervalCount =
+          stripeSub.items.data[0].price.recurring.interval_count ?? 1
+        if (interval === "month" && intervalCount === 3) {
+          billingCycle = "quarterly"
+        } else if (interval === "year") {
+          billingCycle = "annual"
+        } else {
+          billingCycle = "monthly"
+        }
+      }
+    } catch (err) {
+      console.error("[webhook] Error fetching subscription:", err)
+    }
+
+    if (!clinicId) {
+      const customerId = invoice.customer as string
+      if (customerId) {
+        const { data: clinic } = await admin
+          .from("clinics")
+          .select("id")
+          .eq("stripe_customer_id", customerId)
+          .single()
+        clinicId = clinic?.id ?? null
+      }
+    }
+
+    if (!clinicId) {
+      console.log("[webhook] invoice.payment_succeeded: clinic not found")
+      return NextResponse.json({ received: true })
+    }
+
+    // Find active subscription for this clinic
+    const { data: clinicPlan } = await admin
+      .from("clinic_plans")
+      .select("id, expires_at")
+      .eq("clinic_id", clinicId)
+      .eq("status", "active")
+      .single()
+
+    if (!clinicPlan) {
+      console.log("[webhook] No active clinic_plan found for clinic:", clinicId)
+      return NextResponse.json({ received: true })
+    }
+
+    // Calculate new expiration date
+    const currentExpires = new Date(clinicPlan.expires_at)
+    let newExpires: Date
+
+    switch (billingCycle) {
+      case "monthly":
+        newExpires = new Date(currentExpires)
+        newExpires.setMonth(newExpires.getMonth() + 1)
+        break
+      case "quarterly":
+        newExpires = new Date(currentExpires)
+        newExpires.setMonth(newExpires.getMonth() + 3)
+        break
+      case "annual":
+        newExpires = new Date(currentExpires)
+        newExpires.setFullYear(newExpires.getFullYear() + 1)
+        break
+      default:
+        newExpires = new Date(currentExpires)
+        newExpires.setMonth(newExpires.getMonth() + 1)
+    }
+
+    // Update expiration date
+    const { error: updateError } = await admin
+      .from("clinic_plans")
+      .update({
+        expires_at: newExpires.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", clinicPlan.id)
+
+    if (updateError) {
+      console.error("[webhook] Error updating expires_at:", updateError)
+    }
+
+    // Record payment
+    const paymentAmount = invoice.amount_paid / 100
+    await admin.from("subscription_payments").insert({
+      clinic_id: clinicId!,
+      clinic_plan_id: clinicPlan.id,
+      stripe_payment_id: invoice.payment_intent ?? "",
+      stripe_subscription_id: subscriptionId,
+      stripe_session_id: invoice.id,
+      amount: paymentAmount,
+      currency: invoice.currency ?? "brl",
+      status: "succeeded",
+      payment_method: invoice.payment_method_types?.[0] ?? "card",
+      billing_cycle: billingCycle,
+      paid_at: new Date().toISOString(),
+    })
+
+    console.log(
+      `[webhook] Renewal payment successful for clinic ${clinicId}, new expires: ${newExpires.toISOString()}`
+    )
+  }
+
+  // Handle failed payments
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as unknown as {
+      customer: string | null
+      subscription: string | null
+      amount_due: number
+      currency: string
+      payment_intent: string | null
+      payment_method_types: string[]
+    }
+    const admin = createAdminClient()
+
+    const customerId = invoice.customer
+    if (!customerId) {
+      return NextResponse.json({ received: true })
+    }
+
+    const { data: clinic } = await admin
+      .from("clinics")
+      .select("id, name")
+      .eq("stripe_customer_id", customerId)
+      .single()
+
+    if (!clinic) {
+      console.log("[webhook] invoice.payment_failed: clinic not found")
+      return NextResponse.json({ received: true })
+    }
+
+    // Record failed payment attempt
+    const paymentAmount = invoice.amount_due / 100
+    await admin.from("subscription_payments").insert({
+      clinic_id: clinic.id,
+      clinic_plan_id: null,
+      stripe_payment_id: invoice.payment_intent ?? "",
+      stripe_subscription_id: invoice.subscription ?? "",
+      stripe_session_id: "",
+      amount: paymentAmount,
+      currency: invoice.currency ?? "brl",
+      status: "failed",
+      payment_method: invoice.payment_method_types?.[0] ?? "card",
+      billing_cycle: "monthly",
+      paid_at: new Date().toISOString(),
+    })
+
+    // Mark subscription as payment failed for grace period tracking
+    const { data: activePlan } = await admin
+      .from("clinic_plans")
+      .select("id")
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .single()
+
+    if (activePlan) {
+      await admin
+        .from("clinic_plans")
+        .update({
+          payment_failed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", activePlan.id)
+    }
+
+    console.log(
+      `[webhook] Payment failed for clinic ${clinic.id} (${clinic.name}), amount: R$${paymentAmount}`
+    )
   }
 
   return NextResponse.json({ received: true })

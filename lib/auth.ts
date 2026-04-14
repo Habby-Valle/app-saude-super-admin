@@ -154,6 +154,8 @@ export interface SubscriptionStatus {
   daysRemaining: number | null
   isTrial: boolean
   lastPlanStatus: "trial" | "active" | "cancelled" | null
+  paymentFailed: boolean
+  gracePeriodDaysRemaining: number | null
 }
 
 export async function getClinicSubscriptionStatus(
@@ -167,6 +169,8 @@ export async function getClinicSubscriptionStatus(
       daysRemaining: null,
       isTrial: false,
       lastPlanStatus: null,
+      paymentFailed: false,
+      gracePeriodDaysRemaining: null,
     }
   }
 
@@ -174,7 +178,7 @@ export async function getClinicSubscriptionStatus(
 
   const { data: clinicPlan, error } = await supabase
     .from("clinic_plans")
-    .select("status, expires_at, trial_ends_at")
+    .select("status, expires_at, trial_ends_at, payment_failed_at")
     .eq("clinic_id", clinicId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -188,6 +192,8 @@ export async function getClinicSubscriptionStatus(
       daysRemaining: null,
       isTrial: false,
       lastPlanStatus: null,
+      paymentFailed: false,
+      gracePeriodDaysRemaining: null,
     }
   }
 
@@ -205,6 +211,21 @@ export async function getClinicSubscriptionStatus(
     (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   )
 
+  const paymentFailedAt = clinicPlan.payment_failed_at
+    ? new Date(clinicPlan.payment_failed_at)
+    : null
+  const paymentFailed = paymentFailedAt !== null
+  const daysSincePaymentFailed = paymentFailedAt
+    ? Math.ceil(
+        (now.getTime() - paymentFailedAt.getTime()) / (1000 * 60 * 60 * 24)
+      )
+    : 0
+
+  const gracePeriodDaysRemaining =
+    paymentFailed && daysSincePaymentFailed < 7
+      ? 7 - daysSincePaymentFailed
+      : null
+
   return {
     isActive,
     status: clinicPlan.status as "trial" | "active" | "expired" | "cancelled",
@@ -216,6 +237,8 @@ export async function getClinicSubscriptionStatus(
       | "active"
       | "cancelled"
       | null,
+    paymentFailed: paymentFailed && daysSincePaymentFailed >= 7,
+    gracePeriodDaysRemaining,
   }
 }
 

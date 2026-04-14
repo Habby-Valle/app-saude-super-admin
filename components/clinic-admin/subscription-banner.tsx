@@ -39,6 +39,11 @@ export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
     subscription.daysRemaining > 0 &&
     subscription.isActive
 
+  const hasPaymentFailed = subscription.paymentFailed
+  const isInGracePeriod =
+    subscription.gracePeriodDaysRemaining !== null &&
+    subscription.gracePeriodDaysRemaining > 0
+
   if (showTrialExpiredBanner) {
     return (
       <div className="border-b border-amber-300 bg-amber-50 px-4 py-2">
@@ -67,6 +72,41 @@ export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
               <X className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (hasPaymentFailed) {
+    const isUrgent = (subscription.gracePeriodDaysRemaining ?? 0) <= 3
+    return (
+      <div
+        className={`border-b px-4 py-2 ${
+          isUrgent
+            ? "border-destructive/50 bg-destructive/10"
+            : "border-amber-500/50 bg-amber-50"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div
+            className={`flex items-center gap-2 text-sm ${
+              isUrgent ? "text-destructive" : "text-amber-800"
+            }`}
+          >
+            <AlertTriangle className="h-4 w-4" />
+            <span className="font-medium">
+              {isUrgent
+                ? "Assinatura suspensa - Payment failed"
+                : `Problema com pagamento - ${subscription.gracePeriodDaysRemaining} dias para resolver`}
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant={isUrgent ? "destructive" : "default"}
+            onClick={() => router.push("/admin/plan")}
+          >
+            {isUrgent ? "Atualizar agora" : "Ver plano"}
+          </Button>
         </div>
       </div>
     )

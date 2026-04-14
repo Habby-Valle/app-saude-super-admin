@@ -17,6 +17,8 @@ export type AuditAction =
   | "extend_trial"
   | "update_dates"
   | "change_plan"
+  | "payment_failed"
+  | "payment_failed_blocked"
 
 export type AuditEntity =
   | "clinic"

@@ -304,3 +304,134 @@ export async function getSubscriptionHistory(subscriptionId: string) {
 
   return data ?? []
 }
+
+export interface SubscriptionStatusInfo {
+  status: string
+  daysUntilExpiry: number | null
+  paymentPastDue: boolean
+  paymentFailed: boolean
+  gracePeriodDaysRemaining: number | null
+}
+
+export async function getClinicSubscriptionStatusInfo(
+  clinicId: string
+): Promise<SubscriptionStatusInfo | null> {
+  const admin = createAdminClient()
+
+  const { data: clinicPlan, error } = await admin
+    .from("clinic_plans")
+    .select("status, expires_at, payment_failed_at")
+    .eq("clinic_id", clinicId)
+    .in("status", ["active", "trial"])
+    .single()
+
+  if (error || !clinicPlan) {
+    return null
+  }
+
+  const now = new Date()
+  const expiresAt = new Date(clinicPlan.expires_at)
+  const daysUntilExpiry = Math.ceil(
+    (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  )
+
+  const paymentFailedAt = clinicPlan.payment_failed_at
+    ? new Date(clinicPlan.payment_failed_at)
+    : null
+  const paymentFailed = paymentFailedAt !== null
+  const daysSincePaymentFailed = paymentFailedAt
+    ? Math.ceil(
+        (now.getTime() - paymentFailedAt.getTime()) / (1000 * 60 * 60 * 24)
+      )
+    : 0
+
+  const gracePeriodDaysRemaining =
+    paymentFailed && daysSincePaymentFailed < 7
+      ? 7 - daysSincePaymentFailed
+      : null
+
+  return {
+    status: clinicPlan.status,
+    daysUntilExpiry: daysUntilExpiry > 0 ? daysUntilExpiry : 0,
+    paymentPastDue: paymentFailed && daysSincePaymentFailed >= 7,
+    paymentFailed: paymentFailed && daysSincePaymentFailed >= 7,
+    gracePeriodDaysRemaining,
+  }
+}
+
+export async function markSubscriptionPaymentFailed(
+  clinicId: string
+): Promise<{ success: boolean }> {
+  const admin = createAdminClient()
+
+  const { error } = await admin
+    .from("clinic_plans")
+    .update({
+      payment_failed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("clinic_id", clinicId)
+    .eq("status", "active")
+
+  if (error) {
+    console.error("[markSubscriptionPaymentFailed] Error:", error)
+    return { success: false }
+  }
+
+  await logAuditEvent("payment_failed", "subscription", clinicId, {}).catch(
+    console.error
+  )
+
+  return { success: true }
+}
+
+export async function blockSubscriptionsWithFailedPayment(
+  daysThreshold: number = 7
+): Promise<number> {
+  const admin = createAdminClient()
+
+  const thresholdDate = new Date()
+  thresholdDate.setDate(thresholdDate.getDate() - daysThreshold)
+
+  const { data: expiredSubscriptions, error } = await admin
+    .from("clinic_plans")
+    .select("id, clinic_id")
+    .eq("status", "active")
+    .not("payment_failed_at", "is", null)
+    .lt("payment_failed_at", thresholdDate.toISOString())
+
+  if (error) {
+    console.error("[blockSubscriptionsWithFailedPayment] Error:", error)
+    return 0
+  }
+
+  if (!expiredSubscriptions?.length) {
+    return 0
+  }
+
+  let blockedCount = 0
+
+  for (const sub of expiredSubscriptions) {
+    // Cancel current subscription
+    await admin
+      .from("clinic_plans")
+      .update({ status: "cancelled", updated_at: new Date().toISOString() })
+      .eq("id", sub.id)
+
+    // Attach free plan
+    await admin.rpc("attach_free_plan_to_clinic", {
+      p_clinic_id: sub.clinic_id,
+    })
+
+    await logAuditEvent("payment_failed_blocked", "subscription", sub.id, {
+      clinic_id: sub.clinic_id,
+    }).catch(console.error)
+
+    blockedCount++
+  }
+
+  console.log(
+    `[blockSubscriptionsWithFailedPayment] Blocked ${blockedCount} subscriptions`
+  )
+  return blockedCount
+}
