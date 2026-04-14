@@ -10,7 +10,12 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
-import { getDashboardKPIs, getClinicStats, getRecentActivity } from "./actions"
+import {
+  getDashboardKPIs,
+  getClinicStats,
+  getRecentActivity,
+  getRevenueMetrics,
+} from "./actions"
 import {
   KpiCard,
   KpiCardSkeleton,
@@ -23,6 +28,8 @@ import {
   RecentActivityTable,
   RecentActivityTableSkeleton,
 } from "@/components/super-admin/dashboard/recent-activity-table"
+import { RevenueForecastCards } from "@/components/super-admin/dashboard/revenue-forecast-cards"
+import { RevenueChart } from "@/components/super-admin/dashboard/revenue-chart"
 
 export const metadata = {
   title: "Dashboard",
@@ -42,7 +49,8 @@ async function KpiSection() {
           <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm transition-colors hover:bg-destructive/15">
             <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
             <span className="font-medium text-destructive">
-              {kpis.activeSosAlerts} alerta{kpis.activeSosAlerts > 1 ? "s" : ""} SOS ativo
+              {kpis.activeSosAlerts} alerta{kpis.activeSosAlerts > 1 ? "s" : ""}{" "}
+              SOS ativo
               {kpis.activeSosAlerts > 1 ? "s" : ""} — clique para verificar
             </span>
           </div>
@@ -99,7 +107,11 @@ async function KpiSection() {
           }
           icon={AlertTriangle}
           trend={kpis.activeSosAlerts > 0 ? "down" : "neutral"}
-          className={kpis.activeSosAlerts > 0 ? "border-destructive/50 bg-destructive/5" : ""}
+          className={
+            kpis.activeSosAlerts > 0
+              ? "border-destructive/50 bg-destructive/5"
+              : ""
+          }
         />
       </div>
     </>
@@ -111,6 +123,22 @@ async function KpiSection() {
 async function ClinicSection() {
   const clinics = await getClinicStats()
   return <ClinicStatsTable clinics={clinics} />
+}
+
+// ─── Revenue Section ───────────────────────────────────────────────────────────
+
+async function RevenueSection() {
+  const metrics = await getRevenueMetrics()
+  return (
+    <div className="space-y-4">
+      <RevenueForecastCards metrics={metrics} />
+      {metrics.forecast.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <RevenueChart forecast={metrics.forecast} />
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ─── Recent Activity Section ──────────────────────────────────────────────────
@@ -144,6 +172,25 @@ export default function DashboardPage() {
       >
         <KpiSection />
       </Suspense>
+
+      {/* Revenue Metrics */}
+      <div>
+        <h2 className="mb-4 text-lg font-semibold">Projeção de Receita</h2>
+        <Suspense
+          fallback={
+            <div className="grid gap-4 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-24 animate-pulse rounded-lg bg-muted"
+                />
+              ))}
+            </div>
+          }
+        >
+          <RevenueSection />
+        </Suspense>
+      </div>
 
       {/* Tabela de clínicas */}
       <Suspense fallback={<ClinicStatsTableSkeleton />}>

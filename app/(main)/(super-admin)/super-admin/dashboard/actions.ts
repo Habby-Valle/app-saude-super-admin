@@ -153,3 +153,143 @@ export async function getClinicStats(): Promise<ClinicStat[]> {
 
   return stats
 }
+
+export interface RevenueMetrics {
+  mrr: number
+  arr: number
+  expected30Days: number
+  forecast: { month: string; revenue: number }[]
+  activeSubscriptions: number
+  trialSubscriptions: number
+}
+
+export async function getRevenueMetrics(): Promise<RevenueMetrics> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data: subscriptions, error } = await supabase
+    .from("clinic_plans")
+    .select(
+      `
+      id,
+      status,
+      expires_at,
+      trial_ends_at,
+      plans (
+        price,
+        billing_cycle
+      )
+    `
+    )
+    .in("status", ["active", "trial"])
+
+  if (error || !subscriptions?.length) {
+    return {
+      mrr: 0,
+      arr: 0,
+      expected30Days: 0,
+      forecast: [],
+      activeSubscriptions: 0,
+      trialSubscriptions: 0,
+    }
+  }
+
+  const now = new Date()
+  let mrr = 0
+  let expected30Days = 0
+  let activeCount = 0
+  let trialCount = 0
+  const expiringSoon: { expiresAt: Date; monthlyValue: number }[] = []
+
+  for (const sub of subscriptions) {
+    let price = 0
+    let billingCycle = "monthly"
+
+    if (sub.plans) {
+      if (Array.isArray(sub.plans)) {
+        const plan = sub.plans[0] as {
+          price: number
+          billing_cycle: string
+        } | null
+        price = plan?.price ?? 0
+        billingCycle = plan?.billing_cycle ?? "monthly"
+      } else {
+        price = (sub.plans as { price: number }).price ?? 0
+        billingCycle =
+          (sub.plans as { billing_cycle: string }).billing_cycle ?? "monthly"
+      }
+    }
+
+    let monthlyValue = price
+    if (billingCycle === "yearly") {
+      monthlyValue = price / 12
+    } else if (billingCycle === "quarterly") {
+      monthlyValue = price / 3
+    }
+
+    if (sub.status === "active") {
+      mrr += monthlyValue
+      activeCount++
+      expected30Days += monthlyValue
+
+      const expiresAt = new Date(sub.expires_at)
+      const daysUntilExpiry = Math.ceil(
+        (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (daysUntilExpiry > 0 && daysUntilExpiry <= 90) {
+        expiringSoon.push({ expiresAt, monthlyValue })
+      }
+    } else if (sub.status === "trial") {
+      trialCount++
+      if (sub.trial_ends_at) {
+        const trialEnds = new Date(sub.trial_ends_at)
+        const daysUntilTrial = Math.ceil(
+          (trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        )
+        if (daysUntilTrial > 0 && daysUntilTrial <= 30) {
+          expected30Days += (daysUntilTrial / 30) * monthlyValue
+        }
+      }
+    }
+  }
+
+  const arr = mrr * 12
+
+  const forecast: { month: string; revenue: number }[] = []
+  let forecastMrr = mrr
+
+  for (let i = 0; i < 6; i++) {
+    const futureDate = new Date(now)
+    futureDate.setMonth(futureDate.getMonth() + i)
+    const monthName = futureDate.toLocaleDateString("pt-BR", {
+      month: "short",
+      year: "2-digit",
+    })
+
+    const expiringInMonth = expiringSoon.filter((e) => {
+      const expMonth = e.expiresAt.getMonth()
+      const expYear = e.expiresAt.getFullYear()
+      return (
+        expMonth === futureDate.getMonth() &&
+        expYear === futureDate.getFullYear()
+      )
+    })
+
+    for (const exp of expiringInMonth) {
+      forecastMrr -= exp.monthlyValue
+    }
+
+    forecast.push({
+      month: monthName,
+      revenue: Math.max(0, forecastMrr),
+    })
+  }
+
+  return {
+    mrr,
+    arr,
+    expected30Days,
+    forecast,
+    activeSubscriptions: activeCount,
+    trialSubscriptions: trialCount,
+  }
+}

@@ -39,7 +39,6 @@ import {
   Clock,
   Zap,
   History,
-  ArrowRight,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -349,17 +348,6 @@ export default function SubscriptionDetailPage() {
           <Button onClick={() => setShowActivateDialog(true)}>
             <Zap className="mr-2 h-4 w-4" />
             Ativar Assinatura
-          </Button>
-        )}
-        {/* Botão removido temporariamente - usar mudança de plano via Clinic Admin
-        {(subscription?.status === "active" ||
-          subscription?.status === "trial") && (
-          <Button
-            variant="outline"
-            onClick={() => setShowChangePlanDialog(true)}
-          >
-            <ArrowRight className="mr-2 h-4 w-4" />
-            Mudar Plano
           </Button>
         )}
         <Button variant="outline" onClick={() => setShowHistory(true)}>
