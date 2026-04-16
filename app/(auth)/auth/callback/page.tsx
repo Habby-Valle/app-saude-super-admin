@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import { createClient } from "@/lib/supabase"
 import type { UserRole } from "@/types/database"
 
@@ -14,79 +13,55 @@ const ROLE_DASHBOARD: Record<UserRole, string> = {
 }
 
 export default function AuthCallbackPage() {
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-
   useEffect(() => {
     async function handleCallback() {
       const supabase = createClient()
 
-      // Supabase pode enviar tokens via hash na URL (#access_token=...)
-      // Precisamos extrair e definir a sessão manualmente.
+      // Obter hash da URL
       const hash = window.location.hash
-      if (hash.includes("access_token=")) {
-        const params = new URLSearchParams(hash.replace("#", ""))
-        const accessToken = params.get("access_token")
-        const refreshToken = params.get("refresh_token")
+      const params = new URLSearchParams(hash.replace("#", ""))
+      const accessToken = params.get("access_token")
+      const refreshToken = params.get("refresh_token")
+      const tokenType = params.get("type")
 
-        if (accessToken && refreshToken) {
-          const { error: setSessionError } =
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            })
-
-          if (setSessionError) {
-            console.error("[callback] setSession error:", setSessionError)
-            setError("Erro ao estabelecer sessão. Tente fazer login.")
-            return
-          }
-        }
+      // Estabelecer sessão
+      if (accessToken && refreshToken) {
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
       }
 
-      // Agora getSession() deve funcionar (sessão definida acima ou via cookie)
       const {
         data: { session },
-        error: sessionError,
       } = await supabase.auth.getSession()
+      const user = session?.user
 
-      const user = session?.user ?? null
-
-      if (sessionError || !user) {
-        setError("Sessão inválida. Tente fazer login.")
+      if (!user || tokenType !== "invite") {
+        // Não é convite ou erro → redireciona para login
+        window.location.href = "/login"
         return
       }
 
-      // Busca role e redireciona
+      // É convite → verificar status no banco
       const { data: profile } = await supabase
         .from("users")
-        .select("role")
+        .select("status, role")
         .eq("id", user.id)
         .single()
 
-      const role = (profile?.role as UserRole) ?? "clinic_admin"
-      const redirectTo = ROLE_DASHBOARD[role] ?? "/"
-
-      // Limpa o hash da URL antes de redirecionar
-      window.history.replaceState(null, "", window.location.pathname)
-      router.replace(redirectTo)
+      if (profile?.status === "active") {
+        // Já tem senha definida → dashboard
+        const role = (profile?.role as UserRole) ?? "clinic_admin"
+        window.location.href = ROLE_DASHBOARD[role]
+      } else {
+        // Pendente → definir senha
+        window.location.href = "/accept-invitation"
+      }
     }
 
     handleCallback()
-  }, [router])
+  }, [])
 
-  return (
-    <div className="flex flex-col items-center gap-4">
-      {error ? (
-        <>
-          <p className="text-destructive">{error}</p>
-          <a href="/login" className="text-sm underline">
-            Voltar ao login
-          </a>
-        </>
-      ) : (
-        <p className="text-muted-foreground">Processando seu acesso...</p>
-      )}
-    </div>
-  )
+  return null
 }

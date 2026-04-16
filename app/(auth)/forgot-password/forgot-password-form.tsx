@@ -46,6 +46,7 @@ export function ForgotPasswordForm() {
 
     if (error) {
       setServerError("Ocorreu um erro ao enviar o e-mail. Tente novamente.")
+      console.error("Error sending password reset email:", error)
       return
     }
 

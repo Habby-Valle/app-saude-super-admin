@@ -96,6 +96,11 @@ export async function inviteUser(
   const { name, email, role, clinic_id } = result.data
   const admin = createAdminClient()
 
+  const invitationToken = crypto.randomUUID()
+  const invitationExpiresAt = new Date(
+    Date.now() + 24 * 60 * 60 * 1000
+  ).toISOString()
+
   // Verifica se email já existe
   const { data: existing } = await admin
     .from("users")
@@ -107,9 +112,6 @@ export async function inviteUser(
     return { success: false, error: "Já existe um usuário com este email" }
   }
 
-  // Envia convite por email via Supabase Auth
-  // Nota: se o email já existir em auth.users (convite pendente), o Supabase
-  // re-envia o convite e retorna o usuário existente com o mesmo UUID.
   const { data: invited, error: inviteError } =
     await admin.auth.admin.inviteUserByEmail(email, {
       data: { name },
@@ -131,17 +133,24 @@ export async function inviteUser(
     .maybeSingle()
 
   if (existingProfile) {
-    // Perfil já existe — atualiza dados e remarca como pendente (convite reenviado)
+    // Perfil já existe — atualiza dados e gera novo token (convite reenviado)
     await admin
       .from("users")
-      .update({ name, role, clinic_id: clinic_id ?? null, status: "pending" })
+      .update({
+        name,
+        role,
+        clinic_id: clinic_id ?? null,
+        status: "pending",
+        invitation_token: invitationToken,
+        invitation_expires_at: invitationExpiresAt,
+      })
       .eq("id", invited.user.id)
 
     revalidatePath("/users")
     return { success: true }
   }
 
-  // Insere perfil público com status pendente — só ativa após aceitar o convite
+  // Insere perfil público com status pendente + token de convite
   const { error: profileError } = await admin.from("users").insert({
     id: invited.user.id,
     name,
@@ -149,6 +158,8 @@ export async function inviteUser(
     role,
     clinic_id: clinic_id ?? null,
     status: "pending",
+    invitation_token: invitationToken,
+    invitation_expires_at: invitationExpiresAt,
   })
 
   if (profileError) {
@@ -214,11 +225,25 @@ export async function resendInvite(
     return { success: false, error: "Usuário já aceitou o convite" }
   }
 
+  const invitationToken = crypto.randomUUID()
+  const invitationExpiresAt = new Date(
+    Date.now() + 24 * 60 * 60 * 1000
+  ).toISOString()
+
   const { error } = await admin.auth.admin.inviteUserByEmail(user.email)
   if (error) {
     console.error("[resendInvite]", error)
     return { success: false, error: error.message }
   }
+
+  // Atualiza o token de convite
+  await admin
+    .from("users")
+    .update({
+      invitation_token: invitationToken,
+      invitation_expires_at: invitationExpiresAt,
+    })
+    .eq("id", userId)
 
   await logAuditEvent("resend_invite", "user", userId).catch(() => {})
   return { success: true }
@@ -250,7 +275,11 @@ export async function toggleUserStatus(
     return { success: false, error: error.message }
   }
 
-  await logAuditEvent(newStatus === "active" ? "activate" : "deactivate", "user", id).catch(() => {})
+  await logAuditEvent(
+    newStatus === "active" ? "activate" : "deactivate",
+    "user",
+    id
+  ).catch(() => {})
   revalidatePath("/users")
   return { success: true }
 }
