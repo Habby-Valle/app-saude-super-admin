@@ -29,8 +29,7 @@ export function ResetPasswordForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const token = searchParams.get("token")
-  const type = searchParams.get("type")
+  const code = searchParams.get("code")
 
   const {
     register,
@@ -43,7 +42,7 @@ export function ResetPasswordForm() {
   async function onSubmit(data: ResetPasswordSchema) {
     setServerError(null)
 
-    if (!token || type !== "recovery") {
+    if (!code) {
       setServerError("Link inválido ou expirado. Solicite um novo link.")
       return
     }

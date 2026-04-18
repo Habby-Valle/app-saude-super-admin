@@ -8,7 +8,7 @@ import {
 
 export async function acceptInvitation(
   raw: AcceptInvitationSchema & { userId: string }
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; role?: string }> {
   const result = acceptInvitationSchema.safeParse(raw)
   if (!result.success) {
     return { success: false, error: result.error.issues[0].message }
@@ -78,5 +78,12 @@ export async function acceptInvitation(
     return { success: false, error: "Erro ao ativar usuário" }
   }
 
-  return { success: true }
+  // Buscar role para retornar
+  const { data: updatedProfile } = await admin
+    .from("users")
+    .select("role")
+    .eq("id", userId)
+    .single()
+
+  return { success: true, role: updatedProfile?.role }
 }

@@ -5,6 +5,7 @@ export type UserRole =
   | "family"
   | "emergency_contact"
 
+
 export type ClinicStatus = "active" | "inactive" | "suspended"
 
 export type ShiftStatus = "in_progress" | "completed" | "cancelled"

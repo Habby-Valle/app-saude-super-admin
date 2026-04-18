@@ -11,9 +11,9 @@ import type { UserRole } from "@/types/database"
 const ROLE_REDIRECT: Record<UserRole, string> = {
   super_admin: "/login",
   clinic_admin: "/login",
-  caregiver: "/app-cuidadores",
-  family: "/app-familiares",
-  emergency_contact: "/app-familiares",
+  caregiver: "/welcome",
+  family: "/welcome",
+  emergency_contact: "/login",
 }
 
 type DetectedRole = UserRole | null
@@ -47,8 +47,8 @@ export default function WelcomePage() {
       setIsLoading(false)
 
       if (role) {
-        const destination = ROLE_REDIRECT[role]
-        if (destination !== "/login") {
+        const destination = ROLE_REDIRECT[role] ?? "/welcome"
+        if (destination && destination !== "/login") {
           router.replace(destination)
         }
       }

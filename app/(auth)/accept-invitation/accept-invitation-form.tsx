@@ -99,6 +99,13 @@ export function AcceptInvitationForm() {
       return
     }
 
+    // Caregiver/Family redirect to /welcome
+    if (result.role === "caregiver" || result.role === "family") {
+      window.history.replaceState(null, "", "/accept-invitation")
+      router.push("/welcome")
+      return
+    }
+
     window.history.replaceState(null, "", "/accept-invitation")
     setIsSuccess(true)
   }
