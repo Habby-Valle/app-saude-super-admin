@@ -67,7 +67,7 @@ function PlanCard({
   return (
     <Card
       className={cn(
-        "relative transition-all",
+        "relative overflow-visible transition-all",
         isCurrentPlan && "border-primary ring-2 ring-primary/20",
         disabled && "opacity-60"
       )}

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
-import { createServerSupabaseClientForRoute } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -22,6 +21,12 @@ export async function POST(request: NextRequest) {
     const body: ChangePlanRequest = await request.json()
     const { clinicId, newPlanId, billingCycle = "monthly" } = body
 
+    console.log("[change-plan] Received request:", {
+      clinicId,
+      newPlanId,
+      billingCycle,
+    })
+
     if (!clinicId || !newPlanId) {
       return NextResponse.json(
         { error: "clinicId e newPlanId são obrigatórios" },
@@ -29,7 +34,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createServerSupabaseClientForRoute(request)
     const admin = createAdminClient()
 
     const { data: newPlan, error: planError } = await admin
@@ -143,7 +147,6 @@ export async function POST(request: NextRequest) {
 
     const currentSubscription = subscriptions.data[0]
     const subscriptionItemId = currentSubscription.items.data[0].id
-    const currentStripePriceId = currentSubscription.items.data[0].price.id
 
     if (!newPlan.stripe_price_id) {
       const newStripePrice = await stripe.prices.create({
@@ -175,25 +178,76 @@ export async function POST(request: NextRequest) {
       proration_behavior: "always_invoice",
     })
 
-    await admin
+    const { count: clinicPlansCount, error: clinicPlansError } = await admin
       .from("clinic_plans")
       .update({
         plan_id: newPlanId,
-        billing_cycle: billingCycle,
         updated_at: new Date().toISOString(),
       })
       .eq("clinic_id", clinicId)
-      .eq("status", "active")
+      .in("status", ["active", "trial", "free"])
+
+    if (clinicPlansError) {
+      console.error(
+        "[change-plan] Erro ao atualizar clinic_plans:",
+        clinicPlansError
+      )
+      return NextResponse.json(
+        { error: "Erro ao atualizar plano no banco de dados" },
+        { status: 500 }
+      )
+    }
+
+    if (clinicPlansCount === 0) {
+      console.error(
+        "[change-plan] Nenhuma linha atualizada em clinic_plans para clinicId:",
+        clinicId
+      )
+      return NextResponse.json(
+        { error: "Plano da clínica não encontrado para atualização" },
+        { status: 404 }
+      )
+    }
 
     await admin
       .from("clinics")
       .update({ plan: newPlan.name })
       .eq("id", clinicId)
 
+    // Marcar trial como usado permanentemente após qualquer assinatura paga
+    console.log(
+      "[change-plan] newPlan.price:",
+      newPlan.price,
+      "clinicId:",
+      clinicId
+    )
+    if (newPlan.price > 0) {
+      console.log("[change-plan] Updating has_used_trial to true...")
+      const { error: trialError } = await admin
+        .from("clinics")
+        .update({ has_used_trial: true })
+        .eq("id", clinicId)
+
+      if (trialError) {
+        console.error(
+          "[change-plan] Error updating has_used_trial:",
+          trialError
+        )
+      } else {
+        console.log("[change-plan] has_used_trial updated successfully!")
+      }
+    } else {
+      console.log("[change-plan] Plan is free, not updating has_used_trial")
+    }
+
     return NextResponse.json({
       success: true,
       proration: true,
-      message: "Plano atualizado com pró-rata",
+      hasUsedTrial: newPlan.price > 0,
+      message:
+        newPlan.price > 0
+          ? "Plano atualizado com pró-rata. Trial bloqueado permanentemente."
+          : "Plano atualizado com pró-rata",
     })
   } catch (error) {
     console.error("[change-plan] Error:", error)
