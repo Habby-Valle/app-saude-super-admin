@@ -232,3 +232,69 @@ export async function deleteAlertThreshold(
   mockAlerts = mockAlerts.filter((a) => a.id !== id)
   return { success: true }
 }
+
+// ─── System Settings ──────────────────────────────────────────────────────────
+
+export async function getSystemSettingsAction(): Promise<{
+  maintenance_mode: boolean
+  maintenance_message: string
+  maintenance_planned_end: string | null
+}> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data, error } = await supabase
+    .from("system_settings")
+    .select("maintenance_mode, maintenance_message, maintenance_planned_end")
+    .maybeSingle()
+
+  if (error || !data) {
+    return {
+      maintenance_mode: false,
+      maintenance_message: "Sistema em manutenção. Em breve retornaremos.",
+      maintenance_planned_end: null,
+    }
+  }
+
+  return {
+    maintenance_mode: data.maintenance_mode ?? false,
+    maintenance_message:
+      data.maintenance_message ??
+      "Sistema em manutenção. Em breve retornaremos.",
+    maintenance_planned_end: data.maintenance_planned_end,
+  }
+}
+
+export async function updateSystemSettingsAction(
+  maintenance_mode: boolean,
+  maintenance_message: string,
+  maintenance_planned_end: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data: existing } = await supabase
+    .from("system_settings")
+    .select("id")
+    .limit(1)
+    .maybeSingle()
+
+  if (!existing?.id) {
+    return { success: false, error: "Configuração não encontrada" }
+  }
+
+  const { error } = await supabase
+    .from("system_settings")
+    .update({
+      maintenance_mode,
+      maintenance_message,
+      maintenance_planned_end: maintenance_planned_end || null,
+    })
+    .eq("id", existing.id)
+
+  if (error) {
+    console.error("[updateSystemSettings] Supabase error:", error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath("/super-admin/settings")
+  return { success: true }
+}

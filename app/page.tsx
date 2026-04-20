@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import type { UserRole } from "@/types/database"
+import { isMaintenanceMode } from "@/lib/maintenance"
 
 export default async function RootPage() {
   const supabase = createClient()
@@ -20,6 +21,14 @@ export default async function RootPage() {
     .single()
 
   const role = profile?.role as UserRole | undefined
+  const isSuperAdmin = role === "super_admin"
+
+  if (!isSuperAdmin) {
+    const maintenance = await isMaintenanceMode()
+    if (maintenance) {
+      redirect("/maintenance")
+    }
+  }
 
   switch (role) {
     case "super_admin":

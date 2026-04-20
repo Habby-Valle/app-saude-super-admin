@@ -1,18 +1,28 @@
+import { redirect } from "next/navigation"
 import { Providers } from "@/components/layout/providers"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Topbar } from "@/components/layout/topbar"
 import { getClinicActiveSosCount } from "@/lib/sos-count"
-import { getClinicSubscriptionStatus } from "@/lib/auth"
+import { getClinicSubscriptionStatus, requireClinicAdmin } from "@/lib/auth"
 import { SuperAdminBanner } from "@/components/clinic-admin/super-admin-banner"
 import { SubscriptionBanner } from "@/components/clinic-admin/subscription-banner"
 import { getMyClinic } from "./settings/actions"
 import { getTheme } from "@/lib/clinic-themes"
+import { isMaintenanceMode } from "@/lib/maintenance"
 
 export default async function ClinicAdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { isSuperAdmin } = await requireClinicAdmin()
+
+  if (!isSuperAdmin) {
+    const maintenance = await isMaintenanceMode()
+    if (maintenance) {
+      redirect("/maintenance")
+    }
+  }
   const [activeSosCount, clinic] = await Promise.all([
     getClinicActiveSosCount(),
     getMyClinic(),
