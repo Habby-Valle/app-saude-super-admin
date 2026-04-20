@@ -8,7 +8,7 @@ import { SuperAdminBanner } from "@/components/clinic-admin/super-admin-banner"
 import { SubscriptionBanner } from "@/components/clinic-admin/subscription-banner"
 import { getMyClinic } from "./settings/actions"
 import { getTheme } from "@/lib/clinic-themes"
-import { isMaintenanceMode } from "@/lib/maintenance"
+import { isMaintenanceMode } from "@/lib/system-settings"
 
 export default async function ClinicAdminLayout({
   children,

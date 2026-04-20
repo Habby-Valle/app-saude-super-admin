@@ -239,12 +239,25 @@ export async function getSystemSettingsAction(): Promise<{
   maintenance_mode: boolean
   maintenance_message: string
   maintenance_planned_end: string | null
+  app_name: string
+  app_url: string
+  app_site_url: string
+  app_store_url: string
+  play_store_url: string
+  support_email: string
+  support_phone: string
+  support_whatsapp: string
+  admin_logo_url: string
+  cnpj: string
+  address: string
+  timezone: string
+  currency: string
 }> {
   const { supabase } = await requireSuperAdmin()
 
   const { data, error } = await supabase
     .from("system_settings")
-    .select("maintenance_mode, maintenance_message, maintenance_planned_end")
+    .select("*")
     .maybeSingle()
 
   if (error || !data) {
@@ -252,6 +265,19 @@ export async function getSystemSettingsAction(): Promise<{
       maintenance_mode: false,
       maintenance_message: "Sistema em manutenção. Em breve retornaremos.",
       maintenance_planned_end: null,
+      app_name: "App Saúde",
+      app_url: "",
+      app_site_url: "",
+      app_store_url: "",
+      play_store_url: "",
+      support_email: "",
+      support_phone: "",
+      support_whatsapp: "",
+      admin_logo_url: "",
+      cnpj: "",
+      address: "",
+      timezone: "America/Sao_Paulo",
+      currency: "BRL",
     }
   }
 
@@ -261,6 +287,19 @@ export async function getSystemSettingsAction(): Promise<{
       data.maintenance_message ??
       "Sistema em manutenção. Em breve retornaremos.",
     maintenance_planned_end: data.maintenance_planned_end,
+    app_name: data.app_name ?? "App Saúde",
+    app_url: data.app_url ?? "",
+    app_site_url: data.app_site_url ?? "",
+    app_store_url: data.app_store_url ?? "",
+    play_store_url: data.play_store_url ?? "",
+    support_email: data.support_email ?? "",
+    support_phone: data.support_phone ?? "",
+    support_whatsapp: data.support_whatsapp ?? "",
+    admin_logo_url: data.admin_logo_url ?? "",
+    cnpj: data.cnpj ?? "",
+    address: data.address ?? "",
+    timezone: data.timezone ?? "America/Sao_Paulo",
+    currency: data.currency ?? "BRL",
   }
 }
 

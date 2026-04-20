@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase"
 import type { UserRole } from "@/types/database"
-import { isMaintenanceMode } from "@/lib/maintenance"
+import { isMaintenanceMode } from "@/lib/system-settings"
 
 export default async function RootPage() {
   const supabase = createClient()

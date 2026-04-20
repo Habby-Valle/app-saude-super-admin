@@ -1,4 +1,4 @@
-import { getSystemSettings } from "@/lib/maintenance"
+import { getSystemSettings } from "@/lib/system-settings"
 import { Wrench } from "lucide-react"
 
 export const metadata = {

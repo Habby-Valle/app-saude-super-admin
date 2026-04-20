@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { createServerSupabaseClient } from "@/lib/supabase-server"
-import { isMaintenanceMode } from "@/lib/maintenance"
+import { isMaintenanceMode } from "@/lib/system-settings"
 
 export default async function AuthLayout({
   children,

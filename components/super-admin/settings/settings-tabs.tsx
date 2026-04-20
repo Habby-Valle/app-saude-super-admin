@@ -18,6 +18,19 @@ interface SettingsTabsProps {
     maintenance_mode: boolean
     maintenance_message: string
     maintenance_planned_end: string | null
+    app_name: string
+    app_url: string
+    app_site_url: string
+    app_store_url: string
+    play_store_url: string
+    support_email: string
+    support_phone: string
+    support_whatsapp: string
+    admin_logo_url: string
+    cnpj: string
+    address: string
+    timezone: string
+    currency: string
   }
 }
 
