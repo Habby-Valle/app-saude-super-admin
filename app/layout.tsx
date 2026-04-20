@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { SeoProvider } from "@/components/layout/seo-provider"
 import { appConfig } from "@/lib/env"
 import { cn } from "@/lib/utils"
@@ -148,6 +149,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <SeoProvider>{children}</SeoProvider>
+          <SpeedInsights />
         </ThemeProvider>
         <Analytics />
       </body>
