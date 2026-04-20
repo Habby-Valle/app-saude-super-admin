@@ -107,6 +107,18 @@ export async function POST(request: NextRequest) {
         .eq("id", clinicId)
     }
 
+    // Marcar trial como usado permanentemente após qualquer assinatura paga
+    const { error: trialError } = await admin
+      .from("clinics")
+      .update({ has_used_trial: true })
+      .eq("id", clinicId)
+
+    if (trialError) {
+      console.error("[webhook] Error updating has_used_trial:", trialError)
+    } else {
+      console.log("[webhook] has_used_trial设置为true para clínica:", clinicId)
+    }
+
     console.log(
       `[webhook] Subscription activated for clinic ${clinicId}, plan ${planId}`
     )
