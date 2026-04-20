@@ -35,10 +35,12 @@ interface AuditLogsTableProps {
     action: string
     entity: string
     userId: string
+    clinicId: string
     dateFrom: string
     dateTo: string
   }
   users: { id: string; name: string; email: string }[]
+  clinicas: { id: string; name: string }[]
   stats: {
     total: number
     today: number
@@ -98,6 +100,7 @@ export function AuditLogsTable({
   pageSize,
   filters,
   users,
+  clinicas,
   stats,
 }: AuditLogsTableProps) {
   const router = useRouter()
@@ -113,6 +116,7 @@ export function AuditLogsTable({
         action: filters.action,
         entity: filters.entity,
         userId: filters.userId,
+        clinicId: filters.clinicId,
         dateFrom: filters.dateFrom,
         dateTo: filters.dateTo,
         page: String(page),
@@ -154,6 +158,7 @@ export function AuditLogsTable({
         | "shift"
         | "system",
       userId: filters.userId,
+      clinicId: filters.clinicId,
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
     })
@@ -280,6 +285,23 @@ export function AuditLogsTable({
                 {users.map((u) => (
                   <SelectItem key={u.id} value={u.id}>
                     {u.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.clinicId}
+              onValueChange={(v) => updateParams({ clinicId: v, page: "1" })}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Clínica" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas clínicas</SelectItem>
+                {clinicas.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>

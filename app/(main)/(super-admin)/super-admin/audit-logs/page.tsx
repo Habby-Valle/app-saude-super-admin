@@ -4,6 +4,7 @@ import {
   getAuditLogs,
   getAuditLogStats,
   getUsersForAuditFilter,
+  getClinicasForAuditFilter,
 } from "./actions"
 import { AuditLogsTable, AuditLogsTableSkeleton } from "./audit-logs-table"
 
@@ -16,6 +17,7 @@ interface AuditLogsPageProps {
     action?: string
     entity?: string
     userId?: string
+    clinicId?: string
     dateFrom?: string
     dateTo?: string
     page?: string
@@ -28,12 +30,13 @@ async function AuditLogsContent({ searchParams }: AuditLogsPageProps) {
   const action = params.action ?? "all"
   const entity = params.entity ?? "all"
   const userId = params.userId ?? "all"
+  const clinicId = params.clinicId ?? "all"
   const dateFrom = params.dateFrom ?? ""
   const dateTo = params.dateTo ?? ""
   const page = Math.max(1, parseInt(params.page ?? "1", 10))
   const pageSize = 20
 
-  const [{ logs, total }, stats, users] = await Promise.all([
+  const [{ logs, total }, stats, users, clinicas] = await Promise.all([
     getAuditLogs({
       action: action as
         | "all"
@@ -54,6 +57,7 @@ async function AuditLogsContent({ searchParams }: AuditLogsPageProps) {
         | "shift"
         | "system",
       userId,
+      clinicId,
       dateFrom,
       dateTo,
       page,
@@ -61,6 +65,7 @@ async function AuditLogsContent({ searchParams }: AuditLogsPageProps) {
     }),
     getAuditLogStats(),
     getUsersForAuditFilter(),
+    getClinicasForAuditFilter(),
   ])
 
   return (
@@ -69,8 +74,9 @@ async function AuditLogsContent({ searchParams }: AuditLogsPageProps) {
       total={total}
       page={page}
       pageSize={pageSize}
-      filters={{ action, entity, userId, dateFrom, dateTo }}
+      filters={{ action, entity, userId, clinicId, dateFrom, dateTo }}
       users={users}
+      clinicas={clinicas}
       stats={stats}
     />
   )
