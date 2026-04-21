@@ -49,6 +49,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Buscar plano atual da clínica para сравar
+    const { data: currentClinicPlan } = await admin
+      .from("clinic_plans")
+      .select("plan_id")
+      .eq("clinic_id", clinicId)
+      .in("status", ["active", "trial", "free"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    let currentPlanData = null
+    if (currentClinicPlan?.plan_id) {
+      const { data: planData } = await admin
+        .from("plans")
+        .select("name, price")
+        .eq("id", currentClinicPlan.plan_id)
+        .single()
+      currentPlanData = planData
+    }
+
     if (newPlan.price === 0) {
       const now = new Date()
       const expiresAt = new Date(now)
@@ -82,6 +102,20 @@ export async function POST(request: NextRequest) {
         .from("clinics")
         .update({ plan: newPlan.name })
         .eq("id", clinicId)
+
+      // Log audit for free plan change (no previous plan to compare)
+      await admin.from("audit_logs").insert({
+        user_id: (await admin.auth.getUser()).data.user?.id,
+        action: "change_plan",
+        entity: "subscription",
+        entity_id: clinicId,
+        metadata: {
+          new_plan: newPlan.name,
+          new_price: newPlan.price,
+          change_type: "upgrade",
+          message: `Plano alterado para ${newPlan.name}`,
+        },
+      })
 
       return NextResponse.json({ success: true })
     }
@@ -214,30 +248,40 @@ export async function POST(request: NextRequest) {
       .update({ plan: newPlan.name })
       .eq("id", clinicId)
 
+    // Log audit for paid plan change
+    const currentClinic = await admin
+      .from("clinics")
+      .select("plan")
+      .eq("id", clinicId)
+      .single()
+
+    const oldPlanName = currentClinic.data?.plan ?? "Desconhecido"
+    const priceChange = newPlan.price - (currentPlanData?.price ?? 0)
+    const changeType =
+      priceChange > 0 ? "upgrade" : priceChange < 0 ? "downgrade" : "same"
+
+    await admin.from("audit_logs").insert({
+      user_id: (await admin.auth.getUser()).data.user?.id,
+      action: "change_plan",
+      entity: "subscription",
+      entity_id: clinicId,
+      metadata: {
+        old_plan: oldPlanName,
+        old_price: currentPlanData?.price ?? 0,
+        new_plan: newPlan.name,
+        new_price: newPlan.price,
+        price_change: priceChange,
+        change_type: changeType,
+        message: `Plano alterado de ${oldPlanName} para ${newPlan.name}`,
+      },
+    })
+
     // Marcar trial como usado permanentemente após qualquer assinatura paga
-    console.log(
-      "[change-plan] newPlan.price:",
-      newPlan.price,
-      "clinicId:",
-      clinicId
-    )
     if (newPlan.price > 0) {
-      console.log("[change-plan] Updating has_used_trial to true...")
-      const { error: trialError } = await admin
+      await admin
         .from("clinics")
         .update({ has_used_trial: true })
         .eq("id", clinicId)
-
-      if (trialError) {
-        console.error(
-          "[change-plan] Error updating has_used_trial:",
-          trialError
-        )
-      } else {
-        console.log("[change-plan] has_used_trial updated successfully!")
-      }
-    } else {
-      console.log("[change-plan] Plan is free, not updating has_used_trial")
     }
 
     return NextResponse.json({
