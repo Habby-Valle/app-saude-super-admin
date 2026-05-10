@@ -1,6 +1,10 @@
 import { Suspense } from "react"
 import { Settings } from "lucide-react"
-import { getPlans, getAlertThresholds } from "./actions"
+import {
+  getPlans,
+  getAlertThresholds,
+  getSystemSettingsAction,
+} from "./actions"
 import { getLgpdConfig } from "./lgpd-actions"
 import { SettingsTabs } from "@/components/super-admin/settings/settings-tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -10,7 +14,7 @@ export const metadata = {
 }
 
 async function SettingsContent() {
-  const [plans, alertThresholds, lgpdConfig] =
+  const [plans, alertThresholds, lgpdConfig, systemSettings] =
     await Promise.all([
       getPlans().catch(() => []),
       getAlertThresholds().catch(() => []),
@@ -19,6 +23,24 @@ async function SettingsContent() {
         encryption_key_configured: false,
         encryption_statuses: [],
       })),
+      getSystemSettingsAction().catch(() => ({
+        maintenance_mode: false,
+        maintenance_message: "Sistema em manutenção. Em breve retornaremos.",
+        maintenance_planned_end: null,
+        app_name: "App Saúde",
+        app_url: "",
+        app_site_url: "",
+        app_store_url: "",
+        play_store_url: "",
+        support_email: "",
+        support_phone: "",
+        support_whatsapp: "",
+        admin_logo_url: "",
+        cnpj: "",
+        address: "",
+        timezone: "America/Sao_Paulo",
+        currency: "BRL",
+      })),
     ])
 
   return (
@@ -26,6 +48,7 @@ async function SettingsContent() {
       plans={plans}
       alertThresholds={alertThresholds}
       lgpdConfig={lgpdConfig}
+      systemSettings={systemSettings}
     />
   )
 }
