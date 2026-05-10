@@ -45,6 +45,7 @@ export interface AuditLogsFilters {
   action?: AuditAction | "all"
   entity?: AuditEntity | "all"
   userId?: string
+  clinicId?: string
   dateFrom?: string
   dateTo?: string
   page?: number
@@ -60,6 +61,7 @@ export async function getAuditLogs(
     action = "all",
     entity = "all",
     userId,
+    clinicId,
     dateFrom,
     dateTo,
     page = 1,
@@ -74,7 +76,7 @@ export async function getAuditLogs(
     .select(
       `
       *,
-      user:users!user_id(name, email)
+      user:users!user_id(name, email, clinic_id)
     `,
       { count: "exact" }
     )
@@ -91,6 +93,10 @@ export async function getAuditLogs(
 
   if (userId && userId !== "all") {
     query = query.eq("user_id", userId)
+  }
+
+  if (clinicId && clinicId !== "all") {
+    query = query.eq("user.clinic_id", clinicId)
   }
 
   if (dateFrom) {
@@ -167,6 +173,25 @@ export async function getUsersForAuditFilter(): Promise<
 
   if (error) {
     console.error("[getUsersForAuditFilter] Supabase error:", error)
+    return []
+  }
+
+  return data ?? []
+}
+
+export async function getClinicasForAuditFilter(): Promise<
+  { id: string; name: string }[]
+> {
+  const { supabase } = await requireSuperAdmin()
+
+  const { data, error } = await supabase
+    .from("clinics")
+    .select("id, name")
+    .eq("status", "active")
+    .order("name")
+
+  if (error) {
+    console.error("[getClinicasForAuditFilter] Supabase error:", error)
     return []
   }
 

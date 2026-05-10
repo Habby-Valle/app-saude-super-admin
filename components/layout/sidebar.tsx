@@ -21,6 +21,7 @@ import {
   TestTube,
   CheckCircle,
   DollarSign,
+  Megaphone,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -85,6 +86,7 @@ const superAdminNavItems = [
   { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
   { label: "Relatórios", href: "/super-admin/reports", icon: BarChart3 },
   { label: "Logs de Auditoria", href: "/super-admin/audit-logs", icon: Shield },
+  { label: "Broadcast", href: "/super-admin/broadcast", icon: Megaphone },
   { label: "SOS", href: "/super-admin/sos", icon: AlertTriangle, isSos: true },
   { label: "Configurações", href: "/super-admin/settings", icon: Settings },
 ]
