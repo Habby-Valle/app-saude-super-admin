@@ -156,7 +156,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="mt-1 text-muted-foreground">
-          Visão geral de toda a plataforma App Saúde.
+          Visão geral de toda a plataforma Zelo.
         </p>
       </div>
 

@@ -1,9 +1,9 @@
 ---
 name: write-a-prd
-description: Cria ou atualiza um PRD focado no contexto do App Saúde (Super Admin, Admin Clínica ou App Cuidadores).
+description: Cria ou atualiza um PRD focado no contexto do Zelo (Super Admin, Admin Clínica ou App Cuidadores).
 ---
 
-# Skill: Write a PRD - App Saúde
+# Skill: Write a PRD - Zelo
 
 Sempre siga esta estrutura:
 

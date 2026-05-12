@@ -1,4 +1,4 @@
-# IMPLEMENTATION PLAN - App Saúde (Painel Administrativo Unificado)
+# IMPLEMENTATION PLAN - Zelo (Painel Administrativo Unificado)
 
 > Documento vivo — atualizado a cada feature concluída.
 > Seguindo: Spec-Driven Development → PRD → Tech Spec → Implementation Plan → Código
@@ -75,9 +75,9 @@ Controla o ambiente de execução da aplicação:
 
 | Valor          | Ambiente        | Indexação    | Título                    |
 | -------------- | --------------- | ------------ | ------------------------- |
-| `development`  | Desenvolvimento | ❌ Bloqueada | "Dev - App Saúde"         |
-| `homologation` | Homologação     | ✅ Permitida | "Homologação - App Saúde" |
-| `production`   | Produção        | ✅ Permitida | "App Saúde"               |
+| `development`  | Desenvolvimento | ❌ Bloqueada | "Dev - Zelo"         |
+| `homologation` | Homologação     | ✅ Permitida | "Homologação - Zelo" |
+| `production`   | Produção        | ✅ Permitida | "Zelo"               |
 
 ### Configurações por Ambiente
 

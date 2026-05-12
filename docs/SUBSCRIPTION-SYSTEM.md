@@ -6,7 +6,7 @@ Documento unificado que especifica o sistema de assinaturas, fluxo de pagamento,
 
 ## 1. Visão Geral
 
-Sistema de gestão de assinaturas do App Saúde. Define o comportamento quando a assinatura está ativa, em trial ou expirada, e quais funcionalidades estão disponíveis em cada estado.
+Sistema de gestão de assinaturas do Zelo. Define o comportamento quando a assinatura está ativa, em trial ou expirada, e quais funcionalidades estão disponíveis em cada estado.
 
 ---
 

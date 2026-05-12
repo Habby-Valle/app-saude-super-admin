@@ -1,6 +1,6 @@
 ---
 name: super-admin-security
-description: Aplica regras de segurança e multi-tenant específicas para o Super Admin do App Saúde.
+description: Aplica regras de segurança e multi-tenant específicas para o Super Admin do Zelo.
 ---
 
 # Super Admin Security & Multi-Tenant Rules

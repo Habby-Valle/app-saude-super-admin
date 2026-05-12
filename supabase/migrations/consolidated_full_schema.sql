@@ -1,5 +1,5 @@
 -- ============================================================
--- App Saúde - Schema Completo Consolidado
+-- Zelo - Schema Completo Consolidado
 -- Execute este arquivo no Supabase SQL Editor para restaurar todas as tabelas
 -- Data: 2026-05-08
 -- ============================================================

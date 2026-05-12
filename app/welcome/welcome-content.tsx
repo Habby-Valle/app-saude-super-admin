@@ -18,7 +18,7 @@ export function WelcomeContent({ role }: WelcomeContentProps) {
       <>
         <div className="space-y-3">
           <h1 className="text-2xl font-bold text-[#1a1a2e]">
-            Boas-vindas ao App Saúde!
+            Boas-vindas ao Zelo!
           </h1>
           <p className="text-[#4a4a6a] leading-relaxed">
             Sua conta foi confirmada. Acesse o painel administrativo para gerenciar sua clínica.
@@ -41,7 +41,7 @@ export function WelcomeContent({ role }: WelcomeContentProps) {
       <>
         <div className="space-y-3">
           <h1 className="text-2xl font-bold text-[#1a1a2e]">
-            Boas-vindas ao App Saúde!
+            Boas-vindas ao Zelo!
           </h1>
           <p className="text-[#4a4a6a] leading-relaxed">
             Seu acesso foi confirmado com sucesso. Para começar a usar, baixe o aplicativo de cuidados no seu celular.
@@ -62,7 +62,7 @@ export function WelcomeContent({ role }: WelcomeContentProps) {
   return (
     <div className="space-y-3">
       <h1 className="text-2xl font-bold text-[#1a1a2e]">
-        Boas-vindas ao App Saúde!
+        Boas-vindas ao Zelo!
       </h1>
       <p className="text-[#4a4a6a] leading-relaxed">
         Seu acesso foi confirmado com sucesso. Aguarde — seu familiar ou cuidador responsável entrará em contato em breve.

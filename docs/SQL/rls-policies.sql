@@ -1,5 +1,5 @@
 -- ============================================
--- App Saúde - RLS Policies (Feature 30)
+-- Zelo - RLS Policies (Feature 30)
 -- Execute no SQL Editor do Supabase Dashboard
 -- ============================================
 

@@ -113,7 +113,7 @@ export function LoginForm() {
           </div>
           <div>
             <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-              App Saúde
+              Zelo
             </p>
             <p className="text-sm leading-none font-semibold">
               Painel Administrativo

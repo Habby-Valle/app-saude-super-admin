@@ -152,7 +152,7 @@ export function Sidebar({
         )}
         <div className="min-w-0 leading-none">
           <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-            App Saúde
+            Zelo
           </p>
           <p className="truncate text-sm font-bold">{title}</p>
         </div>

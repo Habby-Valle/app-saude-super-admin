@@ -28,9 +28,9 @@ function shouldIndex(): boolean {
 
 function getAppName(): string {
   const env = getAppEnv()
-  if (env === "production") return "App Saúde"
-  if (env === "homologation") return "App Saúde - Homologação"
-  return "App Saúde - Dev"
+  if (env === "production") return "Zelo"
+  if (env === "homologation") return "Zelo - Homologação"
+  return "Zelo - Dev"
 }
 
 export const appConfig: AppConfig = {

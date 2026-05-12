@@ -1,4 +1,4 @@
-# App Saúde - System Context
+# Zelo - System Context
 
 Documento de referência para manter consistência entre **Super Admin** e **Clinic Admin**.
 
@@ -8,7 +8,7 @@ Documento de referência para manter consistência entre **Super Admin** e **Cli
 
 ### 1.1 Propósito
 
-O **App Saúde** é uma plataforma SaaS multi-tenant para gestão de cuidados com pacientes (principalmente idosos), conectando cuidadores, familiares e contatos de emergência.
+O **Zelo** é uma plataforma SaaS multi-tenant para gestão de cuidados com pacientes (principalmente idosos), conectando cuidadores, familiares e contatos de emergência.
 
 ### 1.2 Arquitetura de Módulos
 
@@ -16,7 +16,7 @@ O **App Saúde** é uma plataforma SaaS multi-tenant para gestão de cuidados co
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        App Saúde Platform                        │
+│                        Zelo Platform                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────────┐│
