@@ -147,8 +147,10 @@
         Clique no botão abaixo para criar uma nova senha.
       </p>
       
-      <!-- LINK CORRIGIDO -->
-      <a href="{{ .ConfirmationURL }}" class="email-button">Redefinir senha</a>
+      <!-- Rota HTTPS intermediária que redireciona para o deep link zeloapp:// -->
+      <!-- Gmail não consegue envolver URLs HTTPS em proxy, e não executa JS -->
+      <!-- O token_hash só é consumido quando o app chama verifyOtp() -->
+      <a href="{{ .SiteURL }}/auth/mobile-reset?token_hash={{ .TokenHash }}&type=recovery" class="email-button">Redefinir senha</a>
     </div>
 
     <div class="email-footer">
