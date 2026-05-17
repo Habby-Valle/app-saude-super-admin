@@ -71,6 +71,14 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "outline" | "des
   cancelled: "outline",
 }
 
+function getStatusVariant(status: string) {
+  return STATUS_VARIANTS[status] ?? "outline"
+}
+
+function getStatusLabel(status: string) {
+  return STATUS_LABELS[status] ?? status
+}
+
 interface ShiftDetailPageProps {
   params: Promise<{ id: string }>
 }
@@ -100,8 +108,8 @@ async function ShiftDetailContent({ id }: { id: string }) {
             <h1 className="text-2xl font-bold tracking-tight">
               Turno: {shift.patient_name}
             </h1>
-            <Badge variant={STATUS_VARIANTS[shift.status]}>
-              {STATUS_LABELS[shift.status] ?? shift.status}
+            <Badge variant={getStatusVariant(shift.effective_status)}>
+              {getStatusLabel(shift.effective_status)}
             </Badge>
           </div>
           <p className="mt-1 text-muted-foreground">

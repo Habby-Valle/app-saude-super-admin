@@ -77,6 +77,10 @@ function getStatusVariant(status: string) {
   return STATUS_VARIANTS[status] ?? "outline"
 }
 
+function getStatusLabel(status: string) {
+  return STATUS_LABELS[status] ?? status
+}
+
 export function ShiftTable({
   shifts,
   total,
@@ -183,8 +187,8 @@ export function ShiftTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(shift.status)}>
-                      {STATUS_LABELS[shift.status] ?? shift.status}
+                    <Badge variant={getStatusVariant(shift.effective_status)}>
+                      {getStatusLabel(shift.effective_status)}
                     </Badge>
                   </TableCell>
                   <TableCell>

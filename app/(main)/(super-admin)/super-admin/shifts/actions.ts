@@ -5,6 +5,15 @@ import { requireSuperAdmin } from "@/lib/auth"
 import { shiftFiltersSchema } from "@/lib/validations/shift"
 import type { ShiftStatus } from "@/types/database"
 
+function computeEffectiveStatus(
+  dbStatus: string,
+  progress: { total: number; completed: number }
+): ShiftStatus {
+  if (dbStatus === "completed" || dbStatus === "cancelled") return dbStatus as ShiftStatus
+  const allDone = progress.total > 0 && progress.total === progress.completed
+  return allDone ? "completed" : "in_progress"
+}
+
 export interface ShiftWithDetails {
   id: string
   clinic_id: string
@@ -13,6 +22,8 @@ export interface ShiftWithDetails {
   started_at: string
   ended_at: string | null
   status: ShiftStatus
+  effective_status: ShiftStatus
+  checklist_progress: { total: number; completed: number }
   patient_name: string
   caregiver_name: string
   clinic_name: string | null
@@ -54,22 +65,25 @@ export async function getShifts(raw: {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
+  const selectAll = `
+    id, clinic_id, patient_id, caregiver_id, started_at, ended_at, status,
+    patient:patients(name),
+    caregiver:users!caregiver_id(name),
+    clinic:clinics(name)
+  `
+
   let query = supabase
     .from("shifts")
-    .select(
-      `
-      id, clinic_id, patient_id, caregiver_id, started_at, ended_at, status,
-      patient:patients(name),
-      caregiver:users!caregiver_id(name),
-      clinic:clinics(name)
-    `,
-      { count: "exact" }
-    )
+    .select(selectAll, { count: "exact" })
     .order("started_at", { ascending: false })
     .range(from, to)
 
-  if (status !== "all") {
-    query = query.eq("status", status)
+  if (status === "in_progress") {
+    query = query.eq("status", "in_progress")
+  } else if (status === "cancelled") {
+    query = query.eq("status", "cancelled")
+  } else if (status === "completed") {
+    query = query.in("status", ["completed", "in_progress"])
   }
 
   if (clinicId && clinicId !== "all") {
@@ -83,21 +97,53 @@ export async function getShifts(raw: {
     throw new Error(error.message)
   }
 
-  const shifts: ShiftWithDetails[] = (rows ?? []).map((row) => ({
-    id: row.id,
-    clinic_id: row.clinic_id,
-    patient_id: row.patient_id,
-    caregiver_id: row.caregiver_id,
-    started_at: row.started_at,
-    ended_at: row.ended_at,
-    status: row.status as ShiftStatus,
-    patient_name:
-      (row.patient as unknown as { name: string } | null)?.name ?? "—",
-    caregiver_name:
-      (row.caregiver as unknown as { name: string } | null)?.name ?? "—",
-    clinic_name:
-      (row.clinic as unknown as { name: string } | null)?.name ?? null,
-  }))
+  const shiftIds = (rows ?? []).map((r) => r.id)
+
+  const checklistAggregates: Record<
+    string,
+    { total: number; completed: number }
+  > = {}
+  if (shiftIds.length > 0) {
+    const { data: checklists } = await supabase
+      .from("shift_checklists")
+      .select("shift_id, status")
+      .in("shift_id", shiftIds)
+
+    for (const cl of checklists ?? []) {
+      if (!checklistAggregates[cl.shift_id]) {
+        checklistAggregates[cl.shift_id] = { total: 0, completed: 0 }
+      }
+      checklistAggregates[cl.shift_id].total++
+      if (cl.status === "completed") {
+        checklistAggregates[cl.shift_id].completed++
+      }
+    }
+  }
+
+  let shifts: ShiftWithDetails[] = (rows ?? []).map((row) => {
+    const progress = checklistAggregates[row.id] ?? { total: 0, completed: 0 }
+    return {
+      id: row.id,
+      clinic_id: row.clinic_id,
+      patient_id: row.patient_id,
+      caregiver_id: row.caregiver_id,
+      started_at: row.started_at,
+      ended_at: row.ended_at,
+      status: row.status as ShiftStatus,
+      effective_status: computeEffectiveStatus(row.status, progress),
+      checklist_progress: progress,
+      patient_name:
+        (row.patient as unknown as { name: string } | null)?.name ?? "—",
+      caregiver_name:
+        (row.caregiver as unknown as { name: string } | null)?.name ?? "—",
+      clinic_name:
+        (row.clinic as unknown as { name: string } | null)?.name ?? null,
+    }
+  })
+
+  if (status === "completed") {
+    shifts = shifts.filter((s) => s.effective_status === "completed")
+  }
 
   const filtered = search.trim()
     ? shifts.filter(
@@ -136,6 +182,16 @@ export async function getShiftById(
     return null
   }
 
+  const { data: checklists } = await supabase
+    .from("shift_checklists")
+    .select("status")
+    .eq("shift_id", id)
+
+  const progress = {
+    total: checklists?.length ?? 0,
+    completed: checklists?.filter((c) => c.status === "completed").length ?? 0,
+  }
+
   return {
     id: row.id,
     clinic_id: row.clinic_id,
@@ -144,6 +200,8 @@ export async function getShiftById(
     started_at: row.started_at,
     ended_at: row.ended_at,
     status: row.status as ShiftStatus,
+    effective_status: computeEffectiveStatus(row.status, progress),
+    checklist_progress: progress,
     patient_name:
       (row.patient as unknown as { name: string } | null)?.name ?? "—",
     caregiver_name:
