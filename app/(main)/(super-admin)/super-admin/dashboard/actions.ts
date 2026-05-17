@@ -8,6 +8,8 @@ export interface DashboardKPIs {
   totalPatients: number
   totalUsers: number
   totalCaregivers: number
+  totalAdmins: number
+  totalGuardians: number
   activeShifts: number
   checklistsToday: number
   activeSosAlerts: number
@@ -31,6 +33,8 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
     { count: totalPatients },
     { count: totalUsers },
     { count: totalCaregivers },
+    { count: totalAdmins },
+    { count: totalGuardians },
     { count: activeShifts },
     { count: checklistsToday },
     { count: activeSosAlerts },
@@ -50,6 +54,14 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
       .from("users")
       .select("*", { count: "exact", head: true })
       .eq("role", "caregiver"),
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "clinic_admin"),
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "guardian"),
     supabase
       .from("shifts")
       .select("*", { count: "exact", head: true })
@@ -75,6 +87,8 @@ export async function getDashboardKPIs(): Promise<DashboardKPIs> {
     totalPatients: totalPatients ?? 0,
     totalUsers: totalUsers ?? 0,
     totalCaregivers: totalCaregivers ?? 0,
+    totalAdmins: totalAdmins ?? 0,
+    totalGuardians: totalGuardians ?? 0,
     activeShifts: activeShifts ?? 0,
     checklistsToday: checklistsToday ?? 0,
     activeSosAlerts: activeSosAlerts ?? 0,
@@ -109,8 +123,8 @@ export async function getRecentActivity(): Promise<RecentActivity[]> {
     id: log.id,
     action: log.action,
     entity: log.entity,
-    user_name: (log.user as { name: string }[] | null)?.[0]?.name ?? "—",
-    user_email: (log.user as { email: string }[] | null)?.[0]?.email ?? "—",
+    user_name: (log.user as unknown as { name: string } | null)?.name ?? "—",
+    user_email: (log.user as unknown as { email: string } | null)?.email ?? "—",
     created_at: log.created_at,
   }))
 }
