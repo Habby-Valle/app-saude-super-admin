@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Copy, Pencil, Plus, Trash2 } from "lucide-react"
+import { Copy, ListChecks, Pencil, Plus, Trash2 } from "lucide-react"
 
 import type { ChecklistWithDetails } from "@/app/(main)/(super-admin)/super-admin/checklists/actions"
 import {
@@ -155,6 +155,7 @@ export function ChecklistTable({
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="global">Globais</SelectItem>
               <SelectItem value="clinic">Por clínica</SelectItem>
+              <SelectItem value="guardian">Por responsável</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -171,6 +172,7 @@ export function ChecklistTable({
               <TableHead>Nome</TableHead>
               <TableHead>Escopo</TableHead>
               <TableHead>Clínica</TableHead>
+              <TableHead>Responsável</TableHead>
               <TableHead>Itens</TableHead>
               <TableHead>Criado em</TableHead>
               <TableHead className="w-10" />
@@ -180,7 +182,7 @@ export function ChecklistTable({
             {checklists.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-10 text-center text-muted-foreground"
                 >
                   Nenhum template encontrado.
@@ -188,33 +190,39 @@ export function ChecklistTable({
               </TableRow>
             ) : (
               checklists.map((cl) => {
-                const isGlobal = cl.clinic_id === null
+                const scopeType = cl.guardian_id
+                  ? "guardian"
+                  : cl.clinic_id
+                    ? "clinic"
+                    : "global"
+                const scopeLabel =
+                  scopeType === "guardian"
+                    ? "Responsável"
+                    : scopeType === "clinic"
+                      ? "Clínica"
+                      : "Global"
+                const badgeVariant =
+                  scopeType === "global" ? "default" : "secondary"
                 return (
                   <TableRow key={cl.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        {cl.icon &&
-                          (cl.icon.startsWith("http") ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={cl.icon}
-                              alt=""
-                              className="h-5 w-5 rounded object-cover"
-                            />
-                          ) : (
-                            <span className="text-lg">{cl.icon}</span>
-                          ))}
                         {cl.name}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={isGlobal ? "default" : "secondary"}>
-                        {isGlobal ? "Global" : "Clínica"}
-                      </Badge>
+                      <Badge variant={badgeVariant}>{scopeLabel}</Badge>
                     </TableCell>
                     <TableCell>
                       {cl.clinic_name ? (
                         <span className="text-sm">{cl.clinic_name}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {cl.guardian_name ? (
+                        <span className="text-sm">{cl.guardian_name}</span>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}

@@ -42,7 +42,7 @@ export async function requireSuperAdmin(): Promise<SuperAdminContext> {
   // Busca perfil completo
   const { data: profile } = await supabase
     .from("users")
-    .select("name, email, clinic_id, status")
+    .select("name, email, clinic_id, status, avatar_url")
     .eq("id", user.id)
     .single()
 
@@ -58,6 +58,7 @@ export async function requireSuperAdmin(): Promise<SuperAdminContext> {
       name: profile?.name ?? "Super Admin",
       role: "super_admin" as UserRole,
       clinic_id: null,
+      avatar_url: profile?.avatar_url as string | null | undefined,
     },
     supabase,
   }
@@ -89,7 +90,7 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
 
   const { data: profile, error: profileError } = await supabase
     .from("users")
-    .select("name, email, role, clinic_id, status")
+    .select("name, email, role, clinic_id, status, avatar_url")
     .eq("id", user.id)
     .single()
 
@@ -118,6 +119,7 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
         name: profile.name,
         role: profile.role as UserRole,
         clinic_id: clinicId,
+        avatar_url: profile.avatar_url as string | null | undefined,
       },
       clinicId,
       supabase,
@@ -140,6 +142,7 @@ export async function requireClinicAdmin(): Promise<ClinicAdminContext> {
       name: profile.name,
       role: profile.role as UserRole,
       clinic_id: profile.clinic_id,
+      avatar_url: profile.avatar_url as string | null | undefined,
     },
     clinicId: profile.clinic_id,
     supabase,

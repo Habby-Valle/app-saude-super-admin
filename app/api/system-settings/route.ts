@@ -21,7 +21,7 @@ export async function GET() {
         data?.maintenance_message ??
         "Sistema em manutenção. Em breve retornaremos.",
       maintenance_planned_end: data?.maintenance_planned_end,
-      app_name: data?.app_name ?? "App Saúde",
+      app_name: data?.app_name ?? "Zelo",
       app_url: data?.app_url ?? "",
       app_site_url: data?.app_site_url ?? "",
       app_store_url: data?.app_store_url ?? "",

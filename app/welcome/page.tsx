@@ -11,6 +11,7 @@ import type { UserRole } from "@/types/database"
 const ROLE_REDIRECT: Record<UserRole, string> = {
   super_admin: "/login",
   clinic_admin: "/login",
+  guardian: "/welcome",
   caregiver: "/welcome",
   family: "/welcome",
   emergency_contact: "/login",

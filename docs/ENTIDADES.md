@@ -1,4 +1,4 @@
-# Entidades do Banco de Dados — App Saúde
+# Entidades do Banco de Dados — Zelo
 
 ---
 

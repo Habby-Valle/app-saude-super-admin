@@ -58,9 +58,9 @@ export const metadata: Metadata = {
     "SOS",
     "telemedicina",
   ],
-  authors: [{ name: "App Saúde" }],
-  creator: "App Saúde",
-  publisher: "App Saúde",
+  authors: [{ name: "Zelo" }],
+  creator: "Zelo",
+  publisher: "Zelo",
   robots: SHOULD_INDEX
     ? {
         index: true,

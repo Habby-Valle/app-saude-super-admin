@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 export const metadata = {
   title: "Detalhes do Usuário",
@@ -35,6 +35,7 @@ interface UserDetailsPageProps {
 
 const ROLE_LABELS: Record<string, string> = {
   clinic_admin: "Admin de Clínica",
+  guardian: "Responsável",
   caregiver: "Cuidador",
   family: "Família",
   super_admin: "Super Admin",
@@ -95,6 +96,7 @@ async function UserDetailsContent({ id }: { id: string }) {
         </Button>
         <div className="flex flex-1 items-center gap-4">
           <Avatar className="h-16 w-16">
+            <AvatarImage src={user.avatar_url ?? undefined} alt={user.name} />
             <AvatarFallback className="text-lg">{initials}</AvatarFallback>
           </Avatar>
           <div>

@@ -1,9 +1,9 @@
 ---
 name: spec-driven
-description: Executa o fluxo completo Spec-Driven Development para o App Saúde.
+description: Executa o fluxo completo Spec-Driven Development para o Zelo.
 ---
 
-# Spec-Driven Development (App Saúde)
+# Spec-Driven Development (Zelo)
 
 Siga rigorosamente estas etapas na ordem:
 

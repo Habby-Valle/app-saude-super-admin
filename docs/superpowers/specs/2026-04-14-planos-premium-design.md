@@ -2,13 +2,13 @@
 
 **Data:** 2026-04-14
 **Status:** Aprovado
-**Autor:** App Saúde Team
+**Autor:** Zelo Team
 
 ---
 
 ## 1. Visão Geral
 
-Sistema de planos de assinatura para o App Saúde, estruturado em 4 planos (Free, Basic, Standard, Premium) com modelo freemium. O objetivo é atrair pequenas clínicas com um plano gratuito limitado e converter em clientes paying através de planos progressivos.
+Sistema de planos de assinatura para o Zelo, estruturado em 4 planos (Free, Basic, Standard, Premium) com modelo freemium. O objetivo é atrair pequenas clínicas com um plano gratuito limitado e converter em clientes paying através de planos progressivos.
 
 ---
 

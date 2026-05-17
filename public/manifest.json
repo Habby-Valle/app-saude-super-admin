@@ -1,6 +1,6 @@
 {
-  "name": "App Saúde",
-  "short_name": "App Saúde",
+  "name": "Zelo",
+  "short_name": "Zelo",
   "description": "Painel Administrativo Unificado para gestão de clínicas, pacientes e cuidadores",
   "start_url": "/",
   "display": "standalone",

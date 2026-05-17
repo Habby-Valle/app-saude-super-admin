@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Eye, Search } from "lucide-react"
 
 import type { ClinicPatient } from "@/app/(main)/(clinic-admin)/admin/patients/actions"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -103,7 +104,17 @@ export function PatientTable({
             ) : (
               patients.map((patient) => (
                 <TableRow key={patient.id}>
-                  <TableCell className="font-medium">{patient.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={patient.photo_url ?? undefined} alt={patient.name} />
+                        <AvatarFallback className="text-xs">
+                          {patient.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{patient.name}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>{calculateAge(patient.birth_date)} anos</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatBirthDate(patient.birth_date)}

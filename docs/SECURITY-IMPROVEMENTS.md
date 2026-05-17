@@ -1,4 +1,4 @@
-# Melhorias de Segurança - App Saúde
+# Melhorias de Segurança - Zelo
 
 > Recomendações e melhores práticas de segurança para o painel administrativo.
 

@@ -6,7 +6,7 @@ export const userFormSchema = z.object({
     .min(2, "Nome deve ter pelo menos 2 caracteres")
     .max(100, "Nome muito longo"),
   email: z.string().email("Email inválido").optional(),
-  role: z.enum(["clinic_admin", "caregiver", "family"], {
+  role: z.enum(["clinic_admin", "guardian", "caregiver", "family"], {
     message: "Perfil é obrigatório",
   }),
   clinic_id: z.string().uuid("Clínica inválida").nullable(),

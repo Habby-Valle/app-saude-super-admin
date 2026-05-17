@@ -69,9 +69,11 @@ export interface ChecklistWithDetails {
   name: string
   icon: string | null
   clinic_id: string | null
+  guardian_id: string | null
   order: number
   created_at: string
   clinic_name: string | null
+  guardian_name: string | null
   item_count: number
   is_used: boolean
   checklist_items?: ChecklistItemWithOptions[]
@@ -84,7 +86,7 @@ export interface ChecklistsResult {
 
 export async function getChecklists(params: {
   search?: string
-  scope?: "all" | "global" | "clinic"
+  scope?: "all" | "global" | "clinic" | "guardian"
   clinicId?: string
   page?: number
   pageSize?: number
@@ -106,7 +108,8 @@ export async function getChecklists(params: {
     .select(
       `
       *,
-      clinic:clinics(name)
+      clinic:clinics(name),
+      guardian:users!guardian_id(name)
     `,
       { count: "exact" }
     )
@@ -118,12 +121,14 @@ export async function getChecklists(params: {
   }
 
   if (scope === "global") {
-    query = query.is("clinic_id", null)
+    query = query.is("clinic_id", null).is("guardian_id", null)
   } else if (scope === "clinic") {
     query = query.not("clinic_id", "is", null)
     if (clinicId && clinicId !== "all") {
       query = query.eq("clinic_id", clinicId)
     }
+  } else if (scope === "guardian") {
+    query = query.not("guardian_id", "is", null)
   }
 
   const { data, count, error } = await query
@@ -151,6 +156,7 @@ export async function getChecklists(params: {
   const checklists: ChecklistWithDetails[] = (data ?? []).map((c) => ({
     ...c,
     clinic_name: (c.clinic as { name: string } | null)?.name ?? null,
+    guardian_name: (c.guardian as { name: string } | null)?.name ?? null,
     item_count: itemCounts[c.id] ?? 0,
     is_used: false,
   }))
@@ -169,6 +175,7 @@ export async function getChecklistById(
       `
       *,
       clinic:clinics(name),
+      guardian:users!guardian_id(name),
       checklist_items(
         *,
         checklist_item_options(*)
@@ -186,6 +193,7 @@ export async function getChecklistById(
   return {
     ...data,
     clinic_name: (data.clinic as { name: string } | null)?.name ?? null,
+    guardian_name: (data.guardian as { name: string } | null)?.name ?? null,
     item_count: (data.checklist_items as unknown[])?.length ?? 0,
     is_used: false,
   }

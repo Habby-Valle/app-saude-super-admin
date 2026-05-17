@@ -83,6 +83,7 @@ const superAdminNavItems = [
   { label: "Planos", href: "/super-admin/plans", icon: CheckCircle },
   { label: "Usuários", href: "/super-admin/users", icon: Users },
   { label: "Pacientes", href: "/super-admin/patients", icon: UserRound },
+  { label: "Turnos", href: "/super-admin/shifts", icon: CalendarClock },
   { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
   { label: "Relatórios", href: "/super-admin/reports", icon: BarChart3 },
   { label: "Logs de Auditoria", href: "/super-admin/audit-logs", icon: Shield },
@@ -146,13 +147,20 @@ export function Sidebar({
             )}
           </div>
         ) : (
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-            <ShieldCheck className="h-4 w-4 text-primary-foreground" />
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+            <Image
+              src="/logo.png"
+              alt="Zelo"
+              fill
+              sizes="36px"
+              className="object-contain p-1"
+              unoptimized
+            />
           </div>
         )}
         <div className="min-w-0 leading-none">
           <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-            App Saúde
+            Zelo
           </p>
           <p className="truncate text-sm font-bold">{title}</p>
         </div>

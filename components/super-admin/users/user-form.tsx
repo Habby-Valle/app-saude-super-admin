@@ -101,6 +101,7 @@ export function UserForm({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="clinic_admin">Admin Clínica</SelectItem>
+              <SelectItem value="guardian">Responsável</SelectItem>
               <SelectItem value="caregiver">Cuidador</SelectItem>
               <SelectItem value="family">Familiar</SelectItem>
             </SelectContent>

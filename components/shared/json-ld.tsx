@@ -32,7 +32,7 @@ export function JsonLd({ data }: JsonLdProps) {
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "App Saúde",
+  name: "Zelo",
   description: "Plataforma completa para gestão de cuidados com pacientes",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br",
   logo: `${process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br"}/icon.svg`,
@@ -50,13 +50,13 @@ export const organizationSchema = {
 export const webSiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "App Saúde",
+  name: "Zelo",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br",
   description:
     "Painel Administrativo Unificado para gestão de clínicas, pacientes e cuidadores",
   publisher: {
     "@type": "Organization",
-    name: "App Saúde",
+    name: "Zelo",
     logo: {
       "@type": "ImageObject",
       url: `${process.env.NEXT_PUBLIC_APP_URL || "https://appsaude.com.br"}/icon.svg`,
@@ -75,7 +75,7 @@ export const webSiteSchema = {
 export const softwareApplicationSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "App Saúde",
+  name: "Zelo",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   offers: {

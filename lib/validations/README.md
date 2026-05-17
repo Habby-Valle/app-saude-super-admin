@@ -1,4 +1,4 @@
-# Validações - App Saúde
+# Validações - Zelo
 
 Este diretório contém schemas Zod para validação de formulários e dados de entrada.
 

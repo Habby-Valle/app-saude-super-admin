@@ -2,7 +2,7 @@
 
 ## 1. Visão Geral
 
-Sistema de gestão de planos de assinatura e benefícios para o App Saúde. Permite definir diferentes planos (Trial, Basic, Premium, Enterprise), associar benefícios a cada plano, e rastrear quais benefícios estão ativos para cada clínica e usuário.
+Sistema de gestão de planos de assinatura e benefícios para o Zelo. Permite definir diferentes planos (Trial, Basic, Premium, Enterprise), associar benefícios a cada plano, e rastrear quais benefícios estão ativos para cada clínica e usuário.
 
 ## 2. Entidades
 

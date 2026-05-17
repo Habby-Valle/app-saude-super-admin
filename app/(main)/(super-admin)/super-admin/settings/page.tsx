@@ -27,7 +27,7 @@ async function SettingsContent() {
         maintenance_mode: false,
         maintenance_message: "Sistema em manutenção. Em breve retornaremos.",
         maintenance_planned_end: null,
-        app_name: "App Saúde",
+        app_name: "Zelo",
         app_url: "",
         app_site_url: "",
         app_store_url: "",

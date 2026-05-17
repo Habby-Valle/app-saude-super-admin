@@ -1,4 +1,4 @@
-# Supabase RLS Policies - App Saúde
+# Supabase RLS Policies - Zelo
 
 > Políticas de Row-Level Security para multi-tenant (Clinic Admin e Super Admin)
 
@@ -1253,7 +1253,7 @@ WITH CHECK (true);
 
 ```sql
 -- ============================================
--- App Saúde - RLS Policies
+-- Zelo - RLS Policies
 -- Execute no SQL Editor do Supabase Dashboard
 -- ============================================
 

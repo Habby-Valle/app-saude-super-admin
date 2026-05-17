@@ -1,4 +1,4 @@
-# Tech Spec - App Saúde (Painel Administrativo Unificado)
+# Tech Spec - Zelo (Painel Administrativo Unificado)
 
 ## Arquitetura
 

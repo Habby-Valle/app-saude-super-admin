@@ -1,4 +1,4 @@
-# CLAUDE.md - App Saúde (Painel Administrativo Unificado)
+# CLAUDE.md - Zelo (Painel Administrativo Unificado)
 
 > Este é o documento principal de referência para a IA. Voir aussi: `docs/INDEX.md` para índice completo da documentação.
 
@@ -6,7 +6,7 @@
 
 ## Visão Geral do Projeto
 
-O **App Saúde** é uma plataforma completa para gestão de cuidados com pacientes (principalmente idosos), conectando cuidadores, familiares e contatos de emergência.
+O **Zelo** é uma plataforma completa para gestão de cuidados com pacientes (principalmente idosos), conectando cuidadores, familiares e contatos de emergência.
 
 Este projeto é um **Painel Administrativo Unificado** com dois ambientes de acesso via route groups:
 
