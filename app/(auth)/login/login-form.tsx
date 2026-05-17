@@ -48,6 +48,7 @@ async function getRedirectPath(
       return "/super-admin/dashboard"
     case "clinic_admin":
       return "/admin/dashboard"
+    case "guardian":
     case "caregiver":
     case "family":
     case "emergency_contact":

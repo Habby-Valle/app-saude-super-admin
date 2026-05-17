@@ -62,6 +62,7 @@ import { DataTablePagination } from "@/components/shared/data-table-pagination"
 const ROLE_MAP: Record<UserRole, string> = {
   super_admin: "Super Admin",
   clinic_admin: "Admin Clínica",
+  guardian: "Responsável",
   caregiver: "Cuidador",
   family: "Familiar",
   emergency_contact: "Contato Emergência",
@@ -166,6 +167,7 @@ export function UserTable({
             <SelectContent>
               <SelectItem value="all">Todos os perfis</SelectItem>
               <SelectItem value="clinic_admin">Admin Clínica</SelectItem>
+              <SelectItem value="guardian">Responsável</SelectItem>
               <SelectItem value="caregiver">Cuidador</SelectItem>
               <SelectItem value="family">Familiar</SelectItem>
             </SelectContent>

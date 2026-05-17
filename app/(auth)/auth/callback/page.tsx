@@ -7,6 +7,7 @@ import type { UserRole } from "@/types/database"
 const ROLE_DASHBOARD: Record<UserRole, string> = {
   super_admin: "/super-admin/dashboard",
   clinic_admin: "/admin/dashboard",
+  guardian: "/access-denied",
   caregiver: "/welcome",
   family: "/welcome",
   emergency_contact: "/welcome",

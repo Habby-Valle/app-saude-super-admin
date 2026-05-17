@@ -35,6 +35,7 @@ interface UserDetailsPageProps {
 
 const ROLE_LABELS: Record<string, string> = {
   clinic_admin: "Admin de Clínica",
+  guardian: "Responsável",
   caregiver: "Cuidador",
   family: "Família",
   super_admin: "Super Admin",

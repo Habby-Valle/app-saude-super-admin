@@ -10,7 +10,7 @@ interface WelcomeContentProps {
 }
 
 export function WelcomeContent({ role }: WelcomeContentProps) {
-  const isExternalUser = role && ["caregiver", "family", "emergency_contact"].includes(role)
+  const isExternalUser = role && ["guardian", "caregiver", "family", "emergency_contact"].includes(role)
   const isAdmin = role && ["super_admin", "clinic_admin"].includes(role)
 
   if (isAdmin) {
