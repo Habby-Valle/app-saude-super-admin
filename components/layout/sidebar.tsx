@@ -83,6 +83,7 @@ const superAdminNavItems = [
   { label: "Planos", href: "/super-admin/plans", icon: CheckCircle },
   { label: "Usuários", href: "/super-admin/users", icon: Users },
   { label: "Pacientes", href: "/super-admin/patients", icon: UserRound },
+  { label: "Turnos", href: "/super-admin/shifts", icon: CalendarClock },
   { label: "Checklists", href: "/super-admin/checklists", icon: ClipboardList },
   { label: "Relatórios", href: "/super-admin/reports", icon: BarChart3 },
   { label: "Logs de Auditoria", href: "/super-admin/audit-logs", icon: Shield },
