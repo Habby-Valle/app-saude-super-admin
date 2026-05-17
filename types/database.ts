@@ -97,6 +97,7 @@ export interface EmergencyContact {
 export interface Checklist {
   id: string
   clinic_id: string | null // null = template global
+  guardian_id: string | null // null = global, preenchido = pertence ao responsável
   name: string
   icon: string | null
   order: number

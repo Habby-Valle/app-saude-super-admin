@@ -54,7 +54,17 @@ async function ChecklistDetailsContent({ id }: { id: string }) {
     return null
   }
 
-  const isGlobal = checklist.clinic_id === null
+  const scopeType = checklist.guardian_id
+    ? "guardian"
+    : checklist.clinic_id === null
+      ? "global"
+      : "clinic"
+  const scopeLabel =
+    scopeType === "guardian"
+      ? "Responsável"
+      : scopeType === "clinic"
+        ? "Clínica"
+        : "Global"
   const items =
     (checklist.checklist_items as unknown as ChecklistItemData[]) ?? []
 
@@ -68,7 +78,7 @@ async function ChecklistDetailsContent({ id }: { id: string }) {
         </Button>
         <div className="flex flex-1 items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            {checklist.icon ? (
+            {/* {checklist.icon ? (
               checklist.icon.startsWith("http") ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -80,14 +90,14 @@ async function ChecklistDetailsContent({ id }: { id: string }) {
                 <span className="text-2xl">{checklist.icon}</span>
               )
             ) : (
-              <ListChecks className="h-6 w-6 text-primary" />
-            )}
+            )} */}
+            <ListChecks className="h-6 w-6 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">{checklist.name}</h1>
-              <Badge variant={isGlobal ? "default" : "secondary"}>
-                {isGlobal ? "Global" : "Clínica"}
+              <Badge variant={scopeType === "global" ? "default" : "secondary"}>
+                {scopeLabel}
               </Badge>
             </div>
             <div className="mt-1 flex items-center gap-4 text-muted-foreground">
@@ -118,7 +128,11 @@ async function ChecklistDetailsContent({ id }: { id: string }) {
             <Settings className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isGlobal ? (
+            {scopeType === "guardian" ? (
+              <span className="text-muted-foreground">
+                {checklist.guardian_name ?? "—"}
+              </span>
+            ) : scopeType === "global" ? (
               <span className="text-muted-foreground">
                 Global (todas as clínicas)
               </span>

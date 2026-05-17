@@ -177,7 +177,12 @@ export async function getPatientById(
     return null
   }
 
-  const [clinicResult, caregiversResult, shiftsResult] = await Promise.all([
+  const [
+    clinicResult,
+    caregiversResult,
+    shiftsResult,
+    contactsResult,
+  ] = await Promise.all([
     patient.clinic_id
       ? supabase
           .from("clinics")
@@ -194,6 +199,11 @@ export async function getPatientById(
       .select("id, started_at", { count: "exact" })
       .eq("patient_id", id)
       .order("started_at", { ascending: false }),
+    supabase
+      .from("emergency_contacts")
+      .select("id, user:users!user_id(name, phone)")
+      .eq("patient_id", id)
+      .order("priority", { ascending: true }),
   ])
 
   // Busca checklists executados via IDs dos turnos do paciente
@@ -217,18 +227,17 @@ export async function getPatientById(
       .limit(20)
 
     executedChecklists = (checklistData ?? []).map((sc) => {
-      const checklist = (sc.checklist as { name: string }[] | null)?.[0]
-      const shift = (
-        sc.shift as
-          | { started_at: string; caregiver: { name: string }[] | null }[]
-          | null
-      )?.[0]
+      const checklist = sc.checklist as unknown as { name: string } | null
+      const shift = sc.shift as unknown as {
+        started_at: string
+        caregiver: { name: string } | null
+      } | null
       return {
         id: sc.id,
         status: sc.status,
         checklist_name: checklist?.name ?? "—",
         started_at: shift?.started_at ?? null,
-        caregiver_name: shift?.caregiver?.[0]?.name ?? "—",
+        caregiver_name: shift?.caregiver?.name ?? "—",
       }
     })
   }
@@ -244,11 +253,20 @@ export async function getPatientById(
     )
     .filter((c): c is { id: string; name: string; email: string } => c !== null)
 
+  const emergencyContacts = (contactsResult.data ?? []).map((c) => {
+    const user = c.user as unknown as { name: string; phone: string } | null
+    return {
+      id: c.id,
+      name: user?.name ?? "---",
+      phone: user?.phone ?? "---",
+    }
+  })
+
   return {
     patient,
     clinic: clinicResult.data ?? null,
     caregivers,
-    emergencyContacts: [],
+    emergencyContacts,
     executedChecklists,
     stats: {
       totalShifts: shiftsResult.count ?? 0,
