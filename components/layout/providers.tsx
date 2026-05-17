@@ -39,7 +39,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { data: profile, error: profileError } = await supabase
         .from("users")
-        .select("name, role, clinic_id")
+        .select("name, role, clinic_id, avatar_url")
         .eq("id", user.id)
         .single()
 
@@ -54,6 +54,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         name: profile.name as string,
         role: profile.role as UserRole,
         clinic_id: profile.clinic_id as string | null,
+        avatar_url: profile.avatar_url as string | null | undefined,
       }
       setUser(authUser)
     }
@@ -69,7 +70,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { data: profile, error: profileError } = await supabase
           .from("users")
-          .select("name, role, clinic_id")
+          .select("name, role, clinic_id, avatar_url")
           .eq("id", session.user.id)
           .single()
 
@@ -84,6 +85,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
           name: profile.name as string,
           role: profile.role as UserRole,
           clinic_id: profile.clinic_id as string | null,
+          avatar_url: profile.avatar_url as string | null | undefined,
         })
       }
     )

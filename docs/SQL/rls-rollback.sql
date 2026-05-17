@@ -1,5 +1,5 @@
 -- ============================================
--- App Saúde - RLS Rollback Script
+-- Zelo - RLS Rollback Script
 -- Execute para REMOVER todas as políticas RLS
 -- ============================================
 

@@ -7,7 +7,7 @@ import Link from "next/link"
 
 import { signOut } from "@/app/actions/auth"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -75,6 +75,7 @@ export function Topbar({ variant, activeSosCount = 0 }: TopbarProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 px-2">
               <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.avatar_url ?? undefined} alt={displayName} />
                 <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
                   {initials}
                 </AvatarFallback>

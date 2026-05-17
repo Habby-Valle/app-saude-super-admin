@@ -1,6 +1,7 @@
 export type UserRole =
   | "super_admin"
   | "clinic_admin"
+  | "guardian"
   | "caregiver"
   | "family"
   | "emergency_contact"
@@ -56,6 +57,7 @@ export interface User {
   email: string
   role: UserRole
   status: "active" | "blocked" | "pending"
+  avatar_url?: string | null
   created_at: string
   last_sign_in_at?: string
 }
@@ -69,6 +71,7 @@ export interface Patient {
   name: string
   birth_date: string
   status: "active" | "inactive"
+  photo_url?: string | null
   created_at: string
 }
 
@@ -94,6 +97,7 @@ export interface EmergencyContact {
 export interface Checklist {
   id: string
   clinic_id: string | null // null = template global
+  guardian_id: string | null // null = global, preenchido = pertence ao responsável
   name: string
   icon: string | null
   order: number

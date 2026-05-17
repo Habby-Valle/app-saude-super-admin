@@ -8,6 +8,6 @@
   <rect width="1200" height="630" fill="url(#bg)"/>
   <circle cx="600" cy="280" r="100" stroke="white" stroke-width="20" fill="none"/>
   <path d="M600 180 L600 380 M520 230 L600 180 L680 230" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="600" y="480" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="white" text-anchor="middle">App Saúde</text>
+  <text x="600" y="480" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="white" text-anchor="middle">Zelo</text>
   <text x="600" y="550" font-family="Arial, sans-serif" font-size="32" fill="rgba(255,255,255,0.8)" text-anchor="middle">Painel Administrativo</text>
 </svg>

@@ -11,8 +11,9 @@ export default function AccessDeniedPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Acesso negado</h1>
         <p className="text-muted-foreground max-w-sm">
-          Você não tem permissão para acessar este painel. É necessário ter
-          o papel de <strong>Super Admin</strong>.
+          Você não tem permissão para acessar este painel. Se você é um
+          <strong> responsável (guardian)</strong>, utilize o aplicativo Zelo
+          no seu celular.
         </p>
       </div>
       <Button variant="outline" asChild>

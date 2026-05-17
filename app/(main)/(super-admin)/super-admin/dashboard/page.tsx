@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Activity,
   AlertTriangle,
+  ShieldCheck,
 } from "lucide-react"
 
 import {
@@ -91,9 +92,15 @@ async function KpiSection() {
         />
         <KpiCard
           title="Admins de clínica"
-          value={kpis.totalUsers - kpis.totalCaregivers}
-          description="Outros roles exceto super_admin"
+          value={kpis.totalAdmins}
+          description="Contas com role clinic_admin"
           icon={UserCheck}
+        />
+        <KpiCard
+          title="Responsáveis"
+          value={kpis.totalGuardians}
+          description="Contas com role guardian"
+          icon={ShieldCheck}
         />
         <KpiCard
           title="Alertas SOS"
@@ -156,7 +163,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="mt-1 text-muted-foreground">
-          Visão geral de toda a plataforma App Saúde.
+          Visão geral de toda a plataforma Zelo.
         </p>
       </div>
 

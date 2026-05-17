@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Copy, Pencil, Plus, Search } from "lucide-react"
+import { Copy, ListChecks, Pencil, Plus, Search } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
@@ -162,7 +162,20 @@ export function ClinicChecklistTable({
                 <TableRow key={cl.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
-                      {cl.icon && <span className="text-lg">{cl.icon}</span>}
+                      {cl.icon ? (
+                        cl.icon.startsWith("http") ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={cl.icon}
+                            alt=""
+                            className="h-5 w-5 rounded object-cover"
+                          />
+                        ) : (
+                          <span className="text-lg">{cl.icon}</span>
+                        )
+                      ) : (
+                        <ListChecks className="h-5 w-5 text-muted-foreground" />
+                      )}
                       {cl.name}
                     </div>
                   </TableCell>

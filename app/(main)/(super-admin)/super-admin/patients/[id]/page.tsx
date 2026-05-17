@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 export const metadata = {
   title: "Detalhes do Paciente",
@@ -83,6 +83,7 @@ async function PatientDetailsContent({ id }: { id: string }) {
         </Button>
         <div className="flex flex-1 items-center gap-4">
           <Avatar className="h-16 w-16">
+            <AvatarImage src={patient.photo_url ?? undefined} alt={patient.name} />
             <AvatarFallback className="text-lg">{initials}</AvatarFallback>
           </Avatar>
           <div>

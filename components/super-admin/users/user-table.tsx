@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   Table,
   TableBody,
@@ -62,6 +63,7 @@ import { DataTablePagination } from "@/components/shared/data-table-pagination"
 const ROLE_MAP: Record<UserRole, string> = {
   super_admin: "Super Admin",
   clinic_admin: "Admin Clínica",
+  guardian: "Responsável",
   caregiver: "Cuidador",
   family: "Familiar",
   emergency_contact: "Contato Emergência",
@@ -166,6 +168,7 @@ export function UserTable({
             <SelectContent>
               <SelectItem value="all">Todos os perfis</SelectItem>
               <SelectItem value="clinic_admin">Admin Clínica</SelectItem>
+              <SelectItem value="guardian">Responsável</SelectItem>
               <SelectItem value="caregiver">Cuidador</SelectItem>
               <SelectItem value="family">Familiar</SelectItem>
             </SelectContent>
@@ -218,14 +221,22 @@ export function UserTable({
               users.map((user) => {
                 const clinic = clinics.find((c) => c.id === user.clinic_id)
                 return (
-                  <TableRow key={user.id}>
+                    <TableRow key={user.id}>
                     <TableCell className="font-medium">
-                      <Link
-                        href={`/super-admin/users/${user.id}`}
-                        className="hover:underline"
-                      >
-                        {user.name}
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src={user.avatar_url ?? undefined} alt={user.name} />
+                          <AvatarFallback className="text-xs">
+                            {user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Link
+                          href={`/super-admin/users/${user.id}`}
+                          className="hover:underline"
+                        >
+                          {user.name}
+                        </Link>
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       <span className="flex items-center gap-1.5">

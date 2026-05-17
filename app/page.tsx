@@ -35,6 +35,8 @@ export default async function RootPage() {
       redirect("/super-admin/dashboard")
     case "clinic_admin":
       redirect("/admin/dashboard")
+    case "guardian":
+      redirect("/access-denied")
     default:
       redirect("/welcome")
   }

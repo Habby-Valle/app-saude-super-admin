@@ -1,4 +1,4 @@
-# Checklist de Testes - App Saúde
+# Checklist de Testes - Zelo
 
 > Documento de referência para testes manuais do painel administrativo.
 
@@ -612,7 +612,7 @@
 
 - [ ] Title correto em cada página
 - [ ] Description correta em cada página
-- [ ] Template de título funciona (Página | App Saúde)
+- [ ] Template de título funciona (Página | Zelo)
 
 ### Open Graph
 

@@ -1,8 +1,8 @@
 
-# BASE-PROJETO.md - Template Base App Saúde
+# BASE-PROJETO.md - Template Base Zelo
 
 ## Informações Gerais
-- Nome da Plataforma: App Saúde
+- Nome da Plataforma: Zelo
 - Tipo de Sistema: Gestão de Cuidados para Idosos (Care Management)
 - Banco de Dados: Supabase (PostgreSQL)
 - Padrão de Autenticação: Supabase Auth + RLS

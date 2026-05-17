@@ -204,7 +204,7 @@ export function SystemSettings({ initialSettings }: SystemSettingsProps) {
                 id="appName"
                 value={appName}
                 onChange={(e) => setAppName(e.target.value)}
-                placeholder="App Saúde"
+                placeholder="Zelo"
               />
             </div>
 

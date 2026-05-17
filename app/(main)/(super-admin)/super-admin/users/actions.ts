@@ -78,7 +78,30 @@ export async function getUsers(params: {
     throw new Error(error.message)
   }
 
-  return { users: data ?? [], total: count ?? 0 }
+  const users = data ?? []
+
+  if (users.length > 0) {
+    const userIds = users.map((u) => u.id)
+    const { data: authUsers } = await supabase.rpc(
+      "get_auth_users_last_sign_in",
+      { user_ids: userIds }
+    )
+    if (authUsers) {
+      const authMap = new Map(
+        authUsers.map((au: { id: string; last_sign_in_at: string | null }) => [
+          au.id,
+          au.last_sign_in_at,
+        ])
+      )
+      for (const user of users) {
+        if (authMap.has(user.id)) {
+          user.last_sign_in_at = authMap.get(user.id) ?? user.last_sign_in_at
+        }
+      }
+    }
+  }
+
+  return { users, total: count ?? 0 }
 }
 
 // ─── Convidar usuário (cria via Supabase Auth + insere perfil) ────────────────
