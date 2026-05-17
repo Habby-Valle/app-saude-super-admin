@@ -57,6 +57,7 @@ export interface User {
   email: string
   role: UserRole
   status: "active" | "blocked" | "pending"
+  avatar_url?: string | null
   created_at: string
   last_sign_in_at?: string
 }
@@ -70,6 +71,7 @@ export interface Patient {
   name: string
   birth_date: string
   status: "active" | "inactive"
+  photo_url?: string | null
   created_at: string
 }
 

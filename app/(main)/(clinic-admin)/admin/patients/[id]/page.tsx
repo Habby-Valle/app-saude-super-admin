@@ -7,6 +7,7 @@ import {
   getPatientCaregivers,
   togglePatientStatus,
 } from "../actions"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -83,14 +84,22 @@ export default async function PatientDetailPage({
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{patient.name}</h1>
-            {!isActive && (
-              <Badge variant="secondary">Inativo</Badge>
-            )}
+        <div className="flex flex-1 items-center gap-4">
+          <Avatar className="h-14 w-14">
+            <AvatarImage src={patient.photo_url ?? undefined} alt={patient.name} />
+            <AvatarFallback className="text-base">
+              {patient.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight">{patient.name}</h1>
+              {!isActive && (
+                <Badge variant="secondary">Inativo</Badge>
+              )}
+            </div>
+            <p className="text-muted-foreground">Detalhes do paciente</p>
           </div>
-          <p className="text-muted-foreground">Detalhes do paciente</p>
         </div>
         <div className="flex gap-2">
           <PatientEditDialog

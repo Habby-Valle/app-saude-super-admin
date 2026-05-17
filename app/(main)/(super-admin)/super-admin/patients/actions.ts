@@ -187,7 +187,7 @@ export async function getPatientById(
       : Promise.resolve({ data: null }),
     supabase
       .from("caregiver_patient")
-      .select("caregiver:users!caregiver_id(id, name, email)")
+      .select("caregiver:users!caregiver_id(id, name, email, avatar_url)")
       .eq("patient_id", id),
     supabase
       .from("shifts")

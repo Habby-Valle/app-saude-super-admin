@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Eye } from "lucide-react"
 
 import type { PatientWithDetails } from "@/app/(main)/(super-admin)/super-admin/patients/actions"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -125,7 +126,22 @@ export function PatientTable({
             ) : (
               patients.map((patient) => (
                 <TableRow key={patient.id}>
-                  <TableCell className="font-medium">{patient.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={patient.photo_url ?? undefined} alt={patient.name} />
+                        <AvatarFallback className="text-xs">
+                          {patient.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Link
+                        href={`/super-admin/patients/${patient.id}`}
+                        className="hover:underline"
+                      >
+                        {patient.name}
+                      </Link>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{patient.clinic_name}</Badge>
                   </TableCell>

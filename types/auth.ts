@@ -6,6 +6,7 @@ export interface AuthUser {
   name: string
   role: UserRole
   clinic_id: string | null
+  avatar_url?: string | null
 }
 
 export interface AuthSession {
